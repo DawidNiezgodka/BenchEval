@@ -1,0 +1,27 @@
+{
+  "benchInfo": {
+    "executionTime": "18 m",
+    "parametrization": {
+      "ack": "3",
+      "read-in-ram": true
+    },
+    "otherInfo": "kafka, v2.3"
+  },
+  "results": [
+    {
+      "unit": "ms",
+      "value": 700,
+      "name": "latency"
+    },
+    {
+      "unit": "op/s",
+      "value": 123,
+      "name": "metric2"
+    },
+    {
+      "unit": "%",
+      "value": 456,
+      "name": "metric3"
+    }
+  ]
+}

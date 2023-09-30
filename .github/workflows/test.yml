@@ -1,0 +1,57 @@
+name: "units-test"
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - more-bench-info
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout the main branch
+        uses: actions/checkout@v3
+
+      - name: checkout the bench_data branch to a given folder
+        uses: actions/checkout@v3
+        with:
+          ref: 'bench_data'
+          sparse-checkout: |
+            data.json
+          sparse-checkout-cone-mode: false
+          path: 'benchmark_data'
+
+      - name: print the content of the file from the bench_data branch
+        run: cat benchmark_data/data.json
+
+      - name: evaluate benchmark
+        uses: ./
+        with:
+          current_bench_res_file: ./benchmark_results/curr.json
+          bench_type: simple
+          reference: previous
+          thresholds: 400,100000,95
+          comparison_modes: smaller, bigger, range
+          comparison_margins: 10, 20, 20 # if comp margin -1, then strict comparison
+          fail_if_any_worse: false
+          add_comment_to_commit: true
+          github_token: ${{ secrets.GH_TOKEN }}
+          save_curr_bench_res: true
+
+      - name: print the content of the data file after the update
+        run: cat benchmark_data/data.json
+
+      - name: Commit files
+        working-directory: ./benchmark_data
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -a -m "Add changes"
+          git push origin bench_data
+#    - name: Push changes
+#      uses: ad-m/github-push-action@master
+#      with:
+#        github_token: ${{ secrets.GH_TOKEN }}
+#        branch: bench_data
+

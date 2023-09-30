@@ -1,18 +1,93 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'evaluate benchmark'
+description: 'Evaluate benchmark results'
 
-# Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  name:
+    description: 'The name of a specific benchmark. This name will be used to identify the benchmark ...'
+    required: false
+    default: 'Benchmark'
+  # curr_bench_folder?
+  current_bench_res_file:
+    description: |
+      The name of a file that contains the current benchmark result.
+      Currently, only JSON files are supported.
     required: true
-    default: '1000'
+  folder_with_bench_data:
+    description: |
+      The file serves as the repository for both historical benchmark data
+      and the location where new benchmark data will be appended.
+      Currently, only .js files are supported.
+    required: false
+    default: 'benchmark_data'
+  file_with_bench_data:
+    description: |
+      The name of the file that contains the benchmark data.
+      Currently, only .js files are supported.
+    required: false
+    default: 'data.json'
+  github_token:
+    description: 'GitHub token to pull/push to repo, add benchmark info to the repo, etc.'
+    required: false
+  add_comment_to_commit:
+    description: |
+      Leave a comment with benchmark result comparison.
+      To enable this feature, github-token input must be given as well
+    required: false
+    default: false
+  add_action_page_job_summary:
+    description: 'Leave a job summary with benchmark result comparison in the actions tab of a repo'
+    required: false
+    default: false
+  save_curr_bench_res:
+    description: |
+      Save the benchmark data pointed to by current_bench_res_file
+      to a file located in benchmark_data_file'
+    required: false
+    default: true
+  #### Evaluation input parameters
+  bench_type:
+    description: |
+      The type of benchmark. The benchmark type is determined by the structure of the file that describes the benchmark result.
+      The following benchmark types are available: simple (name, unit, value), simple multiple (array of simples), complex, and complex multiple.
+      Complex benchmarks require you to define a function that takes values as input, whatever they may be,
+      and returns 1 or 0 to indicate whether the benchmark is successful or not.
+    required: true
+  reference:
+    description: |
+      It refers to a reference point by which we determine whether the benchmark is successful or not.
+      The possible values are 'previous,' 'previous_successful,' and 'threshold.'
+    required: true
+  thresholds:
+    description: |
+      The threshold value that is used to determine whether the benchmark is successful or not.
+      The threshold value is used when the reference is set to 'threshold.'
+      If the bench_type is simple, specify a single value.
+      If the bench_type is simple-multi, specify a list of values as a comma-separated string.
+    required: false
+  comparison_modes:
+    description: |
+      Specifies how, in relation to the threshold or a previous benchmark,
+      the value from the current benchmark is evaluated.
+      The possible values are smaller if the benchmark-measured value should be smaller than the threshold / prev;
+      bigger if it should be larger, and range if it should fall within the percentage range defined by another parameter.
+  comparison_margins:
+    description: |
+      Describes by how much percentage a given value can deviate from the desired
+      value (threshold or prev) to still qualify the benchmark as successful.
+      If you have selected range as one of the modes in the above set of modes,
+      and it is not the only function, please provide values of -1 for the remaining functions.
+      For example, if you previously entered: smaller, smaller, range, and your range is 20%,
+      this input should look as follows: "-1, -1, 20"
 
-# Define your outputs here.
-outputs:
-  time:
-    description: 'Your output description here'
+  fail_if_any_worse:
+    description: |
+    required: false
+    default: false
+  fail_if_all_worse:
+    description: |
+    required: false
+    default: false
+
 
 runs:
   using: node20
