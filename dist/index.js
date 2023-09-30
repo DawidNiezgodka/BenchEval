@@ -9643,15 +9643,18 @@ const { BenchmarkInfo } = __nccwpck_require__(8154)
 module.exports.createCurrBench = function (config) {
   const currBenchResJson = config.currBenchResJson
   const benchInfoJson = currBenchResJson.benchInfo
-  console.log('currBenchResJson: ' + JSON.stringify(benchInfoJson))
+  console.log('Complete JSON: ' + JSON.stringify(currBenchResJson))
   const benchInfo = new BenchmarkInfo(
     benchInfoJson.executionTime,
     benchInfoJson.parametrization,
     benchInfoJson.otherInfo
   )
+  console.log('BenchInfo: ' + JSON.stringify(benchInfo))
   const metricResults = currBenchResJson.results.map(
     item => new SimpleMetricResult(item.name, item.value, item.unit)
   )
+
+  console.log('MetricResults: ' + JSON.stringify(metricResults))
   const commit = getCommit()
   return new CompleteBenchmark(
     config.benchName,
