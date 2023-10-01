@@ -9635,6 +9635,7 @@ function wrappy (fn, cb) {
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const { getCommit } = __nccwpck_require__(6254)
+const core = __nccwpck_require__(2186)
 
 const { SimpleMetricResult } = __nccwpck_require__(8154)
 const { CompleteBenchmark } = __nccwpck_require__(8154)
@@ -9643,16 +9644,20 @@ const { BenchmarkInfo } = __nccwpck_require__(8154)
 module.exports.createCurrBench = function (config) {
   const currBenchResJson = config.currBenchResJson
   const benchInfoJson = currBenchResJson.benchInfo
-  console.log('currBenchResJson: ' + JSON.stringify(benchInfoJson))
+  core.debug('Complete JSON: ' + JSON.stringify(currBenchResJson))
   const benchInfo = new BenchmarkInfo(
     benchInfoJson.executionTime,
     benchInfoJson.parametrization,
     benchInfoJson.otherInfo
   )
+  core.debug('BenchInfo: ' + JSON.stringify(benchInfo))
   const metricResults = currBenchResJson.results.map(
     item => new SimpleMetricResult(item.name, item.value, item.unit)
   )
+
+  core.debug('MetricResults: ' + JSON.stringify(metricResults))
   const commit = getCommit()
+  core.debug('Commit info: ' + JSON.stringify(commit))
   return new CompleteBenchmark(
     config.benchName,
     benchInfo,
@@ -9826,6 +9831,7 @@ module.exports.createComment = function (
       comparisonMargins
     )
   } else {
+    core.debug('Creating comment body for comparison with threshold')
     commentBody = module.exports.createCommentBodyForComparisonWithThreshold(
       currentBenchmark,
       thresholdArray,
@@ -9933,6 +9939,10 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
 
 module.exports.createBenchDataText = function (currentBenchmark) {
   const benchInfo = currentBenchmark.benchmarkInfo
+  core.debug(
+    'From createBenchDataText: Current benchmark info: ' +
+      JSON.stringify(benchInfo)
+  )
   const benchDataLines = [
     `**Execution time**: ${benchInfo.executionTime}`,
     `**Parametrization**:`
@@ -10011,7 +10021,10 @@ module.exports.createCommentBodyForComparisonWithThreshold = function (
 
   lines.push('## Benchmark information')
 
+  core.debug('Current benchmark: ' + JSON.stringify(currentBenchmark))
   const benchDataText = module.exports.createBenchDataText(currentBenchmark)
+  core.debug('Bench data text: ' + benchDataText)
+  core.debug('Commit ID:' + currentBenchmark.commitInfo.id)
 
   lines.push(benchDataText)
   lines.push('', '', '', '')
@@ -10101,7 +10114,10 @@ module.exports.leaveComment = async (commitId, body, token) => {
 
 const github = __nccwpck_require__(5438)
 const { Commit } = __nccwpck_require__(8154)
+const core = __nccwpck_require__(2186)
+
 module.exports.getCommit = function () {
+  core.debug(github.context.payload.author)
   if (github.context.payload.head_commit) {
     const { head_commit } = github.context.payload
     return new Commit(
@@ -10403,6 +10419,7 @@ async function run() {
     }
 
     if (config.addComment) {
+      core.debug("G'nna add comment to a commit")
       if (config.reference === 'threshold') {
         createComment(
           currentBenchmark,

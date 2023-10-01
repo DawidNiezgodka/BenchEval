@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - more-bench-info
+      - test
 
 jobs:
   test:
@@ -30,7 +30,7 @@ jobs:
         with:
           current_bench_res_file: ./benchmark_results/curr.json
           bench_type: simple
-          reference: previous
+          reference: threshold
           thresholds: 400,100000,95
           comparison_modes: smaller, bigger, range
           comparison_margins: 10, 20, 20 # if comp margin -1, then strict comparison

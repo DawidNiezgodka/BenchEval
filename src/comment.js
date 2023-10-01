@@ -26,6 +26,7 @@ module.exports.createComment = function (
       comparisonMargins
     )
   } else {
+    core.debug('Creating comment body for comparison with threshold')
     commentBody = module.exports.createCommentBodyForComparisonWithThreshold(
       currentBenchmark,
       thresholdArray,
@@ -133,6 +134,10 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
 
 module.exports.createBenchDataText = function (currentBenchmark) {
   const benchInfo = currentBenchmark.benchmarkInfo
+  core.debug(
+    'From createBenchDataText: Current benchmark info: ' +
+      JSON.stringify(benchInfo)
+  )
   const benchDataLines = [
     `**Execution time**: ${benchInfo.executionTime}`,
     `**Parametrization**:`
@@ -211,7 +216,10 @@ module.exports.createCommentBodyForComparisonWithThreshold = function (
 
   lines.push('## Benchmark information')
 
+  core.debug('Current benchmark: ' + JSON.stringify(currentBenchmark))
   const benchDataText = module.exports.createBenchDataText(currentBenchmark)
+  core.debug('Bench data text: ' + benchDataText)
+  core.debug('Commit ID:' + currentBenchmark.commitInfo.id)
 
   lines.push(benchDataText)
   lines.push('', '', '', '')

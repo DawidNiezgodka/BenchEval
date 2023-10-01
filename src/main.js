@@ -39,6 +39,7 @@ async function run() {
     }
 
     if (config.addComment) {
+      core.debug("G'nna add comment to a commit")
       if (config.reference === 'threshold') {
         createComment(
           currentBenchmark,
