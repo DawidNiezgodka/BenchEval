@@ -13,17 +13,17 @@ jobs:
       - name: checkout the main branch
         uses: actions/checkout@v3
 
-#      - name: checkout the bench_data branch to a given folder
-#        uses: actions/checkout@v3
-#        with:
-#          ref: 'bench_data'
-#          sparse-checkout: |
-#            data.json
-#          sparse-checkout-cone-mode: false
-#          path: 'benchmark_data'
+      - name: checkout the bench_data branch to a given folder
+        uses: actions/checkout@v3
+        with:
+          ref: 'bench_data'
+          sparse-checkout: |
+            data.json
+          sparse-checkout-cone-mode: false
+          path: 'benchmark_data'
 
-#      - name: print the content of the file from the bench_data branch
-#        run: cat benchmark_data/data.json
+      - name: print the content of the file from the bench_data branch
+        run: cat benchmark_data/data.json
 
       - name: evaluate benchmark
         uses: ./
