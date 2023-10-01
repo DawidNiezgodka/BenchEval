@@ -1,4 +1,5 @@
 const { getCommit } = require('./commit')
+const core = require('@actions/core')
 
 const { SimpleMetricResult } = require('./types')
 const { CompleteBenchmark } = require('./types')
@@ -20,6 +21,7 @@ module.exports.createCurrBench = function (config) {
 
   console.log('MetricResults: ' + JSON.stringify(metricResults))
   const commit = getCommit()
+  core.debug('Commit info: ' + JSON.stringify(commit))
   return new CompleteBenchmark(
     config.benchName,
     benchInfo,

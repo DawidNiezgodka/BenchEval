@@ -1,6 +1,9 @@
 const github = require('@actions/github')
 const { Commit } = require('./types')
+const core = require('@actions/core')
+
 module.exports.getCommit = function () {
+  core.debug(github.context.payload.author)
   if (github.context.payload.head_commit) {
     const { head_commit } = github.context.payload
     return new Commit(

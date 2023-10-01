@@ -13,24 +13,24 @@ jobs:
       - name: checkout the main branch
         uses: actions/checkout@v3
 
-      - name: checkout the bench_data branch to a given folder
-        uses: actions/checkout@v3
-        with:
-          ref: 'bench_data'
-          sparse-checkout: |
-            data.json
-          sparse-checkout-cone-mode: false
-          path: 'benchmark_data'
+#      - name: checkout the bench_data branch to a given folder
+#        uses: actions/checkout@v3
+#        with:
+#          ref: 'bench_data'
+#          sparse-checkout: |
+#            data.json
+#          sparse-checkout-cone-mode: false
+#          path: 'benchmark_data'
 
-      - name: print the content of the file from the bench_data branch
-        run: cat benchmark_data/data.json
+#      - name: print the content of the file from the bench_data branch
+#        run: cat benchmark_data/data.json
 
       - name: evaluate benchmark
         uses: ./
         with:
           current_bench_res_file: ./benchmark_results/curr.json
           bench_type: simple
-          reference: previous
+          reference: threshold
           thresholds: 400,100000,95
           comparison_modes: smaller, bigger, range
           comparison_margins: 10, 20, 20 # if comp margin -1, then strict comparison
