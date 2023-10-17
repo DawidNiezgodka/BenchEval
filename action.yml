@@ -33,17 +33,17 @@ inputs:
       Leave a comment with benchmark result comparison.
       To enable this feature, github-token input must be given as well
     required: false
-    default: false
+    default: "false"
   add_action_page_job_summary:
     description: 'Leave a job summary with benchmark result comparison in the actions tab of a repo'
     required: false
-    default: false
+    default: "false"
   save_curr_bench_res:
     description: |
       Save the benchmark data pointed to by current_bench_res_file
       to a file located in benchmark_data_file'
     required: false
-    default: true
+    default: "true"
   #### Evaluation input parameters
   bench_type:
     description: |
@@ -82,11 +82,11 @@ inputs:
   fail_if_any_worse:
     description: |
     required: false
-    default: false
+    default: "false"
   fail_if_all_worse:
     description: |
     required: false
-    default: false
+    default: "false"
 
 
 runs:
