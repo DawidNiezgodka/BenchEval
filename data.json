@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1697555861308,
+    "lastUpdate": 1697555877356,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -143,6 +143,48 @@
                     "url": "https://github.com/DawidNiezgodka/BenchEval/pull/3/commits/9088c8123a25a63e1976f4d8dae590a4ae1778f8"
                 },
                 "date": 1697555861308,
+                "executionTime": "18 m",
+                "parametrization": {
+                    "ack": "3",
+                    "read-in-ram": true
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "latency",
+                        "value": 700,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "metric2",
+                        "value": 123,
+                        "unit": "op/s"
+                    },
+                    {
+                        "name": "metric3",
+                        "value": 456,
+                        "unit": "%"
+                    }
+                ]
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "22837704+DawidNiezgodka@users.noreply.github.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "noreply@github.com",
+                        "name": "GitHub",
+                        "username": "web-flow"
+                    },
+                    "id": "7521b918cff0fb2dde87c046c9518e669ae6b80f",
+                    "message": "Merge pull request #3 from DawidNiezgodka/test\n\ncorrect input type",
+                    "timestamp": "2023-10-17T17:17:43+02:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/7521b918cff0fb2dde87c046c9518e669ae6b80f"
+                },
+                "date": 1697555877356,
                 "executionTime": "18 m",
                 "parametrization": {
                     "ack": "3",
