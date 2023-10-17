@@ -28,12 +28,12 @@
                 "metrics": [
                     {
                         "name": "latency",
-                        "value": 700,
+                        "value": 662,
                         "unit": "ms"
                     },
                     {
                         "name": "metric2",
-                        "value": 123,
+                        "value": 123000,
                         "unit": "op/s"
                     },
                     {
@@ -75,7 +75,7 @@
                     },
                     {
                         "name": "metric2",
-                        "value": 123,
+                        "value": 111111,
                         "unit": "op/s"
                     },
                     {
@@ -112,12 +112,12 @@
                 "metrics": [
                     {
                         "name": "latency",
-                        "value": 700,
+                        "value": 423,
                         "unit": "ms"
                     },
                     {
                         "name": "metric2",
-                        "value": 123,
+                        "value": 121414,
                         "unit": "op/s"
                     },
                     {
@@ -152,12 +152,12 @@
                 "metrics": [
                     {
                         "name": "latency",
-                        "value": 700,
+                        "value": 13134,
                         "unit": "ms"
                     },
                     {
                         "name": "metric2",
-                        "value": 123,
+                        "value": 123456,
                         "unit": "op/s"
                     },
                     {
@@ -194,12 +194,12 @@
                 "metrics": [
                     {
                         "name": "latency",
-                        "value": 700,
+                        "value": 699,
                         "unit": "ms"
                     },
                     {
                         "name": "metric2",
-                        "value": 123,
+                        "value": 311111,
                         "unit": "op/s"
                     },
                     {
