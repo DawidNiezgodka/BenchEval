@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1696168445437,
+    "lastUpdate": 1697555815604,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -61,6 +61,48 @@
                     "url": "https://github.com/DawidNiezgodka/BenchEval/commit/6a28c587e9081ce921e4fc9a5085efbe810026d1"
                 },
                 "date": 1696168445437,
+                "executionTime": "18 m",
+                "parametrization": {
+                    "ack": "3",
+                    "read-in-ram": true
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "latency",
+                        "value": 700,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "metric2",
+                        "value": 123,
+                        "unit": "op/s"
+                    },
+                    {
+                        "name": "metric3",
+                        "value": 456,
+                        "unit": "%"
+                    }
+                ]
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "9088c8123a25a63e1976f4d8dae590a4ae1778f8",
+                    "message": "correct input type",
+                    "timestamp": "2023-10-17T17:16:37+02:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/9088c8123a25a63e1976f4d8dae590a4ae1778f8"
+                },
+                "date": 1697555815604,
                 "executionTime": "18 m",
                 "parametrization": {
                     "ack": "3",
