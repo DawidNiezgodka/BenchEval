@@ -90,7 +90,8 @@ async function run() {
             prev,
             config.thresholds,
             config.comparisonModes,
-            config.comparisonMargins
+            config.comparisonMargins,
+            config.failingCondition
           )
         }
       }
