@@ -9725,6 +9725,7 @@ module.exports.addCompleteBenchmarkToFile = async (
       benchSuccessful: benchmarkInstance.benchSuccessful
     }
 
+    console.log('Benchmark name: ' + benchmarkInstance.benchmarkName)
     if (!jsonData.entries[benchmarkInstance.benchmarkName]) {
       jsonData.entries[benchmarkInstance.benchmarkName] = []
     }
