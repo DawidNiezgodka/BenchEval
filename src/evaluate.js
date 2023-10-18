@@ -83,10 +83,15 @@ module.exports.compareWithPrev = function (
     )
     core.debug(prev)
     let comparisonMode = comparisonModes[i]
+    console.log('comparisonMode: ' + comparisonMode)
     let comparisonMargin = comparisonMargins[i]
+    console.log('comparisonMargin: ' + comparisonMargin)
     let currentBetter
 
     if (prev) {
+      console.log('current metric: ' + currentMetric.value)
+      console.log('prev metric: ' + prev.value)
+      console.log('Entering prev if...')
       if (comparisonMode === 'bigger') {
         if (comparisonMargin === '-1') {
           results.push(currentMetric.value > prev.value ? 'passed' : 'failed')
