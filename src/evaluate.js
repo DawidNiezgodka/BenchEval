@@ -55,7 +55,6 @@ module.exports.evaluateThresholds = function (
 module.exports.compareWithPrev = function (
   currentBenchmark,
   previousBenchmark,
-  thresholdArray,
   comparisonModes,
   comparisonMargins
 ) {
