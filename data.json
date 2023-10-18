@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1697624514233,
+    "lastUpdate": 1697625158468,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -381,6 +381,49 @@
                     {
                         "name": "metric3",
                         "value": 100,
+                        "unit": "%"
+                    }
+                ],
+                "benchSuccessful": true
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "27014d6908a47dac4062a42e89eabbf2f7ae1603",
+                    "message": "compare with diff bench - pilot",
+                    "timestamp": "2023-10-18T12:32:20+02:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/27014d6908a47dac4062a42e89eabbf2f7ae1603"
+                },
+                "date": 1697625158468,
+                "executionTime": "138 m",
+                "parametrization": {
+                    "ack": "1",
+                    "read-in-ram": true
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "latency",
+                        "value": 200,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "metric2",
+                        "value": 200,
+                        "unit": "op/s"
+                    },
+                    {
+                        "name": "metric3",
+                        "value": 200,
                         "unit": "%"
                     }
                 ],
