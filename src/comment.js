@@ -111,7 +111,9 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
         }
       } else if (comparisonMode === 'smaller') {
         if (comparisonMargin === -1) {
+          console.log('Comparing smaller with margin -1')
           currentBetter = currentMetric.value < prev.value
+          console.log('Current better: ' + currentBetter)
         } else {
           const upperLimit = prev.value * (1 - comparisonMargin / 100)
           currentBetter = currentMetric.value <= upperLimit
@@ -183,6 +185,8 @@ module.exports.createBenchDataTextForCompWithPrev = function (
   const previousBenchInfo = previousBenchmark
     ? previousBenchmark.benchmarkInfo
     : null
+
+  console.log('Prev benchmark info: ' + JSON.stringify(previousBenchInfo))
 
   let benchDataLines = [
     '|   Current Benchmark   |   Previous Benchmark   |',
