@@ -52,15 +52,21 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
 
   lines.push('## Benchmark information')
 
+  const currentBenchName = currentBenchmark.benchName
+  const previousBenchName = previousBenchmark.benchName
+
+  if (currentBenchName !== previousBenchName) {
+    lines.push("Watch out! You're comparing benchmarks with different names!")
+  }
   // Call the function to generate bench_data text
   const benchDataText =
     module.exports.createBenchDataTextForCompWithPrev(currentBenchmark)
 
   // Append bench_data text to the lines array
   lines.push(benchDataText)
-  lines.push('', '', '', '')
+  lines.push('', '', '', '', '')
   lines.push('## Results')
-  lines.push('', '', '', '')
+  lines.push('', '', '', '', '')
 
   core.debug(`Current benchmark commit info: ${currentBenchmark.commitInfo.id}`)
   core.debug(
@@ -68,9 +74,9 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
   )
 
   lines.push(
-    `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Result |`
+    `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Condition | Result |`
   )
-  lines.push('|-|-|-|-|')
+  lines.push('|-|-|-|-|-|')
 
   core.debug(`Metrics for ${currentBenchmark.benchmarkName}:`)
   currentBenchmark.simpleMetricResults.forEach(metric => {
@@ -97,9 +103,19 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
 
     if (prev) {
       if (comparisonMode === 'bigger') {
-        currentBetter = currentMetric.value >= prev.value
+        if (comparisonMargin === -1) {
+          currentBetter = currentMetric.value > prev.value
+        } else {
+          const lowerLimit = prev.value * (1 + comparisonMargin / 100)
+          currentBetter = currentMetric.value >= lowerLimit
+        }
       } else if (comparisonMode === 'smaller') {
-        currentBetter = currentMetric.value < prev.value
+        if (comparisonMargin === -1) {
+          currentBetter = currentMetric.value < prev.value
+        } else {
+          const upperLimit = prev.value * (1 - comparisonMargin / 100)
+          currentBetter = currentMetric.value <= upperLimit
+        }
       } else if (comparisonMode === 'range') {
         const lowerLimit = prev.value * (1 - comparisonMargin / 100)
         const upperLimit = prev.value * (1 + comparisonMargin / 100)
@@ -117,17 +133,19 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
       let betterOrWorse = currentBetter ? '🟢' : '🔴'
       line = `| \`${currentMetric.name}\` | ${module.exports.fetchValueAndUnit(
         currentMetric
-      )} | ${module.exports.fetchValueAndUnit(prev)} | ${betterOrWorse} |`
+      )} | ${module.exports.fetchValueAndUnit(
+        prev
+      )} | ${comparisonMode} | ${betterOrWorse} |`
     } else {
       // If the previous benchmark does not contain the current metric, mark it.
       line = `| \`${currentMetric.name}\` | ${module.exports.fetchValueAndUnit(
         currentMetric
-      )} | - | 🔘 |`
+      )} | - | - | 🔘 |`
     }
 
     lines.push(line)
   }
-  lines.push('', '', '', '')
+  lines.push('', '', '', '', '')
 
   return lines.join('\n')
 }
@@ -151,7 +169,7 @@ module.exports.createBenchDataText = function (currentBenchmark) {
     }
   }
 
-  benchDataLines.push('', '', '', '')
+  benchDataLines.push('', '', '', '', '')
   benchDataLines.push(`**Other Info**: ${benchInfo.otherInfo}`)
 
   return benchDataLines.join('\n')
@@ -222,13 +240,13 @@ module.exports.createCommentBodyForComparisonWithThreshold = function (
   core.debug('Commit ID:' + currentBenchmark.commitInfo.id)
 
   lines.push(benchDataText)
-  lines.push('', '', '', '')
+  lines.push('', '', '', '', '')
   lines.push('## Results')
-  lines.push('', '', '', '')
+  lines.push('', '', '', '', '')
   lines.push(
-    `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Threshold | Result |`
+    `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Threshold | Condition | Result |`
   )
-  lines.push('|-|-|-|-|')
+  lines.push('|-|-|-|-|-|')
 
   for (const [
     i,
@@ -245,9 +263,25 @@ module.exports.createCommentBodyForComparisonWithThreshold = function (
     let meetsThreshold
 
     if (comparisonMode === 'bigger') {
-      meetsThreshold = currentMetric.value >= currentThreshold
+      // If comparisonMargin is -1, we look for a strictly bigger value
+      if (comparisonMargin === -1) {
+        meetsThreshold = currentMetric.value > currentThreshold
+      }
+      // otherwise, we look for a value that is at least comparisonMargin% bigger
+      else {
+        const lowerLimit = currentThreshold * (1 + comparisonMargin / 100)
+        meetsThreshold = currentMetric.value >= lowerLimit
+      }
     } else if (comparisonMode === 'smaller') {
-      meetsThreshold = currentMetric.value < currentThreshold
+      // If comparisonMargin is -1, we look for a strictly smaller value
+      if (comparisonMargin === -1) {
+        meetsThreshold = currentMetric.value < currentThreshold
+      }
+      // otherwise, we look for a value that is at least comparisonMargin% smaller
+      else {
+        const upperLimit = currentThreshold * (1 - comparisonMargin / 100)
+        meetsThreshold = currentMetric.value <= upperLimit
+      }
     } else if (comparisonMode === 'range') {
       const lowerLimit = currentThreshold * (1 - comparisonMargin / 100)
       const upperLimit = currentThreshold * (1 + comparisonMargin / 100)
@@ -265,11 +299,11 @@ module.exports.createCommentBodyForComparisonWithThreshold = function (
     let betterOrWorse = meetsThreshold ? '🟢' : '🔴'
     line = `| \`${currentMetric.name}\` | ${module.exports.fetchValueAndUnit(
       currentMetric
-    )} | ${currentThreshold} | ${betterOrWorse} |`
+    )} | ${currentThreshold} | ${comparisonMode} | ${betterOrWorse} |`
 
     lines.push(line)
   }
-  lines.push('', '', '', '')
+  lines.push('', '', '', '', '')
 
   return lines.join('\n')
 }

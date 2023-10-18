@@ -13,8 +13,19 @@ module.exports.validateBenchType = function (benchmarkType) {
   }
 }
 
-module.exports.validateReference = function (reference) {
-  const validReferences = ['previous', 'threshold']
+module.exports.validateReference = function (
+  reference,
+  currentBenchName,
+  benchToCompare
+) {
+  const validReferences = ['previous', 'threshold', 'previous-successful']
+
+  if (currentBenchName !== benchToCompare) {
+    const validReferences = ['previous', 'previous-successful']
+    if (!validReferences.includes(reference)) {
+      throw new Error(`Invalid reference: ${reference}`)
+    }
+  }
 
   if (!validReferences.includes(reference)) {
     throw new Error(`Invalid reference: ${reference}`)
@@ -91,8 +102,12 @@ module.exports.validateInputAndFetchConfig = function () {
   const failIfAnyWorse = module.exports.getBoolInput('fail_if_any_worse')
   const failIfAllWorse = module.exports.getBoolInput('fail_if_all_worse')
 
+  let benchToCompare = core.getInput('bench_to_compare')
+  if (benchToCompare === '' || benchToCompare === null) {
+    benchToCompare = benchName
+  }
   const reference = core.getInput('reference')
-  module.exports.validateReference(reference)
+  module.exports.validateReference(reference, benchToCompare, benchName)
 
   const thresholds = core.getInput('thresholds')
   const thresholdArray = module.exports.getCommaSepInputAsArray(thresholds)
@@ -130,6 +145,7 @@ module.exports.validateInputAndFetchConfig = function () {
     addJobSummary,
     saveCurrBenchRes,
     reference,
+    benchToCompare,
     thresholdArray,
     comparisonModes,
     comparisonMargins,

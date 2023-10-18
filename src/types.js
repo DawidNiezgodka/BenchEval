@@ -46,6 +46,7 @@ class Config {
     addJobSummary,
     saveCurrBenchRes,
     reference,
+    benchToCompare,
     thresholds,
     comparisonModes,
     comparisonMargins,
@@ -63,6 +64,7 @@ class Config {
     this.saveCurrBenchRes = saveCurrBenchRes
     this.reference = reference
     this.thresholds = thresholds
+    this.benchToCompare = benchToCompare
     this.comparisonModes = comparisonModes
     this.comparisonMargins = comparisonMargins
     this.failIfAnyWorse = failIfAnyWorse

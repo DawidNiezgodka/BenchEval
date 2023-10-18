@@ -29,11 +29,12 @@ async function run() {
         comparisonModes,
         comparisonMargins
       )
-    } else {
+    } else if (config.reference === 'previous') {
       const prev = await getLatestBenchmark(
-        config.benchName,
+        config.benchToCompare,
         config.folderWithBenchData,
-        config.fileWithBenchData
+        config.fileWithBenchData,
+        1
       )
       resultArray = null
     }
@@ -52,9 +53,10 @@ async function run() {
         )
       } else {
         const prev = await getLatestBenchmark(
-          config.benchName,
+          config.benchToCompare,
           config.folderWithBenchData,
-          config.fileWithBenchData
+          config.fileWithBenchData,
+          1
         )
         if (!prev) {
           core.debug('No previous benchmark found. Skipping comment creation.')

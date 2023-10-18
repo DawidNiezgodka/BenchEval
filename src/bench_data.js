@@ -67,7 +67,8 @@ module.exports.addCompleteBenchmarkToFile = async (
 module.exports.getLatestBenchmark = async (
   benchmarkName,
   folderWithBenchData,
-  fileNameWithBenchData
+  fileNameWithBenchData,
+  n
 ) => {
   const filePath = path.join(folderWithBenchData, fileNameWithBenchData)
 
@@ -89,26 +90,33 @@ module.exports.getLatestBenchmark = async (
       return null
     }
 
-    const latestBenchmarkData = benchmarkData.entries[benchmarkName].sort(
+    const sortedBenchmarkData = benchmarkData.entries[benchmarkName].sort(
       (a, b) => b.date - a.date
-    )[0]
+    )
 
-    const exeTime = latestBenchmarkData.benchmarkInfo.executionTime
-    const parametrization = latestBenchmarkData.benchmarkInfo.parametrization
-    const otherInfo = latestBenchmarkData.benchmarkInfo.otherInfo
+    if (sortedBenchmarkData.length < n) {
+      console.error(`Less than ${n} benchmarks available`)
+      return null
+    }
+
+    const nthLatestBenchmarkData = sortedBenchmarkData[n - 1]
+
+    const exeTime = nthLatestBenchmarkData.benchmarkInfo.executionTime
+    const parametrization = nthLatestBenchmarkData.benchmarkInfo.parametrization
+    const otherInfo = nthLatestBenchmarkData.benchmarkInfo.otherInfo
     const benchmarkInfo = new BenchmarkInfo(exeTime, parametrization, otherInfo)
 
-    const simpleMetricResults = latestBenchmarkData.metrics.map(
+    const simpleMetricResults = nthLatestBenchmarkData.metrics.map(
       metric => new SimpleMetricResult(metric.name, metric.value, metric.unit)
     )
 
     const commitInfo = new Commit(
-      latestBenchmarkData.commit.author,
-      latestBenchmarkData.commit.committer,
-      latestBenchmarkData.commit.id,
-      latestBenchmarkData.commit.message,
-      latestBenchmarkData.commit.timestamp,
-      latestBenchmarkData.commit.url
+      nthLatestBenchmarkData.commit.author,
+      nthLatestBenchmarkData.commit.committer,
+      nthLatestBenchmarkData.commit.id,
+      nthLatestBenchmarkData.commit.message,
+      nthLatestBenchmarkData.commit.timestamp,
+      nthLatestBenchmarkData.commit.url
     )
 
     return new CompleteBenchmark(
