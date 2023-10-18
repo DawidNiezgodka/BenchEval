@@ -110,46 +110,57 @@ module.exports.validateInputAndFetchConfig = function () {
   module.exports.validateReference(reference, benchToCompare, benchName)
 
   const thresholds = core.getInput('thresholds')
-  const thresholdArray = module.exports.getCommaSepInputAsArray(thresholds)
-  if (itemCount !== thresholdArray.length) {
-    throw new Error(
-      `Number of thresholds (${thresholdArray.length}) must be equal to number of items in JSON (${itemCount})`
+  let thresholdArray = []
+  // if thresholds is empty or null and reference is 'threshold', throw error
+  if (thresholds === '' || thresholds === null) {
+    if (reference === 'threshold') {
+      throw new Error(
+        `Thresholds must be specified when reference is 'threshold'`
+      )
+    }
+    if (reference === 'threshold') {
+      thresholdArray = module.exports.getCommaSepInputAsArray(thresholds)
+      if (itemCount !== thresholdArray.length) {
+        throw new Error(
+          `Number of thresholds (${thresholdArray.length}) must be equal to number of items in JSON (${itemCount})`
+        )
+      }
+    }
+
+    const comparisonModesInput = core.getInput('comparison_modes')
+    const comparisonModes =
+      module.exports.getCommaSepInputAsArray(comparisonModesInput)
+    if (itemCount !== comparisonModes.length) {
+      throw new Error(`Number of threshold comparison modes (${comparisonModes.length})
+         must be equal to number of items in JSON (${itemCount})`)
+    }
+
+    const comparisonMarginsInput = core.getInput('comparison_margins')
+    const comparisonMargins = module.exports.getCommaSepInputAsArray(
+      comparisonMarginsInput
+    )
+    if (itemCount !== comparisonMargins.length) {
+      throw new Error(`Number of percentage threshold margins (${comparisonMargins.length})
+         must be equal to number of items in JSON (${itemCount})`)
+    }
+
+    return new Config(
+      benchName,
+      parsedData,
+      benchType,
+      folderWithBenchData,
+      fileWithBenchData,
+      githubToken,
+      addComment,
+      addJobSummary,
+      saveCurrBenchRes,
+      reference,
+      benchToCompare,
+      thresholdArray,
+      comparisonModes,
+      comparisonMargins,
+      failIfAnyWorse,
+      failIfAllWorse
     )
   }
-
-  const comparisonModesInput = core.getInput('comparison_modes')
-  const comparisonModes =
-    module.exports.getCommaSepInputAsArray(comparisonModesInput)
-  if (itemCount !== comparisonModes.length) {
-    throw new Error(`Number of threshold comparison modes (${comparisonModes.length})
-         must be equal to number of items in JSON (${itemCount})`)
-  }
-
-  const comparisonMarginsInput = core.getInput('comparison_margins')
-  const comparisonMargins = module.exports.getCommaSepInputAsArray(
-    comparisonMarginsInput
-  )
-  if (itemCount !== comparisonMargins.length) {
-    throw new Error(`Number of percentage threshold margins (${comparisonMargins.length})
-         must be equal to number of items in JSON (${itemCount})`)
-  }
-
-  return new Config(
-    benchName,
-    parsedData,
-    benchType,
-    folderWithBenchData,
-    fileWithBenchData,
-    githubToken,
-    addComment,
-    addJobSummary,
-    saveCurrBenchRes,
-    reference,
-    benchToCompare,
-    thresholdArray,
-    comparisonModes,
-    comparisonMargins,
-    failIfAnyWorse,
-    failIfAllWorse
-  )
 }
