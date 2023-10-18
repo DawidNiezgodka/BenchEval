@@ -9875,9 +9875,10 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
 
   lines.push('## Benchmark information')
 
-  const currentBenchName = currentBenchmark.benchName
-  const previousBenchName = previousBenchmark.benchName
-
+  const currentBenchName = currentBenchmark.benchmarkName
+  const previousBenchName = previousBenchmark.benchmarkName
+  console.log('Current bench name', currentBenchName)
+  console.log('Previous bench name', previousBenchName)
   if (currentBenchName !== previousBenchName) {
     lines.push("Watch out! You're comparing benchmarks with different names!")
   }
@@ -10012,11 +10013,18 @@ module.exports.createBenchDataTextForCompWithPrev = function (
     : null
 
   console.log('Prev benchmark info: ' + JSON.stringify(previousBenchInfo))
-
-  let benchDataLines = [
-    '|   Current Benchmark   |   Previous Benchmark   |',
-    '|-----------------------|------------------------|'
-  ]
+  let benchDataLines = []
+  if (currentBenchmark.benchmarkName === previousBenchmark.benchmarkName) {
+    benchDataLines = [
+      `|   Current Benchmark   |   Previous Benchmark   |`,
+      '|-----------------------|------------------------|'
+    ]
+  } else {
+    benchDataLines = [
+      `|   Current ${currentBenchmark.benchmarkName}   |   Last ${previousBenchmark.benchmarkName}   |`,
+      '|-----------------------|------------------------|'
+    ]
+  }
 
   benchDataLines.push(
     `| **Execution time**: ${
