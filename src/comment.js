@@ -163,6 +163,8 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
     lines.push(line)
   }
   lines.push('', '', '', '', '')
+  console.log('Failing condition: ' + failingCondition)
+  console.log('Any failed: ' + anyFailed)
   if (failingCondition === 'any' && anyFailed) {
     lines.push('*Benchmark failed*')
     lines.push(

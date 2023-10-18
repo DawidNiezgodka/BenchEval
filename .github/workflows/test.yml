@@ -53,9 +53,9 @@ jobs:
           git push origin bench_data
           
       - name: Check output and fail if needed
-        if: steps.eval.outputs.failed == 'true'
+        if: steps.eval.outputs.should_fail == 'true'
         run: |
-          echo "Failing because output is some_value_to_fail_on"
+          echo "Failing as indicated by evaluation action"
           exit 1
           
           
