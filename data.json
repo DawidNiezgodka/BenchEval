@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1697619435352,
+    "lastUpdate": 1697619721099,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -331,6 +331,48 @@
                     {
                         "name": "metric3",
                         "value": 456,
+                        "unit": "%"
+                    }
+                ]
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "76bcc05a3c408c0790ed69e9c625496fb1cdd9e1",
+                    "message": "-1 as str not int",
+                    "timestamp": "2023-10-18T11:01:45+02:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/76bcc05a3c408c0790ed69e9c625496fb1cdd9e1"
+                },
+                "date": 1697619721099,
+                "executionTime": "138 m",
+                "parametrization": {
+                    "ack": "1",
+                    "read-in-ram": true
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "latency",
+                        "value": 100,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "metric2",
+                        "value": 100,
+                        "unit": "op/s"
+                    },
+                    {
+                        "name": "metric3",
+                        "value": 100,
                         "unit": "%"
                     }
                 ]
