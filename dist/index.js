@@ -10698,12 +10698,14 @@ async function run() {
     }
     core.setOutput('should_fail', 'false')
     if (config.failingCondition === 'any') {
+      console.log("Fail condition is 'any")
       if (anyFailed(resultArray)) {
         core.setOutput('should_fail', 'true')
       }
     }
     if (config.failingCondition === 'all') {
       if (allFailed(resultArray)) {
+        console.log("Fail condition is 'any")
         core.setOutput('should_fail', 'true')
       }
     }
