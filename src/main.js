@@ -110,6 +110,9 @@ async function run() {
     core.setOutput('should_fail', 'false')
     if (config.failingCondition === 'any') {
       console.log("Fail condition is 'any")
+      resultArray.forEach(element => console.log(element))
+      let anyF = anyFailed(resultArray)
+      console.log('anyF: ' + anyF)
       if (anyFailed(resultArray)) {
         core.setOutput('should_fail', 'true')
       }
