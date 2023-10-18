@@ -99,7 +99,7 @@ module.exports.validateInputAndFetchConfig = function () {
   const addComment = module.exports.getBoolInput('add_comment_to_commit')
   const addJobSummary = module.exports.getBoolInput('add_action_job_summary')
   const saveCurrBenchRes = module.exports.getBoolInput('save_curr_bench_res')
-  const failingCondition = module.exports.getBoolInput('failing_condition')
+  const failingCondition = core.getInput('failing_condition')
 
   let benchToCompare = core.getInput('bench_to_compare')
   if (benchToCompare === '' || benchToCompare === null) {
@@ -141,6 +141,17 @@ module.exports.validateInputAndFetchConfig = function () {
     if (itemCount !== comparisonMargins.length) {
       throw new Error(`Number of percentage threshold margins (${comparisonMargins.length})
          must be equal to number of items in JSON (${itemCount})`)
+    }
+
+    // validate failing condition. it should be one of: any, all, none
+    if (
+      failingCondition !== 'any' &&
+      failingCondition !== 'all' &&
+      failingCondition !== 'none'
+    ) {
+      throw new Error(
+        `Invalid failing condition: ${failingCondition}. Valid values are: any, all, none`
+      )
     }
 
     return new Config(
