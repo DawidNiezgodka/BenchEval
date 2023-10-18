@@ -47,7 +47,8 @@ module.exports.addCompleteBenchmarkToFile = async (
         name: metric.name,
         value: metric.value,
         unit: metric.unit
-      }))
+      })),
+      benchSuccessful: benchmarkInstance.benchSuccessful
     }
 
     if (!jsonData.entries[benchmarkInstance.benchmarkName]) {
@@ -111,6 +112,7 @@ module.exports.getLatestBenchmark = async (
     const parametrization = nthLatestBenchmarkData.parametrization
     const otherInfo = nthLatestBenchmarkData.otherInfo
     const benchmarkInfo = new BenchmarkInfo(exeTime, parametrization, otherInfo)
+    const benchSuccessful = nthLatestBenchmarkData.benchSuccessful
 
     const simpleMetricResults = nthLatestBenchmarkData.metrics.map(
       metric => new SimpleMetricResult(metric.name, metric.value, metric.unit)
@@ -129,7 +131,8 @@ module.exports.getLatestBenchmark = async (
       benchmarkName,
       benchmarkInfo,
       simpleMetricResults,
-      commitInfo
+      commitInfo,
+      benchSuccessful
     )
   } catch (error) {
     console.error('An error occurred:', error)

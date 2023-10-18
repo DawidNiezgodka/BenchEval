@@ -99,8 +99,7 @@ module.exports.validateInputAndFetchConfig = function () {
   const addComment = module.exports.getBoolInput('add_comment_to_commit')
   const addJobSummary = module.exports.getBoolInput('add_action_job_summary')
   const saveCurrBenchRes = module.exports.getBoolInput('save_curr_bench_res')
-  const failIfAnyWorse = module.exports.getBoolInput('fail_if_any_worse')
-  const failIfAllWorse = module.exports.getBoolInput('fail_if_all_worse')
+  const failingCondition = module.exports.getBoolInput('failing_condition')
 
   let benchToCompare = core.getInput('bench_to_compare')
   if (benchToCompare === '' || benchToCompare === null) {
@@ -159,8 +158,7 @@ module.exports.validateInputAndFetchConfig = function () {
       thresholdArray,
       comparisonModes,
       comparisonMargins,
-      failIfAnyWorse,
-      failIfAllWorse
+      failingCondition
     )
   }
 }

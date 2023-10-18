@@ -10,17 +10,17 @@
   "results": [
     {
       "unit": "ms",
-      "value": 100,
+      "value": 110,
       "name": "latency"
     },
     {
       "unit": "op/s",
-      "value": 100,
+      "value": 120,
       "name": "metric2"
     },
     {
       "unit": "%",
-      "value": 100,
+      "value": 130,
       "name": "metric3"
     }
   ]

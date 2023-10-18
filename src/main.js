@@ -2,7 +2,13 @@ const core = require('@actions/core')
 
 const { validateInputAndFetchConfig } = require('./config')
 
-const { evaluateThresholds, allFailed, anyFailed } = require('./evaluate')
+const {
+  evaluateThresholds,
+  allFailed,
+  anyFailed,
+  addResultToBenchmarkObject,
+  compareWithPrev
+} = require('./evaluate')
 
 const { createCurrBench } = require('./bench')
 
@@ -17,17 +23,21 @@ async function run() {
   try {
     const config = validateInputAndFetchConfig()
     const currentBenchmark = createCurrBench(config)
-
+    const thresholds = config.thresholds
+    const comparisonModes = config.comparisonModes
+    const comparisonMargins = config.comparisonMargins
     let resultArray
     if (config.reference === 'threshold') {
-      const thresholds = config.thresholds
-      const comparisonModes = config.comparisonModes
-      const comparisonMargins = config.comparisonMargins
       resultArray = evaluateThresholds(
         currentBenchmark,
         thresholds,
         comparisonModes,
         comparisonMargins
+      )
+      addResultToBenchmarkObject(
+        currentBenchmark,
+        resultArray,
+        config.failingCondition
       )
     } else if (config.reference === 'previous') {
       const prev = await getLatestBenchmark(
@@ -36,7 +46,17 @@ async function run() {
         config.fileWithBenchData,
         1
       )
-      resultArray = null
+      resultArray = compareWithPrev(
+        currentBenchmark,
+        prev,
+        comparisonModes,
+        comparisonMargins
+      )
+      addResultToBenchmarkObject(
+        currentBenchmark,
+        resultArray,
+        config.failingCondition
+      )
     }
 
     if (config.addComment) {
@@ -79,24 +99,23 @@ async function run() {
       // add job summary
     }
 
-    if (config.failIfAnyWorse) {
-      if (anyFailed(resultArray)) {
-        core.setFailed('Some benchmarks are worse than the reference')
-      }
-    }
-
-    if (config.failIfAllWorse) {
-      if (allFailed(resultArray)) {
-        core.setFailed('All benchmarks are worse than the reference')
-      }
-    }
-
     if (config.saveCurrBenchRes) {
       core.debug('Saving current benchmark results to file')
       await addCompleteBenchmarkToFile(
         currentBenchmark,
         config.fileWithBenchData
       )
+    }
+
+    if (config.failingCondition === 'any') {
+      if (anyFailed(resultArray)) {
+        core.setFailed('Some benchmarks are worse than the reference')
+      }
+    }
+    if (config.failingCondition === 'all') {
+      if (allFailed(resultArray)) {
+        core.setFailed('All benchmarks are worse than the reference')
+      }
     }
   } catch (error) {
     core.setFailed(error.message)
