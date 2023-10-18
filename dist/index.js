@@ -9721,9 +9721,11 @@ module.exports.addCompleteBenchmarkToFile = async (
         name: metric.name,
         value: metric.value,
         unit: metric.unit
-      }))
+      })),
+      benchSuccessful: benchmarkInstance.benchSuccessful
     }
 
+    console.log('Benchmark name: ' + benchmarkInstance.benchmarkName)
     if (!jsonData.entries[benchmarkInstance.benchmarkName]) {
       jsonData.entries[benchmarkInstance.benchmarkName] = []
     }
@@ -9741,7 +9743,8 @@ module.exports.addCompleteBenchmarkToFile = async (
 module.exports.getLatestBenchmark = async (
   benchmarkName,
   folderWithBenchData,
-  fileNameWithBenchData
+  fileNameWithBenchData,
+  n
 ) => {
   const filePath = path.join(folderWithBenchData, fileNameWithBenchData)
 
@@ -9763,33 +9766,48 @@ module.exports.getLatestBenchmark = async (
       return null
     }
 
-    const latestBenchmarkData = benchmarkData.entries[benchmarkName].sort(
+    const sortedBenchmarkData = benchmarkData.entries[benchmarkName].sort(
       (a, b) => b.date - a.date
-    )[0]
+    )
 
-    const exeTime = latestBenchmarkData.benchmarkInfo.executionTime
-    const parametrization = latestBenchmarkData.benchmarkInfo.parametrization
-    const otherInfo = latestBenchmarkData.benchmarkInfo.otherInfo
+    if (sortedBenchmarkData.length < n) {
+      console.error(`Less than ${n} benchmarks available`)
+      return null
+    }
+
+    console.log('The amount of benchs', sortedBenchmarkData.length)
+
+    const nthLatestBenchmarkData = sortedBenchmarkData[n - 1]
+    console.log(
+      'nthLatestBenchmarkData',
+      JSON.stringify(nthLatestBenchmarkData)
+    )
+
+    const exeTime = nthLatestBenchmarkData.executionTime
+    const parametrization = nthLatestBenchmarkData.parametrization
+    const otherInfo = nthLatestBenchmarkData.otherInfo
     const benchmarkInfo = new BenchmarkInfo(exeTime, parametrization, otherInfo)
+    const benchSuccessful = nthLatestBenchmarkData.benchSuccessful
 
-    const simpleMetricResults = latestBenchmarkData.metrics.map(
+    const simpleMetricResults = nthLatestBenchmarkData.metrics.map(
       metric => new SimpleMetricResult(metric.name, metric.value, metric.unit)
     )
 
     const commitInfo = new Commit(
-      latestBenchmarkData.commit.author,
-      latestBenchmarkData.commit.committer,
-      latestBenchmarkData.commit.id,
-      latestBenchmarkData.commit.message,
-      latestBenchmarkData.commit.timestamp,
-      latestBenchmarkData.commit.url
+      nthLatestBenchmarkData.commit.author,
+      nthLatestBenchmarkData.commit.committer,
+      nthLatestBenchmarkData.commit.id,
+      nthLatestBenchmarkData.commit.message,
+      nthLatestBenchmarkData.commit.timestamp,
+      nthLatestBenchmarkData.commit.url
     )
 
     return new CompleteBenchmark(
       benchmarkName,
       benchmarkInfo,
       simpleMetricResults,
-      commitInfo
+      commitInfo,
+      benchSuccessful
     )
   } catch (error) {
     console.error('An error occurred:', error)
@@ -9857,15 +9875,24 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
 
   lines.push('## Benchmark information')
 
+  const currentBenchName = currentBenchmark.benchmarkName
+  const previousBenchName = previousBenchmark.benchmarkName
+  console.log('Current bench name', currentBenchName)
+  console.log('Previous bench name', previousBenchName)
+  if (currentBenchName !== previousBenchName) {
+    lines.push("Watch out! You're comparing benchmarks with different names!")
+  }
   // Call the function to generate bench_data text
-  const benchDataText =
-    module.exports.createBenchDataTextForCompWithPrev(currentBenchmark)
+  const benchDataText = module.exports.createBenchDataTextForCompWithPrev(
+    currentBenchmark,
+    previousBenchmark
+  )
 
   // Append bench_data text to the lines array
   lines.push(benchDataText)
-  lines.push('', '', '', '')
+  lines.push('', '', '', '', '')
   lines.push('## Results')
-  lines.push('', '', '', '')
+  lines.push('', '', '', '', '')
 
   core.debug(`Current benchmark commit info: ${currentBenchmark.commitInfo.id}`)
   core.debug(
@@ -9873,9 +9900,9 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
   )
 
   lines.push(
-    `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Result |`
+    `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Condition | Result |`
   )
-  lines.push('|-|-|-|-|')
+  lines.push('|-|-|-|-|-|')
 
   core.debug(`Metrics for ${currentBenchmark.benchmarkName}:`)
   currentBenchmark.simpleMetricResults.forEach(metric => {
@@ -9902,9 +9929,21 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
 
     if (prev) {
       if (comparisonMode === 'bigger') {
-        currentBetter = currentMetric.value >= prev.value
+        if (comparisonMargin === '-1') {
+          currentBetter = currentMetric.value > prev.value
+        } else {
+          const lowerLimit = prev.value * (1 + comparisonMargin / 100)
+          currentBetter = currentMetric.value >= lowerLimit
+        }
       } else if (comparisonMode === 'smaller') {
-        currentBetter = currentMetric.value < prev.value
+        if (comparisonMargin === '-1') {
+          console.log('Comparing smaller with margin -1')
+          currentBetter = currentMetric.value < prev.value
+          console.log('Current better: ' + currentBetter)
+        } else {
+          const upperLimit = prev.value * (1 - comparisonMargin / 100)
+          currentBetter = currentMetric.value <= upperLimit
+        }
       } else if (comparisonMode === 'range') {
         const lowerLimit = prev.value * (1 - comparisonMargin / 100)
         const upperLimit = prev.value * (1 + comparisonMargin / 100)
@@ -9922,17 +9961,19 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
       let betterOrWorse = currentBetter ? '🟢' : '🔴'
       line = `| \`${currentMetric.name}\` | ${module.exports.fetchValueAndUnit(
         currentMetric
-      )} | ${module.exports.fetchValueAndUnit(prev)} | ${betterOrWorse} |`
+      )} | ${module.exports.fetchValueAndUnit(
+        prev
+      )} | ${comparisonMode} | ${betterOrWorse} |`
     } else {
       // If the previous benchmark does not contain the current metric, mark it.
       line = `| \`${currentMetric.name}\` | ${module.exports.fetchValueAndUnit(
         currentMetric
-      )} | - | 🔘 |`
+      )} | - | - | 🔘 |`
     }
 
     lines.push(line)
   }
-  lines.push('', '', '', '')
+  lines.push('', '', '', '', '')
 
   return lines.join('\n')
 }
@@ -9956,7 +9997,7 @@ module.exports.createBenchDataText = function (currentBenchmark) {
     }
   }
 
-  benchDataLines.push('', '', '', '')
+  benchDataLines.push('', '', '', '', '')
   benchDataLines.push(`**Other Info**: ${benchInfo.otherInfo}`)
 
   return benchDataLines.join('\n')
@@ -9971,10 +10012,19 @@ module.exports.createBenchDataTextForCompWithPrev = function (
     ? previousBenchmark.benchmarkInfo
     : null
 
-  let benchDataLines = [
-    '|   Current Benchmark   |   Previous Benchmark   |',
-    '|-----------------------|------------------------|'
-  ]
+  console.log('Prev benchmark info: ' + JSON.stringify(previousBenchInfo))
+  let benchDataLines = []
+  if (currentBenchmark.benchmarkName === previousBenchmark.benchmarkName) {
+    benchDataLines = [
+      `|   Current Benchmark   |   Previous Benchmark   |`,
+      '|-----------------------|------------------------|'
+    ]
+  } else {
+    benchDataLines = [
+      `|   Current ${currentBenchmark.benchmarkName}   |   Last ${previousBenchmark.benchmarkName}   |`,
+      '|-----------------------|------------------------|'
+    ]
+  }
 
   benchDataLines.push(
     `| **Execution time**: ${
@@ -10027,13 +10077,13 @@ module.exports.createCommentBodyForComparisonWithThreshold = function (
   core.debug('Commit ID:' + currentBenchmark.commitInfo.id)
 
   lines.push(benchDataText)
-  lines.push('', '', '', '')
+  lines.push('', '', '', '', '')
   lines.push('## Results')
-  lines.push('', '', '', '')
+  lines.push('', '', '', '', '')
   lines.push(
-    `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Threshold | Result |`
+    `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Threshold | Condition | Result |`
   )
-  lines.push('|-|-|-|-|')
+  lines.push('|-|-|-|-|-|')
 
   for (const [
     i,
@@ -10050,9 +10100,25 @@ module.exports.createCommentBodyForComparisonWithThreshold = function (
     let meetsThreshold
 
     if (comparisonMode === 'bigger') {
-      meetsThreshold = currentMetric.value >= currentThreshold
+      // If comparisonMargin is -1, we look for a strictly bigger value
+      if (comparisonMargin === '-1') {
+        meetsThreshold = currentMetric.value > currentThreshold
+      }
+      // otherwise, we look for a value that is at least comparisonMargin% bigger
+      else {
+        const lowerLimit = currentThreshold * (1 + comparisonMargin / 100)
+        meetsThreshold = currentMetric.value >= lowerLimit
+      }
     } else if (comparisonMode === 'smaller') {
-      meetsThreshold = currentMetric.value < currentThreshold
+      // If comparisonMargin is "-1", we look for a strictly smaller value
+      if (comparisonMargin === '-1') {
+        meetsThreshold = currentMetric.value < currentThreshold
+      }
+      // otherwise, we look for a value that is at least comparisonMargin% smaller
+      else {
+        const upperLimit = currentThreshold * (1 - comparisonMargin / 100)
+        meetsThreshold = currentMetric.value <= upperLimit
+      }
     } else if (comparisonMode === 'range') {
       const lowerLimit = currentThreshold * (1 - comparisonMargin / 100)
       const upperLimit = currentThreshold * (1 + comparisonMargin / 100)
@@ -10070,11 +10136,11 @@ module.exports.createCommentBodyForComparisonWithThreshold = function (
     let betterOrWorse = meetsThreshold ? '🟢' : '🔴'
     line = `| \`${currentMetric.name}\` | ${module.exports.fetchValueAndUnit(
       currentMetric
-    )} | ${currentThreshold} | ${betterOrWorse} |`
+    )} | ${currentThreshold} | ${comparisonMode} | ${betterOrWorse} |`
 
     lines.push(line)
   }
-  lines.push('', '', '', '')
+  lines.push('', '', '', '', '')
 
   return lines.join('\n')
 }
@@ -10171,8 +10237,19 @@ module.exports.validateBenchType = function (benchmarkType) {
   }
 }
 
-module.exports.validateReference = function (reference) {
-  const validReferences = ['previous', 'threshold']
+module.exports.validateReference = function (
+  reference,
+  currentBenchName,
+  benchToCompare
+) {
+  const validReferences = ['previous', 'threshold', 'previous-successful']
+
+  if (currentBenchName !== benchToCompare) {
+    const validReferences = ['previous', 'previous-successful']
+    if (!validReferences.includes(reference)) {
+      throw new Error(`Invalid reference: ${reference}`)
+    }
+  }
 
   if (!validReferences.includes(reference)) {
     throw new Error(`Invalid reference: ${reference}`)
@@ -10246,54 +10323,79 @@ module.exports.validateInputAndFetchConfig = function () {
   const addComment = module.exports.getBoolInput('add_comment_to_commit')
   const addJobSummary = module.exports.getBoolInput('add_action_job_summary')
   const saveCurrBenchRes = module.exports.getBoolInput('save_curr_bench_res')
-  const failIfAnyWorse = module.exports.getBoolInput('fail_if_any_worse')
-  const failIfAllWorse = module.exports.getBoolInput('fail_if_all_worse')
+  const failingCondition = core.getInput('failing_condition')
 
+  let benchToCompare = core.getInput('bench_to_compare')
+  if (benchToCompare === '' || benchToCompare === null) {
+    benchToCompare = benchName
+  }
   const reference = core.getInput('reference')
-  module.exports.validateReference(reference)
+  module.exports.validateReference(reference, benchToCompare, benchName)
 
   const thresholds = core.getInput('thresholds')
-  const thresholdArray = module.exports.getCommaSepInputAsArray(thresholds)
-  if (itemCount !== thresholdArray.length) {
-    throw new Error(
-      `Number of thresholds (${thresholdArray.length}) must be equal to number of items in JSON (${itemCount})`
+  let thresholdArray = []
+  // if thresholds is empty or null and reference is 'threshold', throw error
+  if (thresholds === '' || thresholds === null) {
+    if (reference === 'threshold') {
+      throw new Error(
+        `Thresholds must be specified when reference is 'threshold'`
+      )
+    }
+    if (reference === 'threshold') {
+      thresholdArray = module.exports.getCommaSepInputAsArray(thresholds)
+      if (itemCount !== thresholdArray.length) {
+        throw new Error(
+          `Number of thresholds (${thresholdArray.length}) must be equal to number of items in JSON (${itemCount})`
+        )
+      }
+    }
+
+    const comparisonModesInput = core.getInput('comparison_modes')
+    const comparisonModes =
+      module.exports.getCommaSepInputAsArray(comparisonModesInput)
+    if (itemCount !== comparisonModes.length) {
+      throw new Error(`Number of threshold comparison modes (${comparisonModes.length})
+         must be equal to number of items in JSON (${itemCount})`)
+    }
+
+    const comparisonMarginsInput = core.getInput('comparison_margins')
+    const comparisonMargins = module.exports.getCommaSepInputAsArray(
+      comparisonMarginsInput
+    )
+    if (itemCount !== comparisonMargins.length) {
+      throw new Error(`Number of percentage threshold margins (${comparisonMargins.length})
+         must be equal to number of items in JSON (${itemCount})`)
+    }
+
+    // validate failing condition. it should be one of: any, all, none
+    if (
+      failingCondition !== 'any' &&
+      failingCondition !== 'all' &&
+      failingCondition !== 'none'
+    ) {
+      throw new Error(
+        `Invalid failing condition: ${failingCondition}. Valid values are: any, all, none`
+      )
+    }
+
+    return new Config(
+      benchName,
+      parsedData,
+      benchType,
+      folderWithBenchData,
+      fileWithBenchData,
+      githubToken,
+      addComment,
+      addJobSummary,
+      saveCurrBenchRes,
+      reference,
+      benchToCompare,
+      thresholdArray,
+      comparisonModes,
+      comparisonMargins,
+      failingCondition
     )
   }
-
-  const comparisonModesInput = core.getInput('comparison_modes')
-  const comparisonModes =
-    module.exports.getCommaSepInputAsArray(comparisonModesInput)
-  if (itemCount !== comparisonModes.length) {
-    throw new Error(`Number of threshold comparison modes (${comparisonModes.length})
-         must be equal to number of items in JSON (${itemCount})`)
-  }
-
-  const comparisonMarginsInput = core.getInput('comparison_margins')
-  const comparisonMargins = module.exports.getCommaSepInputAsArray(
-    comparisonMarginsInput
-  )
-  if (itemCount !== comparisonMargins.length) {
-    throw new Error(`Number of percentage threshold margins (${comparisonMargins.length})
-         must be equal to number of items in JSON (${itemCount})`)
-  }
-
-  return new Config(
-    benchName,
-    parsedData,
-    benchType,
-    folderWithBenchData,
-    fileWithBenchData,
-    githubToken,
-    addComment,
-    addJobSummary,
-    saveCurrBenchRes,
-    reference,
-    thresholdArray,
-    comparisonModes,
-    comparisonMargins,
-    failIfAnyWorse,
-    failIfAllWorse
-  )
 }
 
 
@@ -10359,10 +10461,70 @@ module.exports.evaluateThresholds = function (
 module.exports.compareWithPrev = function (
   currentBenchmark,
   previousBenchmark,
-  thresholdArray,
   comparisonModes,
   comparisonMargins
-) {}
+) {
+  const currentBenchName = currentBenchmark.benchName
+  const previousBenchName = previousBenchmark.benchName
+
+  core.debug(`Metrics for ${currentBenchmark.benchmarkName}:`)
+  currentBenchmark.simpleMetricResults.forEach(metric => {
+    core.debug(`  ${metric.name}: ${metric.value}`)
+  })
+
+  core.debug(`Metrics for ${previousBenchmark.benchmarkName}:`)
+  previousBenchmark.simpleMetricResults.forEach(metric => {
+    core.debug(`  ${metric.name}: ${metric.value}`)
+  })
+
+  const results = []
+
+  for (const [
+    i,
+    currentMetric
+  ] of currentBenchmark.simpleMetricResults.entries()) {
+    const prev = previousBenchmark.simpleMetricResults.find(
+      j => j.name === currentMetric.name
+    )
+    core.debug(prev)
+    let comparisonMode = comparisonModes[i]
+    console.log('comparisonMode: ' + comparisonMode)
+    let comparisonMargin = comparisonMargins[i]
+    console.log('comparisonMargin: ' + comparisonMargin)
+    let currentBetter
+
+    if (prev) {
+      console.log('current metric: ' + currentMetric.value)
+      console.log('prev metric: ' + prev.value)
+      console.log('Entering prev if...')
+      if (comparisonMode === 'bigger') {
+        if (comparisonMargin === '-1') {
+          results.push(currentMetric.value > prev.value ? 'passed' : 'failed')
+        } else {
+          const lowerLimit = prev.value * (1 + comparisonMargin / 100)
+          results.push(currentMetric.value >= lowerLimit ? 'passed' : 'failed')
+        }
+      } else if (comparisonMode === 'smaller') {
+        if (comparisonMargin === '-1') {
+          results.push(currentMetric.value < prev.value ? 'passed' : 'failed')
+        } else {
+          const upperLimit = prev.value * (1 - comparisonMargin / 100)
+          results.push(currentMetric.value <= upperLimit ? 'passed' : 'failed')
+        }
+      } else if (comparisonMode === 'range') {
+        const lowerLimit = prev.value * (1 - comparisonMargin / 100)
+        const upperLimit = prev.value * (1 + comparisonMargin / 100)
+        currentBetter =
+          currentMetric.value >= lowerLimit && currentMetric.value <= upperLimit
+        results.push(currentBetter ? 'passed' : 'failed')
+      } else {
+        throw new Error(`Unknown threshold comparison mode: ${comparisonMode}`)
+      }
+
+      return results
+    }
+  }
+}
 
 module.exports.allFailed = function (resultArray) {
   return resultArray.every(element => element === 'failed')
@@ -10370,6 +10532,20 @@ module.exports.allFailed = function (resultArray) {
 
 module.exports.anyFailed = function (resultArray) {
   return resultArray.some(element => element === 'failed')
+}
+
+module.exports.addResultToBenchmarkObject = function (
+  currentBenchmark,
+  resultArray,
+  failingCondition
+) {
+  if (failingCondition === 'any') {
+    currentBenchmark.benchSuccessful = module.exports.anyFailed(resultArray)
+  } else if (failingCondition === 'all') {
+    currentBenchmark.benchSuccessful = module.exports.allFailed(resultArray)
+  } else {
+    currentBenchmark.benchSuccessful = true
+  }
 }
 
 
@@ -10382,7 +10558,13 @@ const core = __nccwpck_require__(2186)
 
 const { validateInputAndFetchConfig } = __nccwpck_require__(4570)
 
-const { evaluateThresholds, allFailed, anyFailed } = __nccwpck_require__(8447)
+const {
+  evaluateThresholds,
+  allFailed,
+  anyFailed,
+  addResultToBenchmarkObject,
+  compareWithPrev
+} = __nccwpck_require__(8447)
 
 const { createCurrBench } = __nccwpck_require__(8421)
 
@@ -10397,25 +10579,40 @@ async function run() {
   try {
     const config = validateInputAndFetchConfig()
     const currentBenchmark = createCurrBench(config)
-
+    const thresholds = config.thresholds
+    const comparisonModes = config.comparisonModes
+    const comparisonMargins = config.comparisonMargins
     let resultArray
     if (config.reference === 'threshold') {
-      const thresholds = config.thresholds
-      const comparisonModes = config.comparisonModes
-      const comparisonMargins = config.comparisonMargins
       resultArray = evaluateThresholds(
         currentBenchmark,
         thresholds,
         comparisonModes,
         comparisonMargins
       )
-    } else {
-      const prev = await getLatestBenchmark(
-        config.benchName,
-        config.folderWithBenchData,
-        config.fileWithBenchData
+      addResultToBenchmarkObject(
+        currentBenchmark,
+        resultArray,
+        config.failingCondition
       )
-      resultArray = null
+    } else if (config.reference === 'previous') {
+      const prev = await getLatestBenchmark(
+        config.benchToCompare,
+        config.folderWithBenchData,
+        config.fileWithBenchData,
+        1
+      )
+      resultArray = compareWithPrev(
+        currentBenchmark,
+        prev,
+        comparisonModes,
+        comparisonMargins
+      )
+      addResultToBenchmarkObject(
+        currentBenchmark,
+        resultArray,
+        config.failingCondition
+      )
     }
 
     if (config.addComment) {
@@ -10432,9 +10629,10 @@ async function run() {
         )
       } else {
         const prev = await getLatestBenchmark(
-          config.benchName,
+          config.benchToCompare,
           config.folderWithBenchData,
-          config.fileWithBenchData
+          config.fileWithBenchData,
+          1
         )
         if (!prev) {
           core.debug('No previous benchmark found. Skipping comment creation.')
@@ -10457,24 +10655,23 @@ async function run() {
       // add job summary
     }
 
-    if (config.failIfAnyWorse) {
-      if (anyFailed(resultArray)) {
-        core.setFailed('Some benchmarks are worse than the reference')
-      }
-    }
-
-    if (config.failIfAllWorse) {
-      if (allFailed(resultArray)) {
-        core.setFailed('All benchmarks are worse than the reference')
-      }
-    }
-
     if (config.saveCurrBenchRes) {
       core.debug('Saving current benchmark results to file')
       await addCompleteBenchmarkToFile(
         currentBenchmark,
         config.fileWithBenchData
       )
+    }
+    core.setOutput('should_fail', 'false')
+    if (config.failingCondition === 'any') {
+      if (anyFailed(resultArray)) {
+        core.setOutput('should_fail', 'true')
+      }
+    }
+    if (config.failingCondition === 'all') {
+      if (allFailed(resultArray)) {
+        core.setOutput('should_fail', 'true')
+      }
     }
   } catch (error) {
     core.setFailed(error.message)
@@ -10492,11 +10689,18 @@ module.exports = {
 /***/ ((module) => {
 
 class CompleteBenchmark {
-  constructor(benchmarkName, benchmarkInfo, simpleMetricResults, commitInfo) {
+  constructor(
+    benchmarkName,
+    benchmarkInfo,
+    simpleMetricResults,
+    commitInfo,
+    benchSuccessful
+  ) {
     this.benchmarkName = benchmarkName
     this.benchmarkInfo = benchmarkInfo
     this.simpleMetricResults = simpleMetricResults
     this.commitInfo = commitInfo
+    this.benchSuccessful = benchSuccessful
   }
 }
 
@@ -10539,11 +10743,11 @@ class Config {
     addJobSummary,
     saveCurrBenchRes,
     reference,
+    benchToCompare,
     thresholds,
     comparisonModes,
     comparisonMargins,
-    failIfAnyWorse,
-    failIfAllWorse
+    failingCondition
   ) {
     this.benchName = benchName
     this.currBenchResJson = currBenchResJson
@@ -10556,10 +10760,10 @@ class Config {
     this.saveCurrBenchRes = saveCurrBenchRes
     this.reference = reference
     this.thresholds = thresholds
+    this.benchToCompare = benchToCompare
     this.comparisonModes = comparisonModes
     this.comparisonMargins = comparisonMargins
-    this.failIfAnyWorse = failIfAnyWorse
-    this.failIfAllWorse = failIfAllWorse
+    this.failingCondition = failingCondition
   }
 }
 

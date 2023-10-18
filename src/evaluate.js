@@ -55,10 +55,70 @@ module.exports.evaluateThresholds = function (
 module.exports.compareWithPrev = function (
   currentBenchmark,
   previousBenchmark,
-  thresholdArray,
   comparisonModes,
   comparisonMargins
-) {}
+) {
+  const currentBenchName = currentBenchmark.benchName
+  const previousBenchName = previousBenchmark.benchName
+
+  core.debug(`Metrics for ${currentBenchmark.benchmarkName}:`)
+  currentBenchmark.simpleMetricResults.forEach(metric => {
+    core.debug(`  ${metric.name}: ${metric.value}`)
+  })
+
+  core.debug(`Metrics for ${previousBenchmark.benchmarkName}:`)
+  previousBenchmark.simpleMetricResults.forEach(metric => {
+    core.debug(`  ${metric.name}: ${metric.value}`)
+  })
+
+  const results = []
+
+  for (const [
+    i,
+    currentMetric
+  ] of currentBenchmark.simpleMetricResults.entries()) {
+    const prev = previousBenchmark.simpleMetricResults.find(
+      j => j.name === currentMetric.name
+    )
+    core.debug(prev)
+    let comparisonMode = comparisonModes[i]
+    console.log('comparisonMode: ' + comparisonMode)
+    let comparisonMargin = comparisonMargins[i]
+    console.log('comparisonMargin: ' + comparisonMargin)
+    let currentBetter
+
+    if (prev) {
+      console.log('current metric: ' + currentMetric.value)
+      console.log('prev metric: ' + prev.value)
+      console.log('Entering prev if...')
+      if (comparisonMode === 'bigger') {
+        if (comparisonMargin === '-1') {
+          results.push(currentMetric.value > prev.value ? 'passed' : 'failed')
+        } else {
+          const lowerLimit = prev.value * (1 + comparisonMargin / 100)
+          results.push(currentMetric.value >= lowerLimit ? 'passed' : 'failed')
+        }
+      } else if (comparisonMode === 'smaller') {
+        if (comparisonMargin === '-1') {
+          results.push(currentMetric.value < prev.value ? 'passed' : 'failed')
+        } else {
+          const upperLimit = prev.value * (1 - comparisonMargin / 100)
+          results.push(currentMetric.value <= upperLimit ? 'passed' : 'failed')
+        }
+      } else if (comparisonMode === 'range') {
+        const lowerLimit = prev.value * (1 - comparisonMargin / 100)
+        const upperLimit = prev.value * (1 + comparisonMargin / 100)
+        currentBetter =
+          currentMetric.value >= lowerLimit && currentMetric.value <= upperLimit
+        results.push(currentBetter ? 'passed' : 'failed')
+      } else {
+        throw new Error(`Unknown threshold comparison mode: ${comparisonMode}`)
+      }
+
+      return results
+    }
+  }
+}
 
 module.exports.allFailed = function (resultArray) {
   return resultArray.every(element => element === 'failed')
@@ -66,4 +126,18 @@ module.exports.allFailed = function (resultArray) {
 
 module.exports.anyFailed = function (resultArray) {
   return resultArray.some(element => element === 'failed')
+}
+
+module.exports.addResultToBenchmarkObject = function (
+  currentBenchmark,
+  resultArray,
+  failingCondition
+) {
+  if (failingCondition === 'any') {
+    currentBenchmark.benchSuccessful = module.exports.anyFailed(resultArray)
+  } else if (failingCondition === 'all') {
+    currentBenchmark.benchSuccessful = module.exports.allFailed(resultArray)
+  } else {
+    currentBenchmark.benchSuccessful = true
+  }
 }

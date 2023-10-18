@@ -1,9 +1,16 @@
 class CompleteBenchmark {
-  constructor(benchmarkName, benchmarkInfo, simpleMetricResults, commitInfo) {
+  constructor(
+    benchmarkName,
+    benchmarkInfo,
+    simpleMetricResults,
+    commitInfo,
+    benchSuccessful
+  ) {
     this.benchmarkName = benchmarkName
     this.benchmarkInfo = benchmarkInfo
     this.simpleMetricResults = simpleMetricResults
     this.commitInfo = commitInfo
+    this.benchSuccessful = benchSuccessful
   }
 }
 
@@ -46,11 +53,11 @@ class Config {
     addJobSummary,
     saveCurrBenchRes,
     reference,
+    benchToCompare,
     thresholds,
     comparisonModes,
     comparisonMargins,
-    failIfAnyWorse,
-    failIfAllWorse
+    failingCondition
   ) {
     this.benchName = benchName
     this.currBenchResJson = currBenchResJson
@@ -63,10 +70,10 @@ class Config {
     this.saveCurrBenchRes = saveCurrBenchRes
     this.reference = reference
     this.thresholds = thresholds
+    this.benchToCompare = benchToCompare
     this.comparisonModes = comparisonModes
     this.comparisonMargins = comparisonMargins
-    this.failIfAnyWorse = failIfAnyWorse
-    this.failIfAllWorse = failIfAllWorse
+    this.failingCondition = failingCondition
   }
 }
 

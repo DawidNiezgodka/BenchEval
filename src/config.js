@@ -13,8 +13,19 @@ module.exports.validateBenchType = function (benchmarkType) {
   }
 }
 
-module.exports.validateReference = function (reference) {
-  const validReferences = ['previous', 'threshold']
+module.exports.validateReference = function (
+  reference,
+  currentBenchName,
+  benchToCompare
+) {
+  const validReferences = ['previous', 'threshold', 'previous-successful']
+
+  if (currentBenchName !== benchToCompare) {
+    const validReferences = ['previous', 'previous-successful']
+    if (!validReferences.includes(reference)) {
+      throw new Error(`Invalid reference: ${reference}`)
+    }
+  }
 
   if (!validReferences.includes(reference)) {
     throw new Error(`Invalid reference: ${reference}`)
@@ -88,52 +99,77 @@ module.exports.validateInputAndFetchConfig = function () {
   const addComment = module.exports.getBoolInput('add_comment_to_commit')
   const addJobSummary = module.exports.getBoolInput('add_action_job_summary')
   const saveCurrBenchRes = module.exports.getBoolInput('save_curr_bench_res')
-  const failIfAnyWorse = module.exports.getBoolInput('fail_if_any_worse')
-  const failIfAllWorse = module.exports.getBoolInput('fail_if_all_worse')
+  const failingCondition = core.getInput('failing_condition')
 
+  let benchToCompare = core.getInput('bench_to_compare')
+  if (benchToCompare === '' || benchToCompare === null) {
+    benchToCompare = benchName
+  }
   const reference = core.getInput('reference')
-  module.exports.validateReference(reference)
+  module.exports.validateReference(reference, benchToCompare, benchName)
 
   const thresholds = core.getInput('thresholds')
-  const thresholdArray = module.exports.getCommaSepInputAsArray(thresholds)
-  if (itemCount !== thresholdArray.length) {
-    throw new Error(
-      `Number of thresholds (${thresholdArray.length}) must be equal to number of items in JSON (${itemCount})`
+  let thresholdArray = []
+  // if thresholds is empty or null and reference is 'threshold', throw error
+  if (thresholds === '' || thresholds === null) {
+    if (reference === 'threshold') {
+      throw new Error(
+        `Thresholds must be specified when reference is 'threshold'`
+      )
+    }
+    if (reference === 'threshold') {
+      thresholdArray = module.exports.getCommaSepInputAsArray(thresholds)
+      if (itemCount !== thresholdArray.length) {
+        throw new Error(
+          `Number of thresholds (${thresholdArray.length}) must be equal to number of items in JSON (${itemCount})`
+        )
+      }
+    }
+
+    const comparisonModesInput = core.getInput('comparison_modes')
+    const comparisonModes =
+      module.exports.getCommaSepInputAsArray(comparisonModesInput)
+    if (itemCount !== comparisonModes.length) {
+      throw new Error(`Number of threshold comparison modes (${comparisonModes.length})
+         must be equal to number of items in JSON (${itemCount})`)
+    }
+
+    const comparisonMarginsInput = core.getInput('comparison_margins')
+    const comparisonMargins = module.exports.getCommaSepInputAsArray(
+      comparisonMarginsInput
+    )
+    if (itemCount !== comparisonMargins.length) {
+      throw new Error(`Number of percentage threshold margins (${comparisonMargins.length})
+         must be equal to number of items in JSON (${itemCount})`)
+    }
+
+    // validate failing condition. it should be one of: any, all, none
+    if (
+      failingCondition !== 'any' &&
+      failingCondition !== 'all' &&
+      failingCondition !== 'none'
+    ) {
+      throw new Error(
+        `Invalid failing condition: ${failingCondition}. Valid values are: any, all, none`
+      )
+    }
+
+    return new Config(
+      benchName,
+      parsedData,
+      benchType,
+      folderWithBenchData,
+      fileWithBenchData,
+      githubToken,
+      addComment,
+      addJobSummary,
+      saveCurrBenchRes,
+      reference,
+      benchToCompare,
+      thresholdArray,
+      comparisonModes,
+      comparisonMargins,
+      failingCondition
     )
   }
-
-  const comparisonModesInput = core.getInput('comparison_modes')
-  const comparisonModes =
-    module.exports.getCommaSepInputAsArray(comparisonModesInput)
-  if (itemCount !== comparisonModes.length) {
-    throw new Error(`Number of threshold comparison modes (${comparisonModes.length})
-         must be equal to number of items in JSON (${itemCount})`)
-  }
-
-  const comparisonMarginsInput = core.getInput('comparison_margins')
-  const comparisonMargins = module.exports.getCommaSepInputAsArray(
-    comparisonMarginsInput
-  )
-  if (itemCount !== comparisonMargins.length) {
-    throw new Error(`Number of percentage threshold margins (${comparisonMargins.length})
-         must be equal to number of items in JSON (${itemCount})`)
-  }
-
-  return new Config(
-    benchName,
-    parsedData,
-    benchType,
-    folderWithBenchData,
-    fileWithBenchData,
-    githubToken,
-    addComment,
-    addJobSummary,
-    saveCurrBenchRes,
-    reference,
-    thresholdArray,
-    comparisonModes,
-    comparisonMargins,
-    failIfAnyWorse,
-    failIfAllWorse
-  )
 }

@@ -2,7 +2,13 @@ const core = require('@actions/core')
 
 const { validateInputAndFetchConfig } = require('./config')
 
-const { evaluateThresholds, allFailed, anyFailed } = require('./evaluate')
+const {
+  evaluateThresholds,
+  allFailed,
+  anyFailed,
+  addResultToBenchmarkObject,
+  compareWithPrev
+} = require('./evaluate')
 
 const { createCurrBench } = require('./bench')
 
@@ -17,25 +23,40 @@ async function run() {
   try {
     const config = validateInputAndFetchConfig()
     const currentBenchmark = createCurrBench(config)
-
+    const thresholds = config.thresholds
+    const comparisonModes = config.comparisonModes
+    const comparisonMargins = config.comparisonMargins
     let resultArray
     if (config.reference === 'threshold') {
-      const thresholds = config.thresholds
-      const comparisonModes = config.comparisonModes
-      const comparisonMargins = config.comparisonMargins
       resultArray = evaluateThresholds(
         currentBenchmark,
         thresholds,
         comparisonModes,
         comparisonMargins
       )
-    } else {
-      const prev = await getLatestBenchmark(
-        config.benchName,
-        config.folderWithBenchData,
-        config.fileWithBenchData
+      addResultToBenchmarkObject(
+        currentBenchmark,
+        resultArray,
+        config.failingCondition
       )
-      resultArray = null
+    } else if (config.reference === 'previous') {
+      const prev = await getLatestBenchmark(
+        config.benchToCompare,
+        config.folderWithBenchData,
+        config.fileWithBenchData,
+        1
+      )
+      resultArray = compareWithPrev(
+        currentBenchmark,
+        prev,
+        comparisonModes,
+        comparisonMargins
+      )
+      addResultToBenchmarkObject(
+        currentBenchmark,
+        resultArray,
+        config.failingCondition
+      )
     }
 
     if (config.addComment) {
@@ -52,9 +73,10 @@ async function run() {
         )
       } else {
         const prev = await getLatestBenchmark(
-          config.benchName,
+          config.benchToCompare,
           config.folderWithBenchData,
-          config.fileWithBenchData
+          config.fileWithBenchData,
+          1
         )
         if (!prev) {
           core.debug('No previous benchmark found. Skipping comment creation.')
@@ -77,24 +99,23 @@ async function run() {
       // add job summary
     }
 
-    if (config.failIfAnyWorse) {
-      if (anyFailed(resultArray)) {
-        core.setFailed('Some benchmarks are worse than the reference')
-      }
-    }
-
-    if (config.failIfAllWorse) {
-      if (allFailed(resultArray)) {
-        core.setFailed('All benchmarks are worse than the reference')
-      }
-    }
-
     if (config.saveCurrBenchRes) {
       core.debug('Saving current benchmark results to file')
       await addCompleteBenchmarkToFile(
         currentBenchmark,
         config.fileWithBenchData
       )
+    }
+    core.setOutput('should_fail', 'false')
+    if (config.failingCondition === 'any') {
+      if (anyFailed(resultArray)) {
+        core.setOutput('should_fail', 'true')
+      }
+    }
+    if (config.failingCondition === 'all') {
+      if (allFailed(resultArray)) {
+        core.setOutput('should_fail', 'true')
+      }
     }
   } catch (error) {
     core.setFailed(error.message)

@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - test
+      - compare_to_trend
 
 jobs:
   test:
@@ -27,14 +28,15 @@ jobs:
 
       - name: evaluate benchmark
         uses: ./
+        id: eval
         with:
+          name: "Benchmark"
+          bench_to_compare: "Benchmark2"
           current_bench_res_file: ./benchmark_results/curr.json
-          bench_type: simple
-          reference: threshold
-          thresholds: 400,100000,95
+          reference: previous
           comparison_modes: smaller, bigger, range
-          comparison_margins: 10, 20, 20 # if comp margin -1, then strict comparison
-          fail_if_any_worse: false
+          comparison_margins: -1, -1, 20
+          failing_condition: any
           add_comment_to_commit: true
           github_token: ${{ secrets.GH_TOKEN }}
           save_curr_bench_res: true
@@ -49,6 +51,15 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git commit -a -m "Add changes"
           git push origin bench_data
+          
+      - name: Check output and fail if needed
+        if: steps.eval.outputs.failed == 'true'
+        run: |
+          echo "Failing because output is some_value_to_fail_on"
+          exit 1
+          
+          
+
 #    - name: Push changes
 #      uses: ad-m/github-push-action@master
 #      with:

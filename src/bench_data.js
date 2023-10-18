@@ -47,9 +47,11 @@ module.exports.addCompleteBenchmarkToFile = async (
         name: metric.name,
         value: metric.value,
         unit: metric.unit
-      }))
+      })),
+      benchSuccessful: benchmarkInstance.benchSuccessful
     }
 
+    console.log('Benchmark name: ' + benchmarkInstance.benchmarkName)
     if (!jsonData.entries[benchmarkInstance.benchmarkName]) {
       jsonData.entries[benchmarkInstance.benchmarkName] = []
     }
@@ -67,7 +69,8 @@ module.exports.addCompleteBenchmarkToFile = async (
 module.exports.getLatestBenchmark = async (
   benchmarkName,
   folderWithBenchData,
-  fileNameWithBenchData
+  fileNameWithBenchData,
+  n
 ) => {
   const filePath = path.join(folderWithBenchData, fileNameWithBenchData)
 
@@ -89,33 +92,48 @@ module.exports.getLatestBenchmark = async (
       return null
     }
 
-    const latestBenchmarkData = benchmarkData.entries[benchmarkName].sort(
+    const sortedBenchmarkData = benchmarkData.entries[benchmarkName].sort(
       (a, b) => b.date - a.date
-    )[0]
+    )
 
-    const exeTime = latestBenchmarkData.benchmarkInfo.executionTime
-    const parametrization = latestBenchmarkData.benchmarkInfo.parametrization
-    const otherInfo = latestBenchmarkData.benchmarkInfo.otherInfo
+    if (sortedBenchmarkData.length < n) {
+      console.error(`Less than ${n} benchmarks available`)
+      return null
+    }
+
+    console.log('The amount of benchs', sortedBenchmarkData.length)
+
+    const nthLatestBenchmarkData = sortedBenchmarkData[n - 1]
+    console.log(
+      'nthLatestBenchmarkData',
+      JSON.stringify(nthLatestBenchmarkData)
+    )
+
+    const exeTime = nthLatestBenchmarkData.executionTime
+    const parametrization = nthLatestBenchmarkData.parametrization
+    const otherInfo = nthLatestBenchmarkData.otherInfo
     const benchmarkInfo = new BenchmarkInfo(exeTime, parametrization, otherInfo)
+    const benchSuccessful = nthLatestBenchmarkData.benchSuccessful
 
-    const simpleMetricResults = latestBenchmarkData.metrics.map(
+    const simpleMetricResults = nthLatestBenchmarkData.metrics.map(
       metric => new SimpleMetricResult(metric.name, metric.value, metric.unit)
     )
 
     const commitInfo = new Commit(
-      latestBenchmarkData.commit.author,
-      latestBenchmarkData.commit.committer,
-      latestBenchmarkData.commit.id,
-      latestBenchmarkData.commit.message,
-      latestBenchmarkData.commit.timestamp,
-      latestBenchmarkData.commit.url
+      nthLatestBenchmarkData.commit.author,
+      nthLatestBenchmarkData.commit.committer,
+      nthLatestBenchmarkData.commit.id,
+      nthLatestBenchmarkData.commit.message,
+      nthLatestBenchmarkData.commit.timestamp,
+      nthLatestBenchmarkData.commit.url
     )
 
     return new CompleteBenchmark(
       benchmarkName,
       benchmarkInfo,
       simpleMetricResults,
-      commitInfo
+      commitInfo,
+      benchSuccessful
     )
   } catch (error) {
     console.error('An error occurred:', error)

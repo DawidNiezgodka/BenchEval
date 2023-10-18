@@ -51,12 +51,19 @@ inputs:
       The following benchmark types are available: simple (name, unit, value), simple multiple (array of simples), complex, and complex multiple.
       Complex benchmarks require you to define a function that takes values as input, whatever they may be,
       and returns 1 or 0 to indicate whether the benchmark is successful or not.
-    required: true
+    required: false
+    default: "simple"
   reference:
     description: |
       It refers to a reference point by which we determine whether the benchmark is successful or not.
       The possible values are 'previous,' 'previous_successful,' and 'threshold.'
     required: true
+  bench_to_compare:
+    description: |
+      The name of the benchmark to compare to.
+      This input is only used when the reference is set to 'previous' or 'previous_successful.'
+      If not specified, the benchmark with the same name as the current benchmark is used.
+    required: false
   thresholds:
     description: |
       The threshold value that is used to determine whether the benchmark is successful or not.
@@ -79,14 +86,18 @@ inputs:
       For example, if you previously entered: smaller, smaller, range, and your range is 20%,
       this input should look as follows: "-1, -1, 20"
 
-  fail_if_any_worse:
+  failing_condition:
     description: |
+      Specifies when the benchmark should fail.
+      The possible values are any, all, and none.
     required: false
-    default: "false"
-  fail_if_all_worse:
+    default: "any"
+
+outputs:
+  should_fail:
     description: |
-    required: false
-    default: "false"
+      Indicates whether the benchmark should fail or not.
+      The possible values are true and false.
 
 
 runs:
