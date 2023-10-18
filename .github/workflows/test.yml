@@ -30,8 +30,8 @@ jobs:
         uses: ./
         id: eval
         with:
-          name: "Benchmark2"
-          bench_to_compare: "Benchmark"
+          name: "Benchmark"
+          bench_to_compare: "Benchmark2"
           current_bench_res_file: ./benchmark_results/curr.json
           reference: previous
           comparison_modes: smaller, bigger, range
