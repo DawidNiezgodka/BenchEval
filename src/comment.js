@@ -59,8 +59,10 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
     lines.push("Watch out! You're comparing benchmarks with different names!")
   }
   // Call the function to generate bench_data text
-  const benchDataText =
-    module.exports.createBenchDataTextForCompWithPrev(currentBenchmark)
+  const benchDataText = module.exports.createBenchDataTextForCompWithPrev(
+    currentBenchmark,
+    previousBenchmark
+  )
 
   // Append bench_data text to the lines array
   lines.push(benchDataText)
