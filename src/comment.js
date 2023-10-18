@@ -163,10 +163,11 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
     lines.push(line)
   }
   lines.push('', '', '', '', '')
+  lines.push('|-|-|-|-|-|')
   console.log('Failing condition: ' + failingCondition)
   console.log('Any failed: ' + anyFailed)
   if (failingCondition === 'any' && anyFailed) {
-    lines.push('*Benchmark failed*')
+    lines.push('## Benchmark failed*')
     lines.push(
       "The chosen failing condition is 'any', and at least one metric failed."
     )
