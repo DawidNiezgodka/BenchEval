@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - test
+      - compare_to_trend
 
 jobs:
   test:
