@@ -41,7 +41,8 @@
                         "value": 456,
                         "unit": "%"
                     }
-                ]
+                ],
+                "benchSuccessful": true
             },
             {
                 "commit": {
@@ -83,7 +84,8 @@
                         "value": 456,
                         "unit": "%"
                     }
-                ]
+                ],
+                "benchSuccessful": true
             },
             {
                 "commit": {
@@ -125,7 +127,8 @@
                         "value": 456,
                         "unit": "%"
                     }
-                ]
+                ],
+                "benchSuccessful": true
             },
             {
                 "commit": {
@@ -165,7 +168,8 @@
                         "value": 456,
                         "unit": "%"
                     }
-                ]
+                ],
+                "benchSuccessful": false
             },
             {
                 "commit": {
@@ -207,7 +211,8 @@
                         "value": 456,
                         "unit": "%"
                     }
-                ]
+                ],
+                "benchSuccessful": false
             },
             {
                 "commit": {
@@ -249,7 +254,8 @@
                         "value": 456,
                         "unit": "%"
                     }
-                ]
+                ],
+                "benchSuccessful": false
             },
             {
                 "commit": {
@@ -291,7 +297,8 @@
                         "value": 456,
                         "unit": "%"
                     }
-                ]
+                ],
+                "benchSuccessful": true
             },
             {
                 "commit": {
@@ -333,7 +340,8 @@
                         "value": 456,
                         "unit": "%"
                     }
-                ]
+                ],
+                "benchSuccessful": true
             },
             {
                 "commit": {
