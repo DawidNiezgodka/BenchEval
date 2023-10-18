@@ -227,16 +227,16 @@
                     "url": "https://github.com/DawidNiezgodka/BenchEval/commit/9e95fa408a5f7abebc16f988f491a9eab980722b"
                 },
                 "date": 1697618689177,
-                "executionTime": "18 m",
+                "executionTime": "15 m",
                 "parametrization": {
-                    "ack": "3",
+                    "ack": "2",
                     "read-in-ram": true
                 },
                 "otherInfo": "kafka, v2.3",
                 "metrics": [
                     {
                         "name": "latency",
-                        "value": 700,
+                        "value": 699,
                         "unit": "ms"
                     },
                     {
