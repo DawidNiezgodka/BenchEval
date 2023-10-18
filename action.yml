@@ -93,6 +93,12 @@ inputs:
     required: false
     default: "any"
 
+outputs:
+  should_fail:
+    description: |
+      Indicates whether the benchmark should fail or not.
+      The possible values are true and false.
+
 
 runs:
   using: node20

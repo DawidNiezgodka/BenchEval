@@ -28,6 +28,7 @@ jobs:
 
       - name: evaluate benchmark
         uses: ./
+        id: eval
         with:
           name: "Benchmark2"
           bench_to_compare: "Benchmark"
@@ -50,6 +51,15 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git commit -a -m "Add changes"
           git push origin bench_data
+          
+      - name: Check output and fail if needed
+        if: steps.eval.outputs.failed == 'true'
+        run: |
+          echo "Failing because output is some_value_to_fail_on"
+          exit 1
+          
+          
+
 #    - name: Push changes
 #      uses: ad-m/github-push-action@master
 #      with:

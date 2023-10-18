@@ -10654,15 +10654,15 @@ async function run() {
         config.fileWithBenchData
       )
     }
-
+    core.setOutput('should_fail', 'false')
     if (config.failingCondition === 'any') {
       if (anyFailed(resultArray)) {
-        core.setFailed('Some benchmarks are worse than the reference')
+        core.setOutput('should_fail', 'true')
       }
     }
     if (config.failingCondition === 'all') {
       if (allFailed(resultArray)) {
-        core.setFailed('All benchmarks are worse than the reference')
+        core.setOutput('should_fail', 'true')
       }
     }
   } catch (error) {
