@@ -383,7 +383,8 @@
                         "value": 100,
                         "unit": "%"
                     }
-                ]
+                ],
+                "benchSuccessful": true
             }
         ]
     }
