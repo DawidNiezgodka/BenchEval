@@ -9924,14 +9924,14 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
 
     if (prev) {
       if (comparisonMode === 'bigger') {
-        if (comparisonMargin === -1) {
+        if (comparisonMargin === '-1') {
           currentBetter = currentMetric.value > prev.value
         } else {
           const lowerLimit = prev.value * (1 + comparisonMargin / 100)
           currentBetter = currentMetric.value >= lowerLimit
         }
       } else if (comparisonMode === 'smaller') {
-        if (comparisonMargin === -1) {
+        if (comparisonMargin === '-1') {
           console.log('Comparing smaller with margin -1')
           currentBetter = currentMetric.value < prev.value
           console.log('Current better: ' + currentBetter)
@@ -10089,7 +10089,7 @@ module.exports.createCommentBodyForComparisonWithThreshold = function (
 
     if (comparisonMode === 'bigger') {
       // If comparisonMargin is -1, we look for a strictly bigger value
-      if (comparisonMargin === -1) {
+      if (comparisonMargin === '-1') {
         meetsThreshold = currentMetric.value > currentThreshold
       }
       // otherwise, we look for a value that is at least comparisonMargin% bigger
@@ -10098,8 +10098,8 @@ module.exports.createCommentBodyForComparisonWithThreshold = function (
         meetsThreshold = currentMetric.value >= lowerLimit
       }
     } else if (comparisonMode === 'smaller') {
-      // If comparisonMargin is -1, we look for a strictly smaller value
-      if (comparisonMargin === -1) {
+      // If comparisonMargin is "-1", we look for a strictly smaller value
+      if (comparisonMargin === '-1') {
         meetsThreshold = currentMetric.value < currentThreshold
       }
       // otherwise, we look for a value that is at least comparisonMargin% smaller
