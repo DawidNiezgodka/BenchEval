@@ -10486,10 +10486,10 @@ module.exports.compareWithPrev = function (
     if (prev) {
       if (comparisonMode === 'bigger') {
         if (comparisonMargin === '-1') {
-          result.push(currentMetric.value > prev.value ? 'passed' : 'failed')
+          results.push(currentMetric.value > prev.value ? 'passed' : 'failed')
         } else {
           const lowerLimit = prev.value * (1 + comparisonMargin / 100)
-          result.push(currentMetric.value >= lowerLimit ? 'passed' : 'failed')
+          results.push(currentMetric.value >= lowerLimit ? 'passed' : 'failed')
         }
       } else if (comparisonMode === 'smaller') {
         if (comparisonMargin === '-1') {
