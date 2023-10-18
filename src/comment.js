@@ -8,7 +8,8 @@ module.exports.createComment = function (
   previousBenchmark, // for reference === 'previous'
   thresholdArray,
   comparisonModes, // for reference === 'threshold'
-  comparisonMargins // for both
+  comparisonMargins, // for both
+  failingCondition
 ) {
   // if github token is not provided, it won't be possible to create a comment
   if (githubToken === null || githubToken === undefined) {
@@ -23,7 +24,8 @@ module.exports.createComment = function (
       currentBenchmark,
       previousBenchmark,
       comparisonModes,
-      comparisonMargins
+      comparisonMargins,
+      failingCondition
     )
   } else {
     core.debug('Creating comment body for comparison with threshold')
@@ -46,7 +48,8 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
   currentBenchmark,
   previousBenchmark,
   comparisonModes,
-  comparisonMargins
+  comparisonMargins,
+  failingCondition
 ) {
   const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
 
@@ -57,7 +60,9 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
   console.log('Current bench name', currentBenchName)
   console.log('Previous bench name', previousBenchName)
   if (currentBenchName !== previousBenchName) {
-    lines.push("Watch out! You're comparing benchmarks with different names!")
+    lines.push(
+      "Please note that you're comparing benchmarks with different names!"
+    )
   }
   // Call the function to generate bench_data text
   const benchDataText = module.exports.createBenchDataTextForCompWithPrev(
@@ -91,6 +96,9 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
     core.debug(`  ${metric.name}: ${metric.value}`)
   })
 
+  let anyFailed = false
+  let failsArr = []
+  let allFailed = false
   for (const [
     i,
     currentMetric
@@ -135,6 +143,10 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
           ' with value ' +
           currentMetric.value
       )
+      if (!currentBetter) {
+        anyFailed = true
+      }
+      failsArr.push(currentBetter)
       let betterOrWorse = currentBetter ? '🟢' : '🔴'
       line = `| \`${currentMetric.name}\` | ${module.exports.fetchValueAndUnit(
         currentMetric
@@ -151,6 +163,27 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
     lines.push(line)
   }
   lines.push('', '', '', '', '')
+  if (failingCondition === 'any' && anyFailed) {
+    lines.push('*Benchmark failed*')
+    lines.push(
+      "The chosen failing condition is 'any', and at least one metric failed."
+    )
+  }
+
+  if (
+    failingCondition === 'all' &&
+    failsArr.every(element => element === false)
+  ) {
+    lines.push('*Benchmark failed*')
+    lines.push("The chosen failing condition is 'all', and all metrics failed.")
+  }
+
+  if (failingCondition === 'none') {
+    lines.push('*Benchmark passed*')
+    lines.push(
+      "The chosen failing condition is 'none' so the benchmark passes regardless of results."
+    )
+  }
 
   return lines.join('\n')
 }

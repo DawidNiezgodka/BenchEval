@@ -69,7 +69,8 @@ async function run() {
           null,
           config.thresholds,
           config.comparisonModes,
-          config.comparisonMargins
+          config.comparisonMargins,
+          config.failingCondition
         )
       } else {
         const prev = await getLatestBenchmark(
