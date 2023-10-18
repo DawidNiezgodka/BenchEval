@@ -102,9 +102,13 @@ module.exports.getLatestBenchmark = async (
     console.log('The amount of benchs', sortedBenchmarkData.length)
 
     const nthLatestBenchmarkData = sortedBenchmarkData[n - 1]
-    console.log('nthLatestBenchmarkData', nthLatestBenchmarkData)
-    const exeTime = nthLatestBenchmarkData.benchmarkInfo.executionTime
-    const parametrization = nthLatestBenchmarkData.benchmarkInfo.parametrization
+    console.log(
+      'nthLatestBenchmarkData',
+      JSON.stringify(nthLatestBenchmarkData)
+    )
+
+    const exeTime = nthLatestBenchmarkData.executionTime
+    const parametrization = nthLatestBenchmarkData.parametrization
     const otherInfo = nthLatestBenchmarkData.benchmarkInfo.otherInfo
     const benchmarkInfo = new BenchmarkInfo(exeTime, parametrization, otherInfo)
 
