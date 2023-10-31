@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1697644591780,
+    "lastUpdate": 1698746709315,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -1047,6 +1047,49 @@
                     "url": "https://github.com/DawidNiezgodka/BenchEval/commit/abdf776ef2cc451ffda10312be893babfc27af6a"
                 },
                 "date": 1697644591780,
+                "executionTime": "1 m",
+                "parametrization": {
+                    "ack": "2",
+                    "read-in-ram": true
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "latency",
+                        "value": 222,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "metric2",
+                        "value": 222,
+                        "unit": "op/s"
+                    },
+                    {
+                        "name": "metric3",
+                        "value": 222,
+                        "unit": "%"
+                    }
+                ],
+                "benchSuccessful": true
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "1a738518e59caec78ae5b32c5fb01cfde559e659",
+                    "message": "fix: correct the logic for threshold processing in config.js",
+                    "timestamp": "2023-10-31T11:04:50+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/1a738518e59caec78ae5b32c5fb01cfde559e659"
+                },
+                "date": 1698746709315,
                 "executionTime": "1 m",
                 "parametrization": {
                     "ack": "2",
