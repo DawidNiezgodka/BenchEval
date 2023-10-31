@@ -117,14 +117,14 @@ module.exports.validateInputAndFetchConfig = function () {
         `Thresholds must be specified when reference is 'threshold'`
       )
     }
-    if (reference === 'threshold') {
-      thresholdArray = module.exports.getCommaSepInputAsArray(thresholds)
-      if (itemCount !== thresholdArray.length) {
-        throw new Error(
+  } else {
+    thresholdArray = module.exports.getCommaSepInputAsArray(thresholds)
+    if (itemCount !== thresholdArray.length) {
+      throw new Error(
           `Number of thresholds (${thresholdArray.length}) must be equal to number of items in JSON (${itemCount})`
-        )
-      }
+      )
     }
+  }
 
     const comparisonModesInput = core.getInput('comparison_modes')
     const comparisonModes =
@@ -171,5 +171,5 @@ module.exports.validateInputAndFetchConfig = function () {
       comparisonMargins,
       failingCondition
     )
-  }
+
 }
