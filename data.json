@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1698746709315,
+    "lastUpdate": 1698763865147,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -1090,6 +1090,49 @@
                     "url": "https://github.com/DawidNiezgodka/BenchEval/commit/1a738518e59caec78ae5b32c5fb01cfde559e659"
                 },
                 "date": 1698746709315,
+                "executionTime": "1 m",
+                "parametrization": {
+                    "ack": "2",
+                    "read-in-ram": true
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "latency",
+                        "value": 222,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "metric2",
+                        "value": 222,
+                        "unit": "op/s"
+                    },
+                    {
+                        "name": "metric3",
+                        "value": 222,
+                        "unit": "%"
+                    }
+                ],
+                "benchSuccessful": true
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "5b86efdb77d03d226b5568c2ae80fec3d0423d14",
+                    "message": "add dist files",
+                    "timestamp": "2023-10-31T15:50:46+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/5b86efdb77d03d226b5568c2ae80fec3d0423d14"
+                },
+                "date": 1698763865147,
                 "executionTime": "1 m",
                 "parametrization": {
                     "ack": "2",
