@@ -121,55 +121,54 @@ module.exports.validateInputAndFetchConfig = function () {
     thresholdArray = module.exports.getCommaSepInputAsArray(thresholds)
     if (itemCount !== thresholdArray.length) {
       throw new Error(
-          `Number of thresholds (${thresholdArray.length}) must be equal to number of items in JSON (${itemCount})`
+        `Number of thresholds (${thresholdArray.length}) must be equal to number of items in JSON (${itemCount})`
       )
     }
   }
 
-    const comparisonModesInput = core.getInput('comparison_modes')
-    const comparisonModes =
-      module.exports.getCommaSepInputAsArray(comparisonModesInput)
-    if (itemCount !== comparisonModes.length) {
-      throw new Error(`Number of threshold comparison modes (${comparisonModes.length})
+  const comparisonModesInput = core.getInput('comparison_modes')
+  const comparisonModes =
+    module.exports.getCommaSepInputAsArray(comparisonModesInput)
+  if (itemCount !== comparisonModes.length) {
+    throw new Error(`Number of threshold comparison modes (${comparisonModes.length})
          must be equal to number of items in JSON (${itemCount})`)
-    }
+  }
 
-    const comparisonMarginsInput = core.getInput('comparison_margins')
-    const comparisonMargins = module.exports.getCommaSepInputAsArray(
-      comparisonMarginsInput
-    )
-    if (itemCount !== comparisonMargins.length) {
-      throw new Error(`Number of percentage threshold margins (${comparisonMargins.length})
+  const comparisonMarginsInput = core.getInput('comparison_margins')
+  const comparisonMargins = module.exports.getCommaSepInputAsArray(
+    comparisonMarginsInput
+  )
+  if (itemCount !== comparisonMargins.length) {
+    throw new Error(`Number of percentage threshold margins (${comparisonMargins.length})
          must be equal to number of items in JSON (${itemCount})`)
-    }
+  }
 
-    // validate failing condition. it should be one of: any, all, none
-    if (
-      failingCondition !== 'any' &&
-      failingCondition !== 'all' &&
-      failingCondition !== 'none'
-    ) {
-      throw new Error(
-        `Invalid failing condition: ${failingCondition}. Valid values are: any, all, none`
-      )
-    }
-
-    return new Config(
-      benchName,
-      parsedData,
-      benchType,
-      folderWithBenchData,
-      fileWithBenchData,
-      githubToken,
-      addComment,
-      addJobSummary,
-      saveCurrBenchRes,
-      reference,
-      benchToCompare,
-      thresholdArray,
-      comparisonModes,
-      comparisonMargins,
-      failingCondition
+  // validate failing condition. it should be one of: any, all, none
+  if (
+    failingCondition !== 'any' &&
+    failingCondition !== 'all' &&
+    failingCondition !== 'none'
+  ) {
+    throw new Error(
+      `Invalid failing condition: ${failingCondition}. Valid values are: any, all, none`
     )
+  }
 
+  return new Config(
+    benchName,
+    parsedData,
+    benchType,
+    folderWithBenchData,
+    fileWithBenchData,
+    githubToken,
+    addComment,
+    addJobSummary,
+    saveCurrBenchRes,
+    reference,
+    benchToCompare,
+    thresholdArray,
+    comparisonModes,
+    comparisonMargins,
+    failingCondition
+  )
 }
