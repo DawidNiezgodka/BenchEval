@@ -70,7 +70,7 @@
         const values = [];
 
         for (let entry of data.entries[benchmark]) {
-            dates.push(moment(entry.date).format('YYYY-MM-DD HH:mm:ss'));
+            dates.push(moment(entry.date).format('YYYY-MM-DD HH:mm'));
             const metricObj = entry.metrics.find(m => m.name === metric);
             if (metricObj) {
                 values.push(metricObj.value);
@@ -90,7 +90,7 @@
         const dataForGivenBench = data.entries[selectedBenchmark];
         const unit = dataForGivenBench[0].metrics.find(m => m.name === selectedMetric).unit;
         for (let entry of data.entries[selectedBenchmark]) {
-            dates.push(moment(entry.date).format('YYYY-MM-DD HH:mm:ss'));
+            dates.push(moment(entry.date).format('YYYY-MM-DD HH:mm'));
             const metricObj = entry.metrics.find(m => m.name === selectedMetric);
             if (metricObj) {
                 values.push(metricObj.value);
