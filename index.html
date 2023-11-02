@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metrics Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.1/dist/chartjs-adapter-moment.min.js"></script>
+
+</head>
+<body>
+<div>
+    <label>Select Benchmark:</label>
+    <label for="benchmarkSelector"></label><select id="benchmarkSelector"></select>
+</div>
+<div>
+    <label>Select Metric:</label>
+    <label for="metricSelector"></label><select id="metricSelector"></select>
+</div>
+<canvas id="myChart"></canvas>
+
+<script>
+    let myChart = null;
+    const ctx = document.getElementById('myChart').getContext('2d');
+    const benchmarkSelector = document.getElementById('benchmarkSelector');
+    const metricSelector = document.getElementById('metricSelector');
+    let data;
+
+    benchmarkSelector.addEventListener('change', populateMetrics);
+    metricSelector.addEventListener('change', updateChart);
+
+    async function fetchData() {
+        const response = await fetch('data.json');
+        data = await response.json();
+        if (data) {
+            console.log("Data loaded successfully");
+        }
+        populateBenchmarks();
+    }
+
+    function populateBenchmarks() {
+        for (const benchmark in data.entries) {
+            console.log("Populating benchmark")
+            const option = document.createElement('option');
+            option.value = benchmark;
+            option.textContent = benchmark;
+            benchmarkSelector.appendChild(option);
+        }
+        populateMetrics();
+    }
+
+    function populateMetrics() {
+        metricSelector.innerHTML = '';
+        const selectedBenchmark = benchmarkSelector.value;
+        const benchmarkMetrics = data.entries[selectedBenchmark][0].metrics;
+
+        for (const metric of benchmarkMetrics) {
+            const option = document.createElement('option');
+            option.value = metric.name;
+            option.textContent = metric.name;
+            metricSelector.appendChild(option);
+        }
+
+        updateChart();
+    }
+
+    function extractData(benchmark, metric) {
+        const dates = [];
+        const values = [];
+
+        for (let entry of data.entries[benchmark]) {
+            dates.push(moment(entry.date).format('YYYY-MM-DD HH:mm:ss'));
+            const metricObj = entry.metrics.find(m => m.name === metric);
+            if (metricObj) {
+                values.push(metricObj.value);
+            }
+        }
+
+        return { dates, values };
+    }
+
+    function updateChart() {
+        const selectedBenchmark = benchmarkSelector.value;
+        const selectedMetric = metricSelector.value;
+
+
+        const dates = [];
+        const values = [];
+        const dataForGivenBench = data.entries[selectedBenchmark];
+        const unit = dataForGivenBench[0].metrics.find(m => m.name === selectedMetric).unit;
+        for (let entry of data.entries[selectedBenchmark]) {
+            dates.push(moment(entry.date).format('YYYY-MM-DD HH:mm:ss'));
+            const metricObj = entry.metrics.find(m => m.name === selectedMetric);
+            if (metricObj) {
+                values.push(metricObj.value);
+            }
+        }
+
+        if (myChart) {
+            myChart.destroy();
+        }
+
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [
+                    {
+                        label: selectedMetric,
+                        data: values,
+                        borderColor: 'green',
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                layout: {
+                    padding: {
+                        left: 60,
+                        right: 10,
+                        top: 10,
+                        bottom: 10
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Time'
+                        },
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 75,
+                            minRotation: 75,
+                            color: '#555555'
+                        },
+                        grid: {
+                            drawBorder: false,
+                            color: '#D6D6D6'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: unit
+                        },
+                        ticks: {
+                            color: '#555555'
+                        },
+                        grid: {
+                            drawBorder: false,
+                            color: '#D6D6D6'
+                        }
+                    }
+                },
+                elements: {
+                    line: {
+                        tension: 0,
+                        borderColor: '#2C3E50',
+                        borderWidth: 2
+                    },
+                    point: {
+                        backgroundColor: '#E74C3C'
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            afterTitle: items => {
+                                const index = items[0].dataIndex;
+                                const data = dataForGivenBench[index];
+                                return '\n Commit message: ' + data.commit.message + '\n Commit time: ' + data.commit.timestamp + ' \n Committed by: ' + data.commit.committer.username + '\n';
+                            },
+                            label: item => {
+                                console.log(item)
+                                const info = dataForGivenBench[item.dataIndex].otherInfo;
+                                return 'Benchmark information: ' + info;
+                            },
+                            afterLabel: item => {
+                                const extra = dataForGivenBench[item.dataIndex].parametrization;
+                                var extraString = "Parameters: \n"
+                                return extraString + Object.keys(extra).map(key => `${key}: ${extra[key]}`).join('\n');
+
+                            }
+                        }
+                    },
+                    legend: {
+                        display: false,
+                        labels: {
+                            color: '#555555'
+                        }
+                    }
+
+                }
+            }
+
+        });
+    }
+
+    fetchData();
+</script>
+</body>
+</html>
