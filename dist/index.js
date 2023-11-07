@@ -31060,12 +31060,14 @@ module.exports.evaluateCurrentBenchmark = function (
     completeConfig
 ) {
   let evaluationResult;
+  const previousBenchmark = getLatestBenchmark(completeConfig.evaluationConfig.benchmarkName,
+      completeConfig.folderWithBenchData, completeConfig.fileWithBenchData, 1);
   switch (completeConfig.evaluationConfig.evaluationMethod) {
     case 'threshold':
       evaluationResult = module.exports.evaluateWithThreshold(currentBenchmark, completeConfig.evaluationConfig);
       break;
     case 'previous':
-      evaluationResult = module.exports.compareWithPrevious(currentBenchmark, completeBenchData, completeConfig);
+      evaluationResult = module.exports.compareWithPrevious(currentBenchmark, previousBenchmark, completeBenchData, completeConfig);
       break;
       // Additional evaluation methods to be implemented here
     default:
@@ -31134,11 +31136,8 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, config) {
   };
 };
 
-module.exports.compareWithPrevious = function (currentBenchmarkData, completeBenchData, config) {
+module.exports.compareWithPrevious = function (currentBenchmarkData, previousBenchmarkData, completeBenchData, config) {
   // First, find the previous benchmark => we will get obj not json
-  const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchmarkName,
-      config.folderWithBenchData, config.fileWithBenchData, 1);
-
   core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
 
   const { comparisonOperators, comparisonMargins } = config.evaluationConfig;
