@@ -31322,7 +31322,11 @@ async function run() {
   try {
 
     const completeConfig = validateInputAndFetchConfig()
+    console.log('Complete config: ' + JSON.stringify(completeConfig))
+    console.log("------------------------------------------------")
     const evaluationConfig = completeConfig.evaluationConfig;
+    console.log('Evaluation config: ' + JSON.stringify(evaluationConfig))
+    console.log("------------------------------------------------")
     const currentBenchmark = createCurrBench(completeConfig);
     const completeBenchData = getCompleteBenchData(
         completeConfig.folderWithBenchData,
