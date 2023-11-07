@@ -21,7 +21,8 @@ const {
 
 async function run() {
   try {
-    console.log(checkIfNthPreviousBenchExists(1, 'test'));
+    console.log('not visible changes')
+    console.log(checkIfNthPreviousBenchExists(1, 'test'))
     const config = validateInputAndFetchConfig()
     const currentBenchmark = createCurrBench(config)
     const thresholds = config.thresholds

@@ -6,6 +6,7 @@ on:
       - main
       - test
       - compare_to_trend
+      - testIfItStillAintWork
 
 jobs:
   test:
