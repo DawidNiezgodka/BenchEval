@@ -94,6 +94,13 @@ inputs:
   moving_ave_threshold:
     description: 'The threshold value for moving average trend detection.'
     required: false
+  trend_det_no_sufficient_data_strategry:
+    description: | 
+      The strategy to use when there is not enough data to perform trend detection.
+      The possible values are use_available and fail.
+    required: false
+    default: "use_available"
+
   deltas_threshold:
     description: 'The threshold value for deltas trend detection.'
     required: false

@@ -30740,8 +30740,29 @@ module.exports.validateAndFetchConfig = function (currentResultLength, benchToCo
       console.log('Validating trend detection with moving average evaluation configuration.')
       module.exports.validateTrendDetectionMovingAveConfig()
       const movingAveWindowSize = core.getInput('moving_ave_window')
-       module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare,
-           movingAveWindowSize);
+        try {
+          module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare,
+              movingAveWindowSize);
+        } catch (Error) {
+          // Depending on the value of the trend_det_no_sufficient_data_strategry input,
+          // we either fail or use available data
+          const noSufficientDataStrategy = core.getInput('trend_det_no_sufficient_data_strategy');
+            if (noSufficientDataStrategy === 'fail') {
+                throw Error;
+            } else if (noSufficientDataStrategy === 'use_available') {
+                const numberOfBenchsForName = benchmarkData.entries[benchToCompare].length;
+                const stringOfNumberOfBenchs= numberOfBenchsForName.toString();
+                console.log(`Not enough data for trend detection with moving average. Using available data.`)
+                process.env[`INPUT_MOVING_AVE_WINDOW`] = stringOfNumberOfBenchs;
+                const newVal = core.getInput('moving_ave_window');
+              console.log(`New value for moving_ave_window: ${newVal}`)
+            } else {
+                throw new Error(`Invalid value for trend_det_no_sufficient_data_strategy: 
+                ${noSufficientDataStrategy}. Valid values are: fail, use_available_data.`)
+            }
+        }
+
+
       break
     case 'trend_detection_deltas':
       //module.exports.validateTrendDetectionDeltasConfig()
