@@ -33,3 +33,7 @@ module.exports.createCurrBench = function (config) {
 module.exports.checkIfNthPreviousBenchExists = function (n, benchName) {
   return 'yo'
 }
+
+module.exports.f = function () {
+  console.log('f')
+}
