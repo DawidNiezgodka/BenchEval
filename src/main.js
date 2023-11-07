@@ -10,7 +10,7 @@ const {
   compareWithPrev
 } = require('./evaluate')
 
-const { validateAndFetchConfig } = require('./test')
+const { camelToSnake } = require('./test')
 
 const { createCurrBench, checkIfNthPreviousBenchExists } = require('./bench')
 
@@ -25,7 +25,7 @@ async function run() {
   try {
     console.log('not visible changes')
     console.log('testing cml2Snk')
-    const evalCfg = validateAndFetchConfig(3)
+    const evalCfg = camelToSnake('evaluationMethod')
     console.log(evalCfg)
     console.log('done testing cml2Snk')
     console.log(checkIfNthPreviousBenchExists(1, 'test'))
