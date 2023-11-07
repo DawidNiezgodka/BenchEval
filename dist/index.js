@@ -31043,22 +31043,25 @@ module.exports.checkForWeekOldBenchmark = function(data, benchmarkKey) {
 
 const core = __nccwpck_require__(5127)
 
+const { getLatestBenchmark } = __nccwpck_require__(9790)
+
+
 module.exports.evaluateCurrentBenchmark = function (
     currentBenchmark,
     completeBenchData,
-    evaluationConfig
+    completeConfig
 ) {
   let evaluationResult;
-  switch (evaluationConfig.evaluationMethod) {
+  switch (completeConfig.evaluationConfig.evaluationMethod) {
     case 'threshold':
-      evaluationResult = module.exports.evaluateWithThreshold(currentBenchmark, evaluationConfig);
+      evaluationResult = module.exports.evaluateWithThreshold(currentBenchmark, completeConfig.evaluationConfig);
       break;
-    case 'threshold_range':
-      //evaluationResult = evaluateWithThresholdRange(currentBenchmark, evaluationConfig);
+    case 'previous':
+      evaluationResult = module.exports.compareWithPrevious(currentBenchmark, completeBenchData, completeConfig);
       break;
       // Additional evaluation methods to be implemented here
     default:
-      throw new Error(`Unsupported evaluation method: ${evaluationConfig.evaluationMethod}`);
+      throw new Error(`Unsupported evaluation method: ${completeConfig.evaluationConfig.evaluationMethod}`);
   }
   // Log or process evaluationResult as needed
   console.log(evaluationResult);
@@ -31089,7 +31092,8 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, config) {
     actualValues.push(value);
     metricNames.push(result.name);
     metricUnits.push(result.unit);
-    shouldBe.push(operator);
+    // if operator is tolerance, put the string named: "in symmetric range to" instead of "tolerance"
+    operator === 'tolerance' ? shouldBe.push('in symmetric range to') : shouldBe.push(operator);
     thanValues.push(thresholdValue);
 
     switch (operator) {
@@ -31122,127 +31126,73 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, config) {
   };
 };
 
+module.exports.compareWithPrevious = function (currentBenchmarkData, completeBenchData, config) {
+  // First, find the previous benchmark => we will get obj not json
+  const previousBenchmarkData = getLatestBenchmark(config.benchmarkName,
+      config.folderWithBenchData, config.fileWithBenchData, 1);
 
-module.exports.evaluateThresholds = function (
-  currentBenchmark,
-  thresholdArray,
-  comparisonModes,
-  comparisonMargins
-) {
-  const metricsInfo = currentBenchmark.simpleMetricResults
-  if (
-    thresholdArray.length !== metricsInfo.length ||
-    comparisonModes.length !== metricsInfo.length ||
-    comparisonMargins.length !== metricsInfo.length
-  ) {
-    throw new Error(
-      'The lengths of the arrays should match the number of objects in jsonData.'
-    )
-  }
+  core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
 
-  const result = []
+  const { comparisonOperators, comparisonMargins } = config.evaluationConfig;
 
-  for (let i = 0; i < metricsInfo.length; i++) {
-    const metricInfo = metricsInfo[i]
-    const threshold = thresholdArray[i]
-    const mode = comparisonModes[i]
-    const margin = comparisonMargins[i]
+  const metricNames = [];
+  const metricUnits = [];
+  const shouldBe = [];
+  const thanValues = [];
+  const evaluationResults = [];
 
-    const value = metricInfo.value
+  const previousResultsMap = new Map(previousBenchmarkData.simpleMetricResults.map(
+      result => [result.name, result]));
 
-    if (mode === 'smaller') {
-      result.push(value < threshold ? 'passed' : 'failed')
-    } else if (mode === 'bigger') {
-      result.push(value > threshold ? 'passed' : 'failed')
-    } else if (mode === 'range') {
-      if (margin === -1) {
-        throw new Error(
-          "Invalid percentage margin for 'range' comparison mode."
-        )
+  currentBenchmarkData.simpleMetricResults.forEach((result, index) => {
+    const currentName = result.name;
+    const currentValue = result.value;
+    const previousResult = previousResultsMap.get(currentName);
+    let isPassed = 'no data';
+
+    if (previousResult) {
+      console.log('previousResult: ' + previousResult)
+      const previousValue = previousResult.value;
+      const margin = comparisonMargins[index];
+      const operator = comparisonOperators[index];
+      const thresholdValue = previousValue;
+
+      metricNames.push(currentName);
+      metricUnits.push(result.unit);
+      shouldBe.push(operator);
+      thanValues.push(thresholdValue);
+
+      switch (operator) {
+        case 'smaller':
+          isPassed = margin < 0 ? currentValue < thresholdValue : currentValue <= thresholdValue * (1 - margin / 100);
+          break;
+        case 'bigger':
+          isPassed = margin < 0 ? currentValue > thresholdValue : currentValue >= thresholdValue * (1 + margin / 100);
+          break;
+        case 'tolerance':
+          isPassed = margin < 0 ? currentValue === thresholdValue : currentValue >= thresholdValue * (1 - margin / 100) && currentValue <= thresholdValue * (1 + margin / 100);
+          break;
       }
-      const lowerLimit = threshold * (1 - margin / 100)
-      const upperLimit = threshold * (1 + margin / 100)
-      result.push(
-        value >= lowerLimit && value <= upperLimit ? 'passed' : 'failed'
-      )
+      evaluationResults.push(typeof isPassed === 'boolean' ? (isPassed ? 'passed' : 'failed') : isPassed);
     } else {
-      throw new Error('Invalid comparison mode.')
+      // If there is no matching metric in the previous results, push 'no data'
+      metricNames.push(currentName);
+      metricUnits.push(result.unit);
+      shouldBe.push('N/A');
+      thanValues.push('N/A');
+      evaluationResults.push('no data');
     }
-  }
-  core.debug(
-    'Finished evaluating currentBenchmark against thresholds with the following result: ' +
-      result
-  )
-  return result
-}
+  });
 
-module.exports.compareWithPrev = function (
-  currentBenchmark,
-  previousBenchmark,
-  comparisonModes,
-  comparisonMargins
-) {
-  const currentBenchName = currentBenchmark.benchName
-  const previousBenchName = previousBenchmark.benchName
-
-  core.debug(`Metrics for ${currentBenchmark.benchmarkName}:`)
-  currentBenchmark.simpleMetricResults.forEach(metric => {
-    core.debug(`  ${metric.name}: ${metric.value}`)
-  })
-
-  core.debug(`Metrics for ${previousBenchmark.benchmarkName}:`)
-  previousBenchmark.simpleMetricResults.forEach(metric => {
-    core.debug(`  ${metric.name}: ${metric.value}`)
-  })
-
-  const results = []
-
-  for (const [
-    i,
-    currentMetric
-  ] of currentBenchmark.simpleMetricResults.entries()) {
-    const prev = previousBenchmark.simpleMetricResults.find(
-      j => j.name === currentMetric.name
-    )
-    core.debug(prev)
-    let comparisonMode = comparisonModes[i]
-    console.log('comparisonMode: ' + comparisonMode)
-    let comparisonMargin = comparisonMargins[i]
-    console.log('comparisonMargin: ' + comparisonMargin)
-    let currentBetter
-
-    if (prev) {
-      console.log('current metric: ' + currentMetric.value)
-      console.log('prev metric: ' + prev.value)
-      console.log('Entering prev if...')
-      if (comparisonMode === 'bigger') {
-        if (comparisonMargin === '-1') {
-          results.push(currentMetric.value > prev.value ? 'passed' : 'failed')
-        } else {
-          const lowerLimit = prev.value * (1 + comparisonMargin / 100)
-          results.push(currentMetric.value >= lowerLimit ? 'passed' : 'failed')
-        }
-      } else if (comparisonMode === 'smaller') {
-        if (comparisonMargin === '-1') {
-          results.push(currentMetric.value < prev.value ? 'passed' : 'failed')
-        } else {
-          const upperLimit = prev.value * (1 - comparisonMargin / 100)
-          results.push(currentMetric.value <= upperLimit ? 'passed' : 'failed')
-        }
-      } else if (comparisonMode === 'range') {
-        const lowerLimit = prev.value * (1 - comparisonMargin / 100)
-        const upperLimit = prev.value * (1 + comparisonMargin / 100)
-        currentBetter =
-          currentMetric.value >= lowerLimit && currentMetric.value <= upperLimit
-        results.push(currentBetter ? 'passed' : 'failed')
-      } else {
-        throw new Error(`Unknown threshold comparison mode: ${comparisonMode}`)
-      }
-
-      return results
-    }
-  }
-}
+  return {
+    "evaluation_method": "comparison",
+    "metric_names": metricNames,
+    "metric_units": metricUnits,
+    "should_be": shouldBe,
+    "than": thanValues,
+    "result": evaluationResults
+  };
+};
 
 module.exports.allFailed = function (resultArray) {
   return resultArray.every(element => element === 'failed')
