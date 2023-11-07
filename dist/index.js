@@ -30723,10 +30723,12 @@ module.exports.validateAndFetchConfig = function (currentResultLength, benchToCo
       module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare, 1);
       break
     case 'previous_successful':
+      console.log('Validating previous successful evaluation configuration.')
       module.exports.validateOperatorsAndMargins(currentResultLength)
       module.exports.checkIfPreviousSuccessfulExists(benchmarkData, benchToCompare);
       break
     case 'threshold_range':
+      console.log('Validating threshold range evaluation configuration.')
       module.exports.validateThresholdRangeConfig(currentResultLength)
       break
     case 'jump_detection':
@@ -30851,6 +30853,7 @@ module.exports.validateThresholdConfig = function (currentResultLength) {
   }
 }
 module.exports.validateThresholdRangeConfig = function (currentResultLength) {
+  console.log('Validating threshold range config')
   const thresholdUpperInput = core.getInput('threshold_upper')
   const thresholdLowerInput = core.getInput('threshold_lower')
 
@@ -30860,7 +30863,6 @@ module.exports.validateThresholdRangeConfig = function (currentResultLength) {
     )
   }
 
-  // Convert the comma-separated string inputs into arrays of numbers
   const thresholdUpper = thresholdUpperInput.split(',').map(Number)
   const thresholdLower = thresholdLowerInput.split(',').map(Number)
 
@@ -30870,7 +30872,6 @@ module.exports.validateThresholdRangeConfig = function (currentResultLength) {
     )
   }
 
-  // Check if the length of the threshold arrays match the number of results
   if (thresholdUpper.length !== currentResultLength) {
     throw new Error(
         'The number of thresholds must match the number of results.'
