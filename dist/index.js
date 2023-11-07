@@ -30743,12 +30743,12 @@ module.exports.validateAndFetchConfig = function (currentResultLength, benchToCo
         try {
           module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare,
               movingAveWindowSize);
-        } catch (Error) {
+        } catch (error) {
           // Depending on the value of the trend_det_no_sufficient_data_strategry input,
           // we either fail or use available data
           const noSufficientDataStrategy = core.getInput('trend_det_no_sufficient_data_strategy');
             if (noSufficientDataStrategy === 'fail') {
-                throw Error;
+                throw error;
             } else if (noSufficientDataStrategy === 'use_available') {
                 const numberOfBenchsForName = benchmarkData.entries[benchToCompare].length;
                 const stringOfNumberOfBenchs= numberOfBenchsForName.toString();
