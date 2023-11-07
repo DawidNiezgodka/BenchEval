@@ -31297,7 +31297,7 @@ async function run() {
     const evaluationResult = evaluateCurrentBenchmark(
         completeBenchmarkObject,
         completeBenchData,
-        evaluationConfig
+        completeConfig
     );
 
     console.log('Evaluation result: ' + evaluationResult);
