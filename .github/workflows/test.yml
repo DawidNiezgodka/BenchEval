@@ -35,6 +35,7 @@ jobs:
           bench_to_compare: "Benchmark2"
           current_bench_res_file: ./benchmark_results/curr.json
           evaluation_method: threshold
+          threshold_values: 200,200,200
           comparison_operators: smaller, bigger, tolerance
           comparison_margins: -1, -1, 20
           failing_condition: none

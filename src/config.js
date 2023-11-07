@@ -252,8 +252,8 @@ module.exports.createEvaluationConfig = function (...inputNames) {
 
 module.exports.validateOperatorsAndMargins = function (currentResultLength) {
   console.log('Validating operators and margins')
-  const comparisonOperatorsInput = core.getInput('comparisonOperators')
-  const comparisonMarginsInput = core.getInput('comparisonMargins')
+  const comparisonOperatorsInput = core.getInput('comparison_operators')
+  const comparisonMarginsInput = core.getInput('comparison_margins')
 
   if (!comparisonOperatorsInput || !comparisonMarginsInput) {
     throw new Error('Comparison operators and margins must not be null.')
