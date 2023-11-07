@@ -30702,6 +30702,254 @@ module.exports.validateInputAndFetchConfig = function () {
   )
 }
 
+module.exports.camelToSnake = function (string) {
+  return string
+      .replace(/\w([A-Z])/g, function (m) {
+        return m[0] + '_' + m[1]
+      })
+      .toLowerCase()
+}
+
+module.exports.createEvaluationConfig = function (...inputNames) {
+  const validInputs = [
+    'evaluationMethod',
+    'thresholdValues',
+    'comparisonOperators',
+    'comparisonMargins',
+    'thresholdUpper',
+    'thresholdLower',
+    'jumpDetectionThreshold',
+    'movingAveWindowSize',
+    'movingAveThreshold',
+    'deltasThreshold'
+  ]
+
+  const configValues = validInputs.map(inputName => {
+    if (inputNames.includes(inputName)) {
+      const snakeCaseInputName = module.exports.camelToSnake(inputName)
+      const inputValue = getInput(snakeCaseInputName)
+
+      if (inputValue) {
+        // Check if the input contains commas, suggesting it's a list
+        return inputValue.includes(',')
+            ? inputValue.split(',').map(Number)
+            : Number(inputValue)
+      }
+    }
+    return null
+  })
+
+  return new EvaluationConfig(...configValues)
+}
+
+module.exports.validateAndFetchConfig = function (currentResultLength) {
+  // Evaluation method
+  const evaluationMethod = getInput('evaluation_method', { required: true })
+  const validEvaluationMethods = [
+    'threshold',
+    'previous',
+    'previous_successful',
+    'threshold_range',
+    'jump_detection',
+    'trend_detection_moving_ave',
+    'trend_detection_deltas'
+  ]
+  if (!validEvaluationMethods.includes(evaluationMethod)) {
+    throw new Error(
+        `Invalid evaluation method: ${evaluationMethod}. Must be one of ${validEvaluationMethods.join(
+            ', '
+        )}`
+    )
+  }
+
+  switch (evaluationMethod) {
+    case 'threshold':
+      module.exports.validateOperatorsAndMargins(currentResultLength)
+      module.exports.validateThresholdConfig(currentResultLength)
+      break
+    case 'previous':
+      module.exports.validateOperatorsAndMargins(currentResultLength)
+      // checkIfPreviousNumberOfBenchmarksExists(1);
+      break
+    case 'previous_successful':
+      module.exports.validateOperatorsAndMargins(currentResultLength)
+      // checkIfPreviousNumberOfBenchmarksExists(1);
+      break
+    case 'threshold_range':
+      module.exports.validateThresholdRangeConfig(currentResultLength)
+      break
+    case 'jump_detection':
+      // checkIfPreviousNumberOfBenchmarksExists(1);
+      module.exports.validateJumpDetectionConfig()
+      break
+    case 'trend_detection_moving_ave':
+      module.exports.validateTrendDetectionMovingAveConfig()
+      const movingAveWindowSize = getInput('moving_ave_window')
+      // checkIfPreviousNumberOfBenchmarksExists(movingAveWindowSize);
+      break
+    case 'trend_detection_deltas':
+      //module.exports.validateTrendDetectionDeltasConfig()
+      break
+    default:
+      throw new Error(
+          `Unsupported evaluation method: ${config.evaluationMethod}`
+      )
+  }
+
+  return module.exports.createEvaluationConfig(
+      'evaluationMethod',
+      'thresholdValues',
+      'comparisonOperators',
+      'comparisonMargins',
+      'thresholdUpper',
+      'thresholdLower',
+      'jumpDetectionThreshold',
+      'movingAveWindowSize',
+      'movingAveThreshold',
+      'deltasThreshold'
+  )
+}
+
+module.exports.validateOperatorsAndMargins = function (currentResultLength) {
+  // Retrieve the inputs as strings
+  const comparisonOperatorsInput = getInput('comparisonOperators')
+  const comparisonMarginsInput = getInput('comparisonMargins')
+
+  // Validate that the inputs are not null
+  if (!comparisonOperatorsInput || !comparisonMarginsInput) {
+    throw new Error('Comparison operators and margins must not be null.')
+  }
+
+  // Convert the inputs into arrays
+  const comparisonOperators = comparisonOperatorsInput.split(',')
+  const comparisonMargins = comparisonMarginsInput.split(',').map(Number) // Convert margins to numbers for further validation
+
+  // Validate the number of elements
+  if (comparisonOperators.length !== currentResultLength) {
+    throw new Error(
+        `The number of comparison operators must be equal to ${currentResultLength}.`
+    )
+  }
+  if (comparisonMargins.length !== currentResultLength) {
+    throw new Error(
+        `The number of comparison margins must be equal to ${currentResultLength}.`
+    )
+  }
+
+  // Validate the values for operators
+  const validOperators = ['smaller', 'bigger', 'tolerance']
+  comparisonOperators.forEach(operator => {
+    if (!validOperators.includes(operator.trim())) {
+      throw new Error(
+          `Invalid comparison operator: ${operator}. Valid operators are: ${validOperators.join(
+              ', '
+          )}.`
+      )
+    }
+  })
+
+  // Validate the range for margins
+  const validMargins = comparisonMargins.every(
+      margin => margin === -1 || (margin >= 0 && margin <= 100)
+  )
+  if (!validMargins) {
+    throw new Error('Comparison margins must be in the range [-1, 100].')
+  }
+}
+module.exports.validateThresholdConfig = function (currentResultLength) {
+  const thresholdValuesInput = getInput('threshold_values')
+  const thresholdValues = thresholdValuesInput
+      .split(',')
+      .map(value => value.trim())
+
+  // Validate the number of elements in each array
+  if (thresholdValues.length !== currentResultLength) {
+    throw new Error(
+        `The number of threshold values (${thresholdValues.length}) must match the number of metrics (${currentResultLength}).`
+    )
+  }
+}
+module.exports.validateThresholdRangeConfig = function (currentResultLength) {
+  const thresholdUpperInput = getInput('threshold_upper')
+  const thresholdLowerInput = getInput('threshold_lower')
+
+  if (!thresholdUpperInput || !thresholdLowerInput) {
+    throw new Error(
+        'Threshold range values are required for the threshold_range evaluation method.'
+    )
+  }
+
+  // Convert the comma-separated string inputs into arrays of numbers
+  const thresholdUpper = thresholdUpperInput.split(',').map(Number)
+  const thresholdLower = thresholdLowerInput.split(',').map(Number)
+
+  if (thresholdUpper.length !== thresholdLower.length) {
+    throw new Error(
+        'The number of upper thresholds must match the number of lower thresholds.'
+    )
+  }
+
+  // Check if the length of the threshold arrays match the number of results
+  if (thresholdUpper.length !== currentResultLength) {
+    throw new Error(
+        'The number of thresholds must match the number of results.'
+    )
+  }
+}
+
+module.exports.validateJumpDetectionConfig = function (currentResultLength) {
+  const jumpDetectionThresholdInput = core.getInput('jump_detection_threshold')
+
+  if (jumpDetectionThresholdInput.trim() === '') {
+    throw new Error('Jump detection threshold must be provided.')
+  }
+
+  const jumpDetectionThreshold = Number(jumpDetectionThresholdInput.trim())
+
+  if (isNaN(jumpDetectionThreshold)) {
+    throw new Error('Jump detection threshold must be a valid number.')
+  }
+
+  if (jumpDetectionThreshold < 0 || jumpDetectionThreshold > 100) {
+    throw new Error(
+        'Jump detection threshold must be within the range [0, 100].'
+    )
+  }
+
+  return jumpDetectionThreshold
+}
+
+module.exports.validateTrendDetectionMovingAveConfig = function () {
+  // Destructuring the necessary properties from the config object
+  const movingAveWindowSize = getInput('moving_ave_window_size')
+  const movingAveThreshold = getInput('moving_ave_threshold')
+
+  // Check if both movingAveWindowSize and movingAveThreshold are present
+  if (movingAveWindowSize == null || movingAveThreshold == null) {
+    throw new Error(
+        'Both movingAveWindowSize and movingAveThreshold must be provided for trend detection with moving average.'
+    )
+  }
+
+  // Use the checkIfPreviousNumberOfBenchmarksExists module.exports.to check the movingAveWindowSize
+  if (!checkIfNthPreviousBenchmarkExists(benchmarkData, movingAveWindowSize)) {
+    throw new Error(
+        `The provided movingAveWindowSize of ${movingAveWindowSize} exceeds the number of available benchmarks.`
+    )
+  }
+
+  // Validate movingAveThreshold to be within the range [0, 100]
+  const movingAveThresholdValue = Number(movingAveThreshold)
+  if (
+      isNaN(movingAveThresholdValue) ||
+      movingAveThresholdValue < 0 ||
+      movingAveThresholdValue > 100
+  ) {
+    throw new Error('movingAveThreshold must be a number between 0 and 100.')
+  }
+}
+
+
 
 /***/ }),
 
@@ -30870,7 +31118,7 @@ const {
   compareWithPrev
 } = __nccwpck_require__(248)
 
-const { camelToSnake } = __nccwpck_require__(7428)
+const { camelToSnake } = __nccwpck_require__(7827)
 
 const { createCurrBench, checkIfNthPreviousBenchExists, createPrevBench } = __nccwpck_require__(501)
 
@@ -30887,7 +31135,8 @@ async function run() {
     console.log(createPrevBench())
     console.log('not visible changes')
     console.log('testing cml2Snk')
-    //const evalCfg = camelToSnake('evaluationMethod')
+    const evalCfg = camelToSnake('evaluationMethod')
+    console.log(evalCfg);
     console.log('done testing cml2Snk')
 
     const config = validateInputAndFetchConfig()
@@ -31001,245 +31250,6 @@ async function run() {
 module.exports = {
   run
 }
-
-
-/***/ }),
-
-/***/ 7428:
-/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
-
-"use strict";
-__nccwpck_require__.r(__webpack_exports__);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(5127);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-
-const {
-  returnNthPreviousBenchmark,
-  checkIfNthPreviousBenchmarkExists
-} = __nccwpck_require__(248)
-const { EvaluationConfig } = __nccwpck_require__(510)
-
-// module.exports.createEvaluationConfig = function (...inputNames) {
-//   const validInputs = [
-//     'evaluationMethod',
-//     'thresholdValues',
-//     'comparisonOperators',
-//     'comparisonMargins',
-//     'thresholdUpper',
-//     'thresholdLower',
-//     'jumpDetectionThreshold',
-//     'movingAveWindowSize',
-//     'movingAveThreshold',
-//     'deltasThreshold'
-//   ]
-//
-//   const configValues = validInputs.map(inputName => {
-//     if (inputNames.includes(inputName)) {
-//       const snakeCaseInputName = module.exports.camelToSnake(inputName)
-//       const inputValue = getInput(snakeCaseInputName)
-//
-//       if (inputValue) {
-//         return inputValue.includes(',')
-//           ? inputValue.split(',').map(Number)
-//           : Number(inputValue)
-//       }
-//     }
-//     return null
-//   })
-//
-//   return new EvaluationConfig(...configValues)
-// }
-//
-// module.exports.validateAndFetchConfig = function (currentResultLength) {
-//   const evaluationMethod = getInput('evaluation_method', { required: true })
-//   const validEvaluationMethods = [
-//     'threshold',
-//     'previous',
-//     'previous_successful',
-//     'threshold_range',
-//     'jump_detection',
-//     'trend_detection_moving_ave',
-//     'trend_detection_deltas'
-//   ]
-//   if (!validEvaluationMethods.includes(evaluationMethod)) {
-//     throw new Error(
-//       `Invalid evaluation method: ${evaluationMethod}. Must be one of ${validEvaluationMethods.join(
-//         ', '
-//       )}`
-//     )
-//   }
-//
-//   switch (evaluationMethod) {
-//     case 'threshold':
-//       module.exports.validateOperatorsAndMargins(currentResultLength)
-//       module.exports.validateThresholdConfig(currentResultLength)
-//       break
-//     case 'previous':
-//       module.exports.validateOperatorsAndMargins(currentResultLength)
-//
-//       break
-//     case 'previous_successful':
-//       module.exports.validateOperatorsAndMargins(currentResultLength)
-//
-//       break
-//     case 'threshold_range':
-//       module.exports.validateThresholdRangeConfig(currentResultLength)
-//       break
-//     case 'jump_detection':
-//       module.exports.validateJumpDetectionConfig()
-//       break
-//     case 'trend_detection_moving_ave':
-//       module.exports.validateTrendDetectionMovingAveConfig()
-//       const movingAveWindowSize = getInput('moving_ave_window')
-//
-//       break
-//     case 'trend_detection_deltas':
-//       break
-//     default:
-//       throw new Error(
-//         `Unsupported evaluation method: ${config.evaluationMethod}`
-//       )
-//   }
-//
-//   return module.exports.createEvaluationConfig(
-//     'evaluationMethod',
-//     'thresholdValues',
-//     'comparisonOperators',
-//     'comparisonMargins',
-//     'thresholdUpper',
-//     'thresholdLower',
-//     'jumpDetectionThreshold',
-//     'movingAveWindowSize',
-//     'movingAveThreshold',
-//     'deltasThreshold'
-//   )
-// }
-//
-// module.exports.validateOperatorsAndMargins = function (currentResultLength) {
-//   const comparisonOperatorsInput = getInput('comparisonOperators')
-//   const comparisonMarginsInput = getInput('comparisonMargins')
-//
-//   if (!comparisonOperatorsInput || !comparisonMarginsInput) {
-//     throw new Error('Comparison operators and margins must not be null.')
-//   }
-//
-//   const comparisonOperators = comparisonOperatorsInput.split(',')
-//   const comparisonMargins = comparisonMarginsInput.split(',').map(Number)
-//
-//   if (comparisonOperators.length !== currentResultLength) {
-//     throw new Error(
-//       `The number of comparison operators must be equal to ${currentResultLength}.`
-//     )
-//   }
-//   if (comparisonMargins.length !== currentResultLength) {
-//     throw new Error(
-//       `The number of comparison margins must be equal to ${currentResultLength}.`
-//     )
-//   }
-//
-//   const validOperators = ['smaller', 'bigger', 'tolerance']
-//   comparisonOperators.forEach(operator => {
-//     if (!validOperators.includes(operator.trim())) {
-//       throw new Error(
-//         `Invalid comparison operator: ${operator}. Valid operators are: ${validOperators.join(
-//           ', '
-//         )}.`
-//       )
-//     }
-//   })
-//
-//   const validMargins = comparisonMargins.every(
-//     margin => margin === -1 || (margin >= 0 && margin <= 100)
-//   )
-//   if (!validMargins) {
-//     throw new Error('Comparison margins must be in the range [-1, 100].')
-//   }
-// }
-// module.exports.validateThresholdConfig = function (currentResultLength) {
-//   const thresholdValuesInput = getInput('threshold_values')
-//   const thresholdValues = thresholdValuesInput
-//     .split(',')
-//     .map(value => value.trim())
-//
-//   if (thresholdValues.length !== currentResultLength) {
-//     throw new Error(
-//       `The number of threshold values (${thresholdValues.length}) must match the number of metrics (${currentResultLength}).`
-//     )
-//   }
-// }
-// module.exports.validateThresholdRangeConfig = function (currentResultLength) {
-//   const thresholdUpperInput = getInput('threshold_upper')
-//   const thresholdLowerInput = getInput('threshold_lower')
-//
-//   if (!thresholdUpperInput || !thresholdLowerInput) {
-//     throw new Error(
-//       'Threshold range values are required for the threshold_range evaluation method.'
-//     )
-//   }
-//
-//   const thresholdUpper = thresholdUpperInput.split(',').map(Number)
-//   const thresholdLower = thresholdLowerInput.split(',').map(Number)
-//
-//   if (thresholdUpper.length !== thresholdLower.length) {
-//     throw new Error(
-//       'The number of upper thresholds must match the number of lower thresholds.'
-//     )
-//   }
-//
-//   if (thresholdUpper.length !== currentResultLength) {
-//     throw new Error(
-//       'The number of thresholds must match the number of results.'
-//     )
-//   }
-// }
-//
-// module.exports.validateJumpDetectionConfig = function (currentResultLength) {
-//   const jumpDetectionThresholdInput = core.getInput('jump_detection_threshold')
-//
-//   if (jumpDetectionThresholdInput.trim() === '') {
-//     throw new Error('Jump detection threshold must be provided.')
-//   }
-//
-//   const jumpDetectionThreshold = Number(jumpDetectionThresholdInput.trim())
-//
-//   if (isNaN(jumpDetectionThreshold)) {
-//     throw new Error('Jump detection threshold must be a valid number.')
-//   }
-//
-//   if (jumpDetectionThreshold < 0 || jumpDetectionThreshold > 100) {
-//     throw new Error(
-//       'Jump detection threshold must be within the range [0, 100].'
-//     )
-//   }
-//
-//   return jumpDetectionThreshold
-// }
-//
-// module.exports.validateTrendDetectionMovingAveConfig = function () {
-//   const movingAveWindowSize = getInput('moving_ave_window_size')
-//   const movingAveThreshold = getInput('moving_ave_threshold')
-//
-//   if (movingAveWindowSize == null || movingAveThreshold == null) {
-//     throw new Error(
-//       'Both movingAveWindowSize and movingAveThreshold must be provided for trend detection with moving average.'
-//     )
-//   }
-//
-//   if (!checkIfNthPreviousBenchmarkExists(benchmarkData, movingAveWindowSize)) {
-//     throw new Error(
-//       `The provided movingAveWindowSize of ${movingAveWindowSize} exceeds the number of available benchmarks.`
-//     )
-//   }
-//
-//   const movingAveThresholdValue = Number(movingAveThreshold)
-//   if (
-//     isNaN(movingAveThresholdValue) ||
-//     movingAveThresholdValue < 0 ||
-//     movingAveThresholdValue > 100
-//   ) {
-//     throw new Error('movingAveThreshold must be a number between 0 and 100.')
-//   }
-// }
 
 
 /***/ }),
@@ -31621,46 +31631,6 @@ module.exports = require("zlib");
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/compat get default export */
-/******/ 	(() => {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__nccwpck_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
-/******/ 				() => (module['default']) :
-/******/ 				() => (module);
-/******/ 			__nccwpck_require__.d(getter, { a: getter });
-/******/ 			return getter;
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__nccwpck_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/make namespace object */
-/******/ 	(() => {
-/******/ 		// define __esModule on exports
-/******/ 		__nccwpck_require__.r = (exports) => {
-/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 			}
-/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
