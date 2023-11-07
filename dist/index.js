@@ -31071,6 +31071,7 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, config) {
   // Destructure the required fields from the config object
   const { comparisonOperators, comparisonMargins, thresholdValues } = config;
 
+  const actualValues = [];
   const metricNames = [];
   const metricUnits = [];
   const shouldBe = [];
@@ -31078,13 +31079,14 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, config) {
   const evaluationResults = [];
 
   console.log('currentBenchmarkData.results: ' + currentBenchmarkData.results)
-  currentBenchmarkData.results.forEach((result, index) => {
+  currentBenchmarkData.simpleMetricResults.forEach((result, index) => {
     const value = result.value;
     const thresholdValue = thresholdValues[index];
     const margin = comparisonMargins[index];
     const operator = comparisonOperators[index];
     let isPassed;
 
+    actualValues.push(value);
     metricNames.push(result.name);
     metricUnits.push(result.unit);
     shouldBe.push(operator);
@@ -31113,6 +31115,7 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, config) {
     "evaluation_method": "threshold",
     "metric_names": metricNames,
     "metric_units": metricUnits,
+    "is": actualValues,
     "should_be": shouldBe,
     "than": thanValues,
     "result": evaluationResults
@@ -31330,8 +31333,9 @@ async function run() {
     const evaluationConfig = completeConfig.evaluationConfig;
     core.debug('Evaluation config: ' + JSON.stringify(evaluationConfig))
     core.debug("------------------------------------------------")
-    const currentBenchmark = createCurrBench(completeConfig);
-    core.debug('Current benchmark: ' + JSON.stringify(currentBenchmark))
+    // The variable below is an object, not 1:1 json from the file!
+    const completeBenchmarkObject = createCurrBench(completeConfig);
+    core.debug('Current benchmark: ' + JSON.stringify(completeBenchmarkObject))
     core.debug("------------------------------------------------")
     const completeBenchData = getCompleteBenchData(
         completeConfig.folderWithBenchData,
@@ -31341,7 +31345,7 @@ async function run() {
     //core.debug("------------------------------------------------")
 
     const evaluationResult = evaluateCurrentBenchmark(
-        currentBenchmark,
+        completeBenchmarkObject,
         completeBenchData,
         evaluationConfig
     );
@@ -31354,7 +31358,7 @@ async function run() {
     if (completeConfig.saveCurrBenchRes) {
       core.debug('Saving current benchmark results to file')
       await addCompleteBenchmarkToFile(
-        currentBenchmark,
+        completeBenchmarkObject,
         completeConfig.fileWithBenchData
       )
     }

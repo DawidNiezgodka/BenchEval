@@ -28,6 +28,7 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, config) {
   // Destructure the required fields from the config object
   const { comparisonOperators, comparisonMargins, thresholdValues } = config;
 
+  const actualValues = [];
   const metricNames = [];
   const metricUnits = [];
   const shouldBe = [];
@@ -35,13 +36,14 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, config) {
   const evaluationResults = [];
 
   console.log('currentBenchmarkData.results: ' + currentBenchmarkData.results)
-  currentBenchmarkData.results.forEach((result, index) => {
+  currentBenchmarkData.simpleMetricResults.forEach((result, index) => {
     const value = result.value;
     const thresholdValue = thresholdValues[index];
     const margin = comparisonMargins[index];
     const operator = comparisonOperators[index];
     let isPassed;
 
+    actualValues.push(value);
     metricNames.push(result.name);
     metricUnits.push(result.unit);
     shouldBe.push(operator);
@@ -70,6 +72,7 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, config) {
     "evaluation_method": "threshold",
     "metric_names": metricNames,
     "metric_units": metricUnits,
+    "is": actualValues,
     "should_be": shouldBe,
     "than": thanValues,
     "result": evaluationResults

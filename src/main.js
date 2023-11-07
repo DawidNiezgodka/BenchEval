@@ -27,8 +27,9 @@ async function run() {
     const evaluationConfig = completeConfig.evaluationConfig;
     core.debug('Evaluation config: ' + JSON.stringify(evaluationConfig))
     core.debug("------------------------------------------------")
-    const currentBenchmark = createCurrBench(completeConfig);
-    core.debug('Current benchmark: ' + JSON.stringify(currentBenchmark))
+    // The variable below is an object, not 1:1 json from the file!
+    const completeBenchmarkObject = createCurrBench(completeConfig);
+    core.debug('Current benchmark: ' + JSON.stringify(completeBenchmarkObject))
     core.debug("------------------------------------------------")
     const completeBenchData = getCompleteBenchData(
         completeConfig.folderWithBenchData,
@@ -38,7 +39,7 @@ async function run() {
     //core.debug("------------------------------------------------")
 
     const evaluationResult = evaluateCurrentBenchmark(
-        currentBenchmark,
+        completeBenchmarkObject,
         completeBenchData,
         evaluationConfig
     );
@@ -51,7 +52,7 @@ async function run() {
     if (completeConfig.saveCurrBenchRes) {
       core.debug('Saving current benchmark results to file')
       await addCompleteBenchmarkToFile(
-        currentBenchmark,
+        completeBenchmarkObject,
         completeConfig.fileWithBenchData
       )
     }
