@@ -1,6 +1,6 @@
 const core = require('@actions/core')
 const fs = require('fs')
-const { Config } = require('./types')
+const { Config, EvaluationConfig} = require('./types')
 
 module.exports.validateBooleanInput = function (input) {
   return input === 'true' || input === 'false'
@@ -82,94 +82,62 @@ module.exports.convertSingleJsonObjectToArr = function (obj) {
 }
 
 module.exports.validateInputAndFetchConfig = function () {
+  // Part 1: General info + extracting json with current bench data
   const benchName = core.getInput('name')
-
   const pathToCurBenchFile = core.getInput('current_bench_res_file')
   const rawData = fs.readFileSync(pathToCurBenchFile)
   const parsedData = JSON.parse(rawData)
   const itemCount = module.exports.determineJsonItemCount(parsedData.results)
+
   const benchType = core.getInput('bench_type')
   module.exports.validateBenchType(benchType)
   module.exports.validateItemCountForBenchType(itemCount, benchType)
 
-  const folderWithBenchData = core.getInput('folder_with_bench_data')
-  const fileWithBenchData = core.getInput('file_with_bench_data')
-  const githubToken = core.getInput('github_token')
-
-  const addComment = module.exports.getBoolInput('add_comment_to_commit')
-  const addJobSummary = module.exports.getBoolInput('add_action_job_summary')
-  const saveCurrBenchRes = module.exports.getBoolInput('save_curr_bench_res')
+  // Part 2: Get and validate failing condition
   const failingCondition = core.getInput('failing_condition')
+  if (
+      failingCondition !== 'any' &&
+      failingCondition !== 'all' &&
+      failingCondition !== 'none'
+  ) {
+    throw new Error(
+        `Invalid failing condition: ${failingCondition}. Valid values are: any, all, none`
+    )
+  }
 
+  // Part 3: Get and validate the benchmark to compare; if not specified, use the current benchmark
   let benchToCompare = core.getInput('bench_to_compare')
   if (benchToCompare === '' || benchToCompare === null) {
     benchToCompare = benchName
   }
-  const reference = core.getInput('reference')
-  module.exports.validateReference(reference, benchToCompare, benchName)
 
-  const thresholds = core.getInput('thresholds')
-  let thresholdArray = []
-  // if thresholds is empty or null and reference is 'threshold', throw error
-  if (thresholds === '' || thresholds === null) {
-    if (reference === 'threshold') {
-      throw new Error(
-        `Thresholds must be specified when reference is 'threshold'`
-      )
-    }
-  } else {
-    thresholdArray = module.exports.getCommaSepInputAsArray(thresholds)
-    if (itemCount !== thresholdArray.length) {
-      throw new Error(
-        `Number of thresholds (${thresholdArray.length}) must be equal to number of items in JSON (${itemCount})`
-      )
-    }
-  }
+  // Part 4 (new): Check if evaluation_method is valid and carry out validation for this specific method
+  const evalConfig = module.exports.validateAndFetchConfig(itemCount);
 
-  const comparisonModesInput = core.getInput('comparison_modes')
-  const comparisonModes =
-    module.exports.getCommaSepInputAsArray(comparisonModesInput)
-  if (itemCount !== comparisonModes.length) {
-    throw new Error(`Number of threshold comparison modes (${comparisonModes.length})
-         must be equal to number of items in JSON (${itemCount})`)
-  }
+  // No need for extra validaiton
+  const folderWithBenchData = core.getInput('folder_with_bench_data')
+  const fileWithBenchData = core.getInput('file_with_bench_data')
+  const githubToken = core.getInput('github_token')
 
-  const comparisonMarginsInput = core.getInput('comparison_margins')
-  const comparisonMargins = module.exports.getCommaSepInputAsArray(
-    comparisonMarginsInput
-  )
-  if (itemCount !== comparisonMargins.length) {
-    throw new Error(`Number of percentage threshold margins (${comparisonMargins.length})
-         must be equal to number of items in JSON (${itemCount})`)
-  }
+  // Variables concerning git repo manipulations
+  const addComment = module.exports.getBoolInput('add_comment_to_commit')
+  const addJobSummary = module.exports.getBoolInput('add_action_job_summary')
+  const saveCurrBenchRes = module.exports.getBoolInput('save_curr_bench_res')
 
-  // validate failing condition. it should be one of: any, all, none
-  if (
-    failingCondition !== 'any' &&
-    failingCondition !== 'all' &&
-    failingCondition !== 'none'
-  ) {
-    throw new Error(
-      `Invalid failing condition: ${failingCondition}. Valid values are: any, all, none`
-    )
-  }
 
   return new Config(
-    benchName,
-    parsedData,
-    benchType,
-    folderWithBenchData,
-    fileWithBenchData,
-    githubToken,
-    addComment,
-    addJobSummary,
-    saveCurrBenchRes,
-    reference,
-    benchToCompare,
-    thresholdArray,
-    comparisonModes,
-    comparisonMargins,
-    failingCondition
+      benchName,
+      parsedData,
+      benchType,
+      failingCondition,
+      benchToCompare,
+      evalConfig,
+      folderWithBenchData,
+      fileWithBenchData,
+      githubToken,
+      addComment,
+      addJobSummary,
+      saveCurrBenchRes,
   )
 }
 
@@ -181,41 +149,9 @@ module.exports.camelToSnake = function (string) {
       .toLowerCase()
 }
 
-module.exports.createEvaluationConfig = function (...inputNames) {
-  const validInputs = [
-    'evaluationMethod',
-    'thresholdValues',
-    'comparisonOperators',
-    'comparisonMargins',
-    'thresholdUpper',
-    'thresholdLower',
-    'jumpDetectionThreshold',
-    'movingAveWindowSize',
-    'movingAveThreshold',
-    'deltasThreshold'
-  ]
-
-  const configValues = validInputs.map(inputName => {
-    if (inputNames.includes(inputName)) {
-      const snakeCaseInputName = module.exports.camelToSnake(inputName)
-      const inputValue = getInput(snakeCaseInputName)
-
-      if (inputValue) {
-        // Check if the input contains commas, suggesting it's a list
-        return inputValue.includes(',')
-            ? inputValue.split(',').map(Number)
-            : Number(inputValue)
-      }
-    }
-    return null
-  })
-
-  return new EvaluationConfig(...configValues)
-}
-
 module.exports.validateAndFetchConfig = function (currentResultLength) {
   // Evaluation method
-  const evaluationMethod = getInput('evaluation_method', { required: true })
+  const evaluationMethod = core.getInput('evaluation_method', { required: true })
   const validEvaluationMethods = [
     'threshold',
     'previous',
@@ -235,28 +171,29 @@ module.exports.validateAndFetchConfig = function (currentResultLength) {
 
   switch (evaluationMethod) {
     case 'threshold':
+      console.log('Validating threshold evaluation configuration.')
       module.exports.validateOperatorsAndMargins(currentResultLength)
       module.exports.validateThresholdConfig(currentResultLength)
       break
     case 'previous':
       module.exports.validateOperatorsAndMargins(currentResultLength)
-      // checkIfPreviousNumberOfBenchmarksExists(1);
+      module.exports.checkIfNthPreviousBenchmarkExists(1);
       break
     case 'previous_successful':
       module.exports.validateOperatorsAndMargins(currentResultLength)
-      // checkIfPreviousNumberOfBenchmarksExists(1);
+       module.exports.checkIfNthPreviousBenchmarkExists(1);
       break
     case 'threshold_range':
       module.exports.validateThresholdRangeConfig(currentResultLength)
       break
     case 'jump_detection':
-      // checkIfPreviousNumberOfBenchmarksExists(1);
+       module.exports.checkIfNthPreviousBenchmarkExists(1);
       module.exports.validateJumpDetectionConfig()
       break
     case 'trend_detection_moving_ave':
       module.exports.validateTrendDetectionMovingAveConfig()
-      const movingAveWindowSize = getInput('moving_ave_window')
-      // checkIfPreviousNumberOfBenchmarksExists(movingAveWindowSize);
+      const movingAveWindowSize = core.getInput('moving_ave_window')
+       module.exports.checkIfNthPreviousBenchmarkExists(movingAveWindowSize);
       break
     case 'trend_detection_deltas':
       //module.exports.validateTrendDetectionDeltasConfig()
@@ -281,21 +218,48 @@ module.exports.validateAndFetchConfig = function (currentResultLength) {
   )
 }
 
-module.exports.validateOperatorsAndMargins = function (currentResultLength) {
-  // Retrieve the inputs as strings
-  const comparisonOperatorsInput = getInput('comparisonOperators')
-  const comparisonMarginsInput = getInput('comparisonMargins')
+module.exports.createEvaluationConfig = function (...inputNames) {
+  const validInputs = [
+    'evaluationMethod',
+    'thresholdValues',
+    'comparisonOperators',
+    'comparisonMargins',
+    'thresholdUpper',
+    'thresholdLower',
+    'jumpDetectionThreshold',
+    'movingAveWindowSize',
+    'movingAveThreshold',
+    'deltasThreshold'
+  ]
 
-  // Validate that the inputs are not null
+  const configValues = validInputs.map(inputName => {
+    if (inputNames.includes(inputName)) {
+      const snakeCaseInputName = module.exports.camelToSnake(inputName)
+      const inputValue = core.getInput(snakeCaseInputName)
+
+      if (inputValue) {
+        // Check if the input contains commas, suggesting it's a list
+        return inputValue.includes(',')
+            ? inputValue.split(',').map(Number)
+            : Number(inputValue)
+      }
+    }
+    return null
+  })
+
+  return new EvaluationConfig(...configValues)
+}
+
+module.exports.validateOperatorsAndMargins = function (currentResultLength) {
+  console.log('Validating operators and margins')
+  const comparisonOperatorsInput = core.getInput('comparisonOperators')
+  const comparisonMarginsInput = core.getInput('comparisonMargins')
+
   if (!comparisonOperatorsInput || !comparisonMarginsInput) {
     throw new Error('Comparison operators and margins must not be null.')
   }
-
-  // Convert the inputs into arrays
   const comparisonOperators = comparisonOperatorsInput.split(',')
-  const comparisonMargins = comparisonMarginsInput.split(',').map(Number) // Convert margins to numbers for further validation
-
-  // Validate the number of elements
+  const comparisonMargins = comparisonMarginsInput.split(',').map(Number)
   if (comparisonOperators.length !== currentResultLength) {
     throw new Error(
         `The number of comparison operators must be equal to ${currentResultLength}.`
@@ -306,8 +270,6 @@ module.exports.validateOperatorsAndMargins = function (currentResultLength) {
         `The number of comparison margins must be equal to ${currentResultLength}.`
     )
   }
-
-  // Validate the values for operators
   const validOperators = ['smaller', 'bigger', 'tolerance']
   comparisonOperators.forEach(operator => {
     if (!validOperators.includes(operator.trim())) {
@@ -319,7 +281,6 @@ module.exports.validateOperatorsAndMargins = function (currentResultLength) {
     }
   })
 
-  // Validate the range for margins
   const validMargins = comparisonMargins.every(
       margin => margin === -1 || (margin >= 0 && margin <= 100)
   )
@@ -327,13 +288,14 @@ module.exports.validateOperatorsAndMargins = function (currentResultLength) {
     throw new Error('Comparison margins must be in the range [-1, 100].')
   }
 }
+
 module.exports.validateThresholdConfig = function (currentResultLength) {
-  const thresholdValuesInput = getInput('threshold_values')
+  console.log('Validating threshold config')
+  const thresholdValuesInput = core.getInput('threshold_values')
   const thresholdValues = thresholdValuesInput
       .split(',')
       .map(value => value.trim())
 
-  // Validate the number of elements in each array
   if (thresholdValues.length !== currentResultLength) {
     throw new Error(
         `The number of threshold values (${thresholdValues.length}) must match the number of metrics (${currentResultLength}).`
@@ -341,8 +303,8 @@ module.exports.validateThresholdConfig = function (currentResultLength) {
   }
 }
 module.exports.validateThresholdRangeConfig = function (currentResultLength) {
-  const thresholdUpperInput = getInput('threshold_upper')
-  const thresholdLowerInput = getInput('threshold_lower')
+  const thresholdUpperInput = core.getInput('threshold_upper')
+  const thresholdLowerInput = core.getInput('threshold_lower')
 
   if (!thresholdUpperInput || !thresholdLowerInput) {
     throw new Error(
@@ -392,8 +354,8 @@ module.exports.validateJumpDetectionConfig = function (currentResultLength) {
 
 module.exports.validateTrendDetectionMovingAveConfig = function () {
   // Destructuring the necessary properties from the config object
-  const movingAveWindowSize = getInput('moving_ave_window_size')
-  const movingAveThreshold = getInput('moving_ave_threshold')
+  const movingAveWindowSize = core.getInput('moving_ave_window_size')
+  const movingAveThreshold = core.getInput('moving_ave_threshold')
 
   // Check if both movingAveWindowSize and movingAveThreshold are present
   if (movingAveWindowSize == null || movingAveThreshold == null) {
@@ -419,4 +381,58 @@ module.exports.validateTrendDetectionMovingAveConfig = function () {
     throw new Error('movingAveThreshold must be a number between 0 and 100.')
   }
 }
+
+module.exports.checkIfNthPreviousBenchmarkExists = function (
+    benchmarkData,
+    benchmarkName,
+    numberOfBenchmarks
+) {
+  // Check if benchmarkName exists in the benchmarkData
+  if (!benchmarkData.entries.hasOwnProperty(benchmarkName)) {
+    throw new Error(`No benchmarks found with the name "${benchmarkName}"`)
+  }
+
+  // Get the benchmarks array for the given benchmarkName
+  const benchmarks = benchmarkData.entries[benchmarkName]
+
+  // Sort the benchmarks by date in descending order (most recent first)
+  benchmarks.sort((a, b) => b.date - a.date)
+
+  // Check if there are enough benchmarks to satisfy the numberOfBenchmarks request
+  if (numberOfBenchmarks <= 0 || numberOfBenchmarks > benchmarks.length) {
+    throw new Error(
+        `Cannot return ${numberOfBenchmarks} previous benchmark(s) - insufficient data.`
+    )
+  }
+
+  // Get the nth previous benchmark
+  return benchmarks[numberOfBenchmarks - 1] // because arrays are zero-indexed
+}
+
+module.exports.checkIfNthPreviousBenchmarkExists = function (
+    benchmarkData,
+    benchmarkName,
+    numberOfBenchmarks
+) {
+  // Check if benchmarkName exists in the benchmarkData
+  if (!benchmarkData.entries.hasOwnProperty(benchmarkName)) {
+    throw new Error(`No benchmarks found with the name "${benchmarkName}"`)
+  }
+
+  // Get the benchmarks array for the given benchmarkName
+  const benchmarks = benchmarkData.entries[benchmarkName]
+
+  // No need to sort since we are not returning the benchmark
+
+  // Check if the nth previous benchmark exists
+  if (numberOfBenchmarks <= 0 || numberOfBenchmarks > benchmarks.length) {
+    throw new Error(
+        `Benchmark "${benchmarkName}" does not have an nth previous entry.`
+    )
+  }
+
+  // If the function reaches this point, the nth previous benchmark exists
+  // There is no need to return anything
+}
+
 

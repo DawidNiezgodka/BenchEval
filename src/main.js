@@ -23,15 +23,9 @@ const {
 
 async function run() {
   try {
-    console.log("Running new added create prev bench")
-    console.log(createPrevBench())
-    console.log('not visible changes')
-    console.log('testing cml2Snk')
-    const evalCfg = camelToSnake('evaluationMethod')
-    console.log(evalCfg);
-    console.log('done testing cml2Snk')
 
     const config = validateInputAndFetchConfig()
+    console.log('Config: ' + JSON.stringify(config))
     const currentBenchmark = createCurrBench(config)
     const thresholds = config.thresholds
     const comparisonModes = config.comparisonModes

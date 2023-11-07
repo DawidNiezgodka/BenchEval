@@ -34,8 +34,8 @@ jobs:
           name: "Benchmark"
           bench_to_compare: "Benchmark2"
           current_bench_res_file: ./benchmark_results/curr.json
-          reference: previous
-          comparison_modes: smaller, bigger, range
+          evaluation_method: threshold
+          comparison_operators: smaller, bigger, tolerance
           comparison_margins: -1, -1, 20
           failing_condition: none
           add_comment_to_commit: true

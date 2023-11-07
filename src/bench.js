@@ -29,11 +29,3 @@ module.exports.createCurrBench = function (config) {
     commit
   )
 }
-
-module.exports.checkIfNthPreviousBenchExists = function (n, benchName) {
-  return 'yo'
-}
-
-module.exports.createPrevBench = function (config) {
-  return 'createPrevBench'
-}

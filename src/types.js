@@ -46,34 +46,33 @@ class Config {
     benchName,
     currBenchResJson,
     benchType,
+
+    failingCondition,
+
+    benchToCompare,
+
+    evaluationConfig,
+
     folderWithBenchData,
     fileWithBenchData,
     githubToken,
     addComment,
     addJobSummary,
     saveCurrBenchRes,
-    reference,
-    benchToCompare,
-    thresholds,
-    comparisonModes,
-    comparisonMargins,
-    failingCondition
   ) {
     this.benchName = benchName
     this.currBenchResJson = currBenchResJson
     this.benchType = benchType
+    this.failingCondition = failingCondition
+    this.benchToCompare = benchToCompare
+    this.evaluationConfig = evaluationConfig
     this.folderWithBenchData = folderWithBenchData
     this.fileWithBenchData = fileWithBenchData
     this.githubToken = githubToken
     this.addComment = addComment
     this.addJobSummary = addJobSummary
     this.saveCurrBenchRes = saveCurrBenchRes
-    this.reference = reference
-    this.thresholds = thresholds
-    this.benchToCompare = benchToCompare
-    this.comparisonModes = comparisonModes
-    this.comparisonMargins = comparisonMargins
-    this.failingCondition = failingCondition
+
   }
 }
 
