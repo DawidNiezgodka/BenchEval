@@ -34,8 +34,8 @@ async function run() {
         completeConfig.folderWithBenchData,
         completeConfig.fileWithBenchData
     );
-    core.debug('Complete benchmark data: ' + JSON.stringify(completeBenchData))
-    core.debug("------------------------------------------------")
+    //core.debug('Complete benchmark data: ' + JSON.stringify(completeBenchData))
+    //core.debug("------------------------------------------------")
 
     const evaluationResult = evaluateCurrentBenchmark(
         currentBenchmark,

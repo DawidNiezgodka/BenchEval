@@ -31067,7 +31067,7 @@ module.exports.evaluateCurrentBenchmark = function (
 
 module.exports.evaluateWithThreshold = function (currentBenchmarkData, config) {
   core.debug('Evaluating current benchmark with threshold method')
-
+  core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData))
   // Destructure the required fields from the config object
   const { comparisonOperators, comparisonMargins, thresholdValues } = config;
 
@@ -31077,6 +31077,7 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, config) {
   const thanValues = [];
   const evaluationResults = [];
 
+  console.log('currentBenchmarkData.results: ' + currentBenchmarkData.results)
   currentBenchmarkData.results.forEach((result, index) => {
     const value = result.value;
     const thresholdValue = thresholdValues[index];
@@ -31336,8 +31337,8 @@ async function run() {
         completeConfig.folderWithBenchData,
         completeConfig.fileWithBenchData
     );
-    core.debug('Complete benchmark data: ' + JSON.stringify(completeBenchData))
-    core.debug("------------------------------------------------")
+    //core.debug('Complete benchmark data: ' + JSON.stringify(completeBenchData))
+    //core.debug("------------------------------------------------")
 
     const evaluationResult = evaluateCurrentBenchmark(
         currentBenchmark,
