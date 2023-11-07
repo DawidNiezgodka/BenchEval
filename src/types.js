@@ -77,10 +77,37 @@ class Config {
   }
 }
 
+class EvaluationConfig {
+  constructor(
+    evaluationMethod,
+    thresholdValues,
+    comparisonOperators,
+    comparisonMargins,
+    thresholdUpper,
+    thresholdLower,
+    jumpDetectionThreshold,
+    movingAveWindowSize,
+    movingAveThreshold,
+    deltasThreshold
+  ) {
+    this.evaluationMethod = evaluationMethod
+    this.thresholdValues = thresholdValues
+    this.comparisonOperators = comparisonOperators
+    this.comparisonMargins = comparisonMargins
+    this.thresholdUpper = thresholdUpper
+    this.thresholdLower = thresholdLower
+    this.jumpDetectionThreshold = jumpDetectionThreshold
+    this.movingAveWindowSize = movingAveWindowSize
+    this.movingAveThreshold = movingAveThreshold
+    this.deltasThreshold = deltasThreshold
+  }
+}
+
 module.exports = {
   CompleteBenchmark,
   SimpleMetricResult,
   Config,
   Commit,
-  BenchmarkInfo
+  BenchmarkInfo,
+  EvaluationConfig
 }
