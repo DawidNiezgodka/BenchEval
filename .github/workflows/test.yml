@@ -34,9 +34,9 @@ jobs:
           name: "Benchmark"
           bench_to_compare: "Benchmark2"
           current_bench_res_file: ./benchmark_results/curr.json
-          evaluation_method: threshold_range
-          threshold_lower: 20,20,20
-          threshold_upper: 30,30,30
+          evaluation_method: jump_detection
+          jump_detection_threshold: 20
+
           comparison_operators: smaller, bigger, tolerance
           comparison_margins: -1, -1, 20
           failing_condition: none

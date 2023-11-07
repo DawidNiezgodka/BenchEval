@@ -194,6 +194,7 @@ module.exports.validateAndFetchConfig = function (currentResultLength, benchToCo
       module.exports.validateThresholdRangeConfig(currentResultLength)
       break
     case 'jump_detection':
+      console.log('Validating jump detection evaluation configuration.')
       module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare, 1);
       module.exports.validateJumpDetectionConfig()
       break
@@ -341,7 +342,7 @@ module.exports.validateThresholdRangeConfig = function (currentResultLength) {
   }
 }
 
-module.exports.validateJumpDetectionConfig = function (currentResultLength) {
+module.exports.validateJumpDetectionConfig = function () {
   const jumpDetectionThresholdInput = core.getInput('jump_detection_threshold')
 
   if (jumpDetectionThresholdInput.trim() === '') {
