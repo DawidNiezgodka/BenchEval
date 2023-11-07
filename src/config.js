@@ -112,13 +112,13 @@ module.exports.validateInputAndFetchConfig = function () {
     benchToCompare = benchName
   }
 
-  // Part 4 (new): Check if evaluation_method is valid and carry out validation for this specific method
-  const evalConfig = module.exports.validateAndFetchConfig(
-      itemCount, benchToCompare);
-
-  // No need for extra validaiton
   const folderWithBenchData = core.getInput('folder_with_bench_data')
   const fileWithBenchData = core.getInput('file_with_bench_data')
+  // Part 4 (new): Check if evaluation_method is valid and carry out validation for this specific method
+  const evalConfig = module.exports.validateAndFetchConfig(
+      itemCount, benchToCompare, folderWithBenchData, fileWithBenchData);
+
+  // No need for extra validaiton
   const githubToken = core.getInput('github_token')
 
   // Variables concerning git repo manipulations
@@ -151,7 +151,8 @@ module.exports.camelToSnake = function (string) {
       .toLowerCase()
 }
 
-module.exports.validateAndFetchConfig = async (currentResultLength, benchToCompare) => {
+module.exports.validateAndFetchConfig = async (currentResultLength, benchToCompare,
+                                               folderWithBenchData, fileWithBenchData) => {
   // Evaluation method
   const evaluationMethod = core.getInput('evaluation_method', { required: true })
   const validEvaluationMethods = [
@@ -171,7 +172,7 @@ module.exports.validateAndFetchConfig = async (currentResultLength, benchToCompa
     )
   }
 
-  let benchmarkData = await getCompleteBenchData();
+  let benchmarkData = await getCompleteBenchData(folderWithBenchData, fileWithBenchData);
   switch (evaluationMethod) {
     case 'threshold':
       console.log('Validating threshold evaluation configuration.')
@@ -179,7 +180,6 @@ module.exports.validateAndFetchConfig = async (currentResultLength, benchToCompa
       module.exports.validateThresholdConfig(currentResultLength)
       break
     case 'previous':
-
       console.log('Validating previous evaluation configuration.')
       module.exports.validateOperatorsAndMargins(currentResultLength)
       module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare, 1);
