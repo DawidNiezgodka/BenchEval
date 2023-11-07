@@ -3,118 +3,52 @@ const core = require('@actions/core')
 const { validateInputAndFetchConfig } = require('./config')
 
 const {
-  evaluateThresholds,
   allFailed,
   anyFailed,
-  addResultToBenchmarkObject,
-  compareWithPrev
+  evaluateCurrentBenchmark
 } = require('./evaluate')
 
-const { camelToSnake } = require('./config')
-
-const { createCurrBench, checkIfNthPreviousBenchExists, createPrevBench } = require('./bench')
+const { createCurrBench} = require('./bench')
 
 const { createComment } = require('./comment')
 
 const {
   addCompleteBenchmarkToFile,
-  getLatestBenchmark
+  getLatestBenchmark,
+  getCompleteBenchData
 } = require('./bench_data')
 
 async function run() {
   try {
 
-    const config = validateInputAndFetchConfig()
-    console.log('Config: ' + JSON.stringify(config))
-    const currentBenchmark = createCurrBench(config)
+    const completeConfig = validateInputAndFetchConfig()
+    const evaluationConfig = completeConfig.evaluationConfig;
+    const currentBenchmark = createCurrBench(completeConfig);
+    const completeBenchData = getCompleteBenchData(
+        completeConfig.folderWithBenchData,
+        completeConfig.fileWithBenchData
+    );
 
-    // const thresholds = config.thresholds
-    // const comparisonModes = config.comparisonModes
-    // const comparisonMargins = config.comparisonMargins
-    // let resultArray
-    // if (config.evaluationConfig === 'threshold') {
-    //   resultArray = evaluateThresholds(
-    //     currentBenchmark,
-    //     thresholds,
-    //     comparisonModes,
-    //     comparisonMargins
-    //   )
-    //   addResultToBenchmarkObject(
-    //     currentBenchmark,
-    //     resultArray,
-    //     config.failingCondition
-    //   )
-    // } else if (config.reference === 'previous') {
-    //   const prev = await getLatestBenchmark(
-    //     config.benchToCompare,
-    //     config.folderWithBenchData,
-    //     config.fileWithBenchData,
-    //     1
-    //   )
-    //   resultArray = compareWithPrev(
-    //     currentBenchmark,
-    //     prev,
-    //     comparisonModes,
-    //     comparisonMargins
-    //   )
-    //   addResultToBenchmarkObject(
-    //     currentBenchmark,
-    //     resultArray,
-    //     config.failingCondition
-    //   )
-    // }
+    const evaluationResult = evaluateCurrentBenchmark(
+        currentBenchmark,
+        completeBenchData,
+        evaluationConfig
+    );
 
-    if (config.addComment) {
-      core.debug("G'nna add comment to a commit")
-      if (config.reference === 'threshold') {
-        createComment(
-          currentBenchmark,
-          config.githubToken,
-          config.reference,
-          null,
-          config.thresholds,
-          config.comparisonModes,
-          config.comparisonMargins,
-          config.failingCondition
-        )
-      } else {
-        const prev = await getLatestBenchmark(
-          config.benchToCompare,
-          config.folderWithBenchData,
-          config.fileWithBenchData,
-          1
-        )
-        if (!prev) {
-          core.debug('No previous benchmark found. Skipping comment creation.')
-          return
-        } else {
-          createComment(
-            currentBenchmark,
-            config.githubToken,
-            config.reference,
-            prev,
-            config.thresholds,
-            config.comparisonModes,
-            config.comparisonMargins,
-            config.failingCondition
-          )
-        }
-      }
-    }
+    console.log('Evaluation result: ' + evaluationResult);
 
-    if (config.addJobSummary) {
-      // add job summary
-    }
 
-    if (config.saveCurrBenchRes) {
+
+
+    if (completeConfig.saveCurrBenchRes) {
       core.debug('Saving current benchmark results to file')
       await addCompleteBenchmarkToFile(
         currentBenchmark,
-        config.fileWithBenchData
+        completeConfig.fileWithBenchData
       )
     }
     core.setOutput('should_fail', 'false')
-    if (config.failingCondition === 'any') {
+    if (completeConfig.failingCondition === 'any') {
       console.log("Fail condition is 'any")
       resultArray.forEach(element => console.log(element))
       let anyF = anyFailed(resultArray)
@@ -123,7 +57,7 @@ async function run() {
         core.setOutput('should_fail', 'true')
       }
     }
-    if (config.failingCondition === 'all') {
+    if (completeConfig.failingCondition === 'all') {
       if (allFailed(resultArray)) {
         console.log("Fail condition is 'any")
         core.setOutput('should_fail', 'true')

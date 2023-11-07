@@ -30765,40 +30765,44 @@ module.exports.validateAndFetchConfig = function (currentResultLength, benchToCo
 
       break
     case 'trend_detection_deltas':
-      //module.exports.validateTrendDetectionDeltasConfig()
+      module.exports.validateTrendDetectionDeltasConfig();
+      module.exports.checkForWeekOldBenchmark(benchmarkData, benchToCompare);
+      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare,1);
       break
     default:
       throw new Error(
-          `Unsupported evaluation method: ${config.evaluationMethod}`
+          `Unsupported evaluation method: ${evaluationMethod}`
       )
   }
 
   return module.exports.createEvaluationConfig(
       'evaluationMethod',
+      'benchToCompare',
       'thresholdValues',
       'comparisonOperators',
       'comparisonMargins',
       'thresholdUpper',
       'thresholdLower',
       'jumpDetectionThreshold',
+      'trendThreshold',
       'movingAveWindowSize',
-      'movingAveThreshold',
-      'deltasThreshold'
+      'trendDetNoSufficientDataStrategy',
   )
 }
 
 module.exports.createEvaluationConfig = function (...inputNames) {
   const validInputs = [
-    'evaluationMethod',
-    'thresholdValues',
-    'comparisonOperators',
-    'comparisonMargins',
-    'thresholdUpper',
-    'thresholdLower',
-    'jumpDetectionThreshold',
-    'movingAveWindowSize',
-    'movingAveThreshold',
-    'deltasThreshold'
+    "evaluationMethod,",
+    "benchToCompare,",
+    "thresholdValues,",
+    "comparisonOperators,",
+    "comparisonMargins,",
+    "thresholdUpper,",
+    "thresholdLower,",
+    "jumpDetectionThreshold,",
+    "trendThreshold,",
+    "movingAveWindowSize,",
+    "trendDetNoSufficientDataStrategy"
   ]
 
   const configValues = validInputs.map(inputName => {
@@ -30810,7 +30814,8 @@ module.exports.createEvaluationConfig = function (...inputNames) {
         if (inputName === 'comparisonOperators') {
             return inputValue.split(',').map(operator => operator.trim())
         }
-        if (inputName === 'evaluationMethod') {
+        if (inputName === 'evaluationMethod' || inputName === 'benchToCompare'
+        || inputName === 'trendDetNoSufficientDataStrategy') {
           return inputValue
         }
         return inputValue.includes(',')
@@ -30927,21 +30932,21 @@ module.exports.validateJumpDetectionConfig = function () {
 
 module.exports.validateTrendDetectionMovingAveConfig = function () {
   const movingAveWindowSize = core.getInput('moving_ave_window_size')
-  const movingAveThreshold = core.getInput('moving_ave_threshold')
+  const trendThreshold = core.getInput('trend_threshold')
 
-  if (movingAveWindowSize == null || movingAveThreshold == null) {
+  if (movingAveWindowSize == null || trendThreshold == null) {
     throw new Error(
-        'Both movingAveWindowSize and movingAveThreshold must be provided for trend detection with moving average.'
+        'Both movingAveWindowSize and trendThreshold must be provided for trend detection with moving average.'
     )
   }
 
-  const movingAveThresholdValue = Number(movingAveThreshold)
+  const movingAveThresholdValue = Number(trendThreshold)
   if (
       isNaN(movingAveThresholdValue) ||
       movingAveThresholdValue < 0 ||
       movingAveThresholdValue > 100
   ) {
-    throw new Error('movingAveThreshold must be a number between 0 and 100.')
+    throw new Error('trendThreshold must be a number between 0 and 100.')
   }
 }
 
@@ -30985,6 +30990,48 @@ module.exports.checkIfPreviousSuccessfulExists = function(data, benchmarkKey) {
   }
 }
 
+module.exports.validateTrendDetectionDeltasConfig = function () {
+  const trendThreshold = core.getInput('trend_threshold')
+
+  if (trendThreshold == null) {
+    throw new Error(
+        'trendThreshold must be provided for trend detection.'
+    )
+  }
+
+  const trendThresholdNum = Number(trendThreshold)
+  if (
+      isNaN(trendThresholdNum) ||
+      trendThresholdNum < 0 ||
+      trendThresholdNum > 100
+  ) {
+    throw new Error('trendThreshold must be a number between 0 and 100.')
+  }
+}
+
+module.exports.checkForWeekOldBenchmark = function(data, benchmarkKey) {
+
+  const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
+  const DAY_IN_MS = 24 * 60 * 60 * 1000;
+  const now = Date.now();
+
+  if (!data.entries.hasOwnProperty(benchmarkKey)) {
+    throw new Error(`No such benchmark key: '${benchmarkKey}' exists.`);
+  }
+
+  let benchmarks = data.entries[benchmarkKey];
+  let weekOldBenchmarkExists = benchmarks.some(benchmark => {
+    let benchmarkAge = now - benchmark.date;
+    return benchmarkAge >= (ONE_WEEK_IN_MS - DAY_IN_MS) && benchmarkAge <= (ONE_WEEK_IN_MS + DAY_IN_MS);
+  });
+
+  if (!weekOldBenchmarkExists) {
+    throw new Error(`No benchmark under '${benchmarkKey}' is approximately one week old.`);
+  } else {
+    console.log(`A benchmark under '${benchmarkKey}' is approximately one week old.`);
+  }
+}
+
 
 
 
@@ -30995,6 +31042,81 @@ module.exports.checkIfPreviousSuccessfulExists = function(data, benchmarkKey) {
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const core = __nccwpck_require__(5127)
+
+module.exports.evaluateCurrentBenchmark = function (
+    currentBenchmark,
+    completeBenchData,
+    evaluationConfig
+) {
+  let evaluationResult;
+  switch (evaluationConfig.evaluationMethod) {
+    case 'threshold':
+      evaluationResult = module.exports.evaluateWithThreshold(completeBenchData, config);
+      break;
+    case 'threshold_range':
+      //evaluationResult = evaluateWithThresholdRange(currentBenchmark, evaluationConfig);
+      break;
+      // Additional evaluation methods to be implemented here
+    default:
+      throw new Error(`Unsupported evaluation method: ${config.evaluationMethod}`);
+  }
+  // Log or process evaluationResult as needed
+  console.log(evaluationResult);
+  return evaluationResult;
+}
+
+module.exports.evaluateWithThreshold = function (currentBenchmarkData, config) {
+  // Destructure the required fields from the config object
+  const { comparisonOperators, comparisonMargins, thresholdValues } = config;
+
+  const metricNames = [];
+  const metricUnits = [];
+  const shouldBe = [];
+  const thanValues = [];
+  const evaluationResults = [];
+
+  currentBenchmarkData.results.forEach((result, index) => {
+    const value = result.value;
+    const thresholdValue = thresholdValues[index];
+    const margin = comparisonMargins[index];
+    const operator = comparisonOperators[index];
+    let isPassed;
+
+    metricNames.push(result.name);
+    metricUnits.push(result.unit);
+    shouldBe.push(operator);
+    thanValues.push(thresholdValue);
+
+    switch (operator) {
+      case 'smaller':
+        isPassed = margin < 0 ? value < thresholdValue : value <= thresholdValue * (1 - margin / 100);
+        break;
+      case 'bigger':
+        isPassed = margin < 0 ? value > thresholdValue : value >= thresholdValue * (1 + margin / 100);
+        break;
+      case 'tolerance':
+        isPassed = margin < 0 ? value === thresholdValue : value >= thresholdValue * (1 - margin / 100) && value <= thresholdValue * (1 + margin / 100);
+        break;
+      default:
+
+        isPassed = false;
+        break;
+    }
+
+    evaluationResults.push(isPassed ? 'passed' : 'failed');
+  });
+
+  return {
+    "evaluation_method": "threshold",
+    "metric_names": metricNames,
+    "metric_units": metricUnits,
+    "should_be": shouldBe,
+    "than": thanValues,
+    "result": evaluationResults
+  };
+};
+
+
 module.exports.evaluateThresholds = function (
   currentBenchmark,
   thresholdArray,
@@ -31138,6 +31260,38 @@ module.exports.addResultToBenchmarkObject = function (
   }
 }
 
+function findClosestWeekOldBenchmark(benchmarkKey) {
+  const data = {
+    // ... the JSON data structure
+  };
+
+  const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000; // one week in milliseconds
+  const now = Date.now();
+
+  if (!data.entries.hasOwnProperty(benchmarkKey)) {
+    throw new Error(`No such benchmark key: '${benchmarkKey}' exists.`);
+  }
+
+  let benchmarks = data.entries[benchmarkKey];
+  let closestBenchmark = null;
+  let smallestDifference = Infinity;
+
+  benchmarks.forEach(benchmark => {
+    let difference = Math.abs(now - benchmark.date - ONE_WEEK_IN_MS);
+    if (difference < smallestDifference) {
+      smallestDifference = difference;
+      closestBenchmark = benchmark;
+    }
+  });
+
+  if (closestBenchmark === null) {
+    throw new Error(`No benchmark under '${benchmarkKey}' is close to one week old.`);
+  } else {
+    console.log(`The closest benchmark to one week old under '${benchmarkKey}' is:`, closestBenchmark);
+    return closestBenchmark;
+  }
+}
+
 
 /***/ }),
 
@@ -31149,118 +31303,52 @@ const core = __nccwpck_require__(5127)
 const { validateInputAndFetchConfig } = __nccwpck_require__(7827)
 
 const {
-  evaluateThresholds,
   allFailed,
   anyFailed,
-  addResultToBenchmarkObject,
-  compareWithPrev
+  evaluateCurrentBenchmark
 } = __nccwpck_require__(248)
 
-const { camelToSnake } = __nccwpck_require__(7827)
-
-const { createCurrBench, checkIfNthPreviousBenchExists, createPrevBench } = __nccwpck_require__(501)
+const { createCurrBench} = __nccwpck_require__(501)
 
 const { createComment } = __nccwpck_require__(3732)
 
 const {
   addCompleteBenchmarkToFile,
-  getLatestBenchmark
+  getLatestBenchmark,
+  getCompleteBenchData
 } = __nccwpck_require__(9790)
 
 async function run() {
   try {
 
-    const config = validateInputAndFetchConfig()
-    console.log('Config: ' + JSON.stringify(config))
-    const currentBenchmark = createCurrBench(config)
+    const completeConfig = validateInputAndFetchConfig()
+    const evaluationConfig = completeConfig.evaluationConfig;
+    const currentBenchmark = createCurrBench(completeConfig);
+    const completeBenchData = getCompleteBenchData(
+        completeConfig.folderWithBenchData,
+        completeConfig.fileWithBenchData
+    );
 
-    // const thresholds = config.thresholds
-    // const comparisonModes = config.comparisonModes
-    // const comparisonMargins = config.comparisonMargins
-    // let resultArray
-    // if (config.evaluationConfig === 'threshold') {
-    //   resultArray = evaluateThresholds(
-    //     currentBenchmark,
-    //     thresholds,
-    //     comparisonModes,
-    //     comparisonMargins
-    //   )
-    //   addResultToBenchmarkObject(
-    //     currentBenchmark,
-    //     resultArray,
-    //     config.failingCondition
-    //   )
-    // } else if (config.reference === 'previous') {
-    //   const prev = await getLatestBenchmark(
-    //     config.benchToCompare,
-    //     config.folderWithBenchData,
-    //     config.fileWithBenchData,
-    //     1
-    //   )
-    //   resultArray = compareWithPrev(
-    //     currentBenchmark,
-    //     prev,
-    //     comparisonModes,
-    //     comparisonMargins
-    //   )
-    //   addResultToBenchmarkObject(
-    //     currentBenchmark,
-    //     resultArray,
-    //     config.failingCondition
-    //   )
-    // }
+    const evaluationResult = evaluateCurrentBenchmark(
+        currentBenchmark,
+        completeBenchData,
+        evaluationConfig
+    );
 
-    if (config.addComment) {
-      core.debug("G'nna add comment to a commit")
-      if (config.reference === 'threshold') {
-        createComment(
-          currentBenchmark,
-          config.githubToken,
-          config.reference,
-          null,
-          config.thresholds,
-          config.comparisonModes,
-          config.comparisonMargins,
-          config.failingCondition
-        )
-      } else {
-        const prev = await getLatestBenchmark(
-          config.benchToCompare,
-          config.folderWithBenchData,
-          config.fileWithBenchData,
-          1
-        )
-        if (!prev) {
-          core.debug('No previous benchmark found. Skipping comment creation.')
-          return
-        } else {
-          createComment(
-            currentBenchmark,
-            config.githubToken,
-            config.reference,
-            prev,
-            config.thresholds,
-            config.comparisonModes,
-            config.comparisonMargins,
-            config.failingCondition
-          )
-        }
-      }
-    }
+    console.log('Evaluation result: ' + evaluationResult);
 
-    if (config.addJobSummary) {
-      // add job summary
-    }
 
-    if (config.saveCurrBenchRes) {
+
+
+    if (completeConfig.saveCurrBenchRes) {
       core.debug('Saving current benchmark results to file')
       await addCompleteBenchmarkToFile(
         currentBenchmark,
-        config.fileWithBenchData
+        completeConfig.fileWithBenchData
       )
     }
     core.setOutput('should_fail', 'false')
-    if (config.failingCondition === 'any') {
+    if (completeConfig.failingCondition === 'any') {
       console.log("Fail condition is 'any")
       resultArray.forEach(element => console.log(element))
       let anyF = anyFailed(resultArray)
@@ -31269,7 +31357,7 @@ async function run() {
         core.setOutput('should_fail', 'true')
       }
     }
-    if (config.failingCondition === 'all') {
+    if (completeConfig.failingCondition === 'all') {
       if (allFailed(resultArray)) {
         console.log("Fail condition is 'any")
         core.setOutput('should_fail', 'true')
@@ -31369,29 +31457,32 @@ class Config {
 }
 
 class EvaluationConfig {
-  constructor(
-    evaluationMethod,
-    thresholdValues,
-    comparisonOperators,
-    comparisonMargins,
-    thresholdUpper,
-    thresholdLower,
-    jumpDetectionThreshold,
-    movingAveWindowSize,
-    movingAveThreshold,
-    deltasThreshold
-  ) {
-    this.evaluationMethod = evaluationMethod
-    this.thresholdValues = thresholdValues
-    this.comparisonOperators = comparisonOperators
-    this.comparisonMargins = comparisonMargins
-    this.thresholdUpper = thresholdUpper
-    this.thresholdLower = thresholdLower
-    this.jumpDetectionThreshold = jumpDetectionThreshold
-    this.movingAveWindowSize = movingAveWindowSize
-    this.movingAveThreshold = movingAveThreshold
-    this.deltasThreshold = deltasThreshold
-  }
+
+    constructor(
+        evaluationMethod,
+        benchToCompare,
+        thresholdValues,
+        comparisonOperators,
+        comparisonMargins,
+        thresholdUpper,
+        thresholdLower,
+        jumpDetectionThreshold,
+        trendThreshold,
+        movingAveWindowSize,
+        trendDetNoSufficientDataStrategy
+    ) {
+        this.evaluationMethod = evaluationMethod
+        this.benchToCompare = benchToCompare
+        this.thresholdValues = thresholdValues
+        this.comparisonOperators = comparisonOperators
+        this.comparisonMargins = comparisonMargins
+        this.thresholdUpper = thresholdUpper
+        this.thresholdLower = thresholdLower
+        this.jumpDetectionThreshold = jumpDetectionThreshold
+        this.trendThreshold = trendThreshold
+        this.movingAveWindowSize = movingAveWindowSize
+        this.trendDetNoSufficientDataStrategy = trendDetNoSufficientDataStrategy
+    }
 }
 
 module.exports = {

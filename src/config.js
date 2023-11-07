@@ -227,40 +227,44 @@ module.exports.validateAndFetchConfig = function (currentResultLength, benchToCo
 
       break
     case 'trend_detection_deltas':
-      //module.exports.validateTrendDetectionDeltasConfig()
+      module.exports.validateTrendDetectionDeltasConfig();
+      module.exports.checkForWeekOldBenchmark(benchmarkData, benchToCompare);
+      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare,1);
       break
     default:
       throw new Error(
-          `Unsupported evaluation method: ${config.evaluationMethod}`
+          `Unsupported evaluation method: ${evaluationMethod}`
       )
   }
 
   return module.exports.createEvaluationConfig(
       'evaluationMethod',
+      'benchToCompare',
       'thresholdValues',
       'comparisonOperators',
       'comparisonMargins',
       'thresholdUpper',
       'thresholdLower',
       'jumpDetectionThreshold',
+      'trendThreshold',
       'movingAveWindowSize',
-      'movingAveThreshold',
-      'deltasThreshold'
+      'trendDetNoSufficientDataStrategy',
   )
 }
 
 module.exports.createEvaluationConfig = function (...inputNames) {
   const validInputs = [
-    'evaluationMethod',
-    'thresholdValues',
-    'comparisonOperators',
-    'comparisonMargins',
-    'thresholdUpper',
-    'thresholdLower',
-    'jumpDetectionThreshold',
-    'movingAveWindowSize',
-    'movingAveThreshold',
-    'deltasThreshold'
+    "evaluationMethod,",
+    "benchToCompare,",
+    "thresholdValues,",
+    "comparisonOperators,",
+    "comparisonMargins,",
+    "thresholdUpper,",
+    "thresholdLower,",
+    "jumpDetectionThreshold,",
+    "trendThreshold,",
+    "movingAveWindowSize,",
+    "trendDetNoSufficientDataStrategy"
   ]
 
   const configValues = validInputs.map(inputName => {
@@ -272,7 +276,8 @@ module.exports.createEvaluationConfig = function (...inputNames) {
         if (inputName === 'comparisonOperators') {
             return inputValue.split(',').map(operator => operator.trim())
         }
-        if (inputName === 'evaluationMethod') {
+        if (inputName === 'evaluationMethod' || inputName === 'benchToCompare'
+        || inputName === 'trendDetNoSufficientDataStrategy') {
           return inputValue
         }
         return inputValue.includes(',')
@@ -389,21 +394,21 @@ module.exports.validateJumpDetectionConfig = function () {
 
 module.exports.validateTrendDetectionMovingAveConfig = function () {
   const movingAveWindowSize = core.getInput('moving_ave_window_size')
-  const movingAveThreshold = core.getInput('moving_ave_threshold')
+  const trendThreshold = core.getInput('trend_threshold')
 
-  if (movingAveWindowSize == null || movingAveThreshold == null) {
+  if (movingAveWindowSize == null || trendThreshold == null) {
     throw new Error(
-        'Both movingAveWindowSize and movingAveThreshold must be provided for trend detection with moving average.'
+        'Both movingAveWindowSize and trendThreshold must be provided for trend detection with moving average.'
     )
   }
 
-  const movingAveThresholdValue = Number(movingAveThreshold)
+  const movingAveThresholdValue = Number(trendThreshold)
   if (
       isNaN(movingAveThresholdValue) ||
       movingAveThresholdValue < 0 ||
       movingAveThresholdValue > 100
   ) {
-    throw new Error('movingAveThreshold must be a number between 0 and 100.')
+    throw new Error('trendThreshold must be a number between 0 and 100.')
   }
 }
 
@@ -444,6 +449,48 @@ module.exports.checkIfPreviousSuccessfulExists = function(data, benchmarkKey) {
     console.log(`A previous successful benchmark under '${benchmarkKey}' exists.`);
   } else {
     console.log(`No successful benchmark under '${benchmarkKey}' exists.`);
+  }
+}
+
+module.exports.validateTrendDetectionDeltasConfig = function () {
+  const trendThreshold = core.getInput('trend_threshold')
+
+  if (trendThreshold == null) {
+    throw new Error(
+        'trendThreshold must be provided for trend detection.'
+    )
+  }
+
+  const trendThresholdNum = Number(trendThreshold)
+  if (
+      isNaN(trendThresholdNum) ||
+      trendThresholdNum < 0 ||
+      trendThresholdNum > 100
+  ) {
+    throw new Error('trendThreshold must be a number between 0 and 100.')
+  }
+}
+
+module.exports.checkForWeekOldBenchmark = function(data, benchmarkKey) {
+
+  const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
+  const DAY_IN_MS = 24 * 60 * 60 * 1000;
+  const now = Date.now();
+
+  if (!data.entries.hasOwnProperty(benchmarkKey)) {
+    throw new Error(`No such benchmark key: '${benchmarkKey}' exists.`);
+  }
+
+  let benchmarks = data.entries[benchmarkKey];
+  let weekOldBenchmarkExists = benchmarks.some(benchmark => {
+    let benchmarkAge = now - benchmark.date;
+    return benchmarkAge >= (ONE_WEEK_IN_MS - DAY_IN_MS) && benchmarkAge <= (ONE_WEEK_IN_MS + DAY_IN_MS);
+  });
+
+  if (!weekOldBenchmarkExists) {
+    throw new Error(`No benchmark under '${benchmarkKey}' is approximately one week old.`);
+  } else {
+    console.log(`A benchmark under '${benchmarkKey}' is approximately one week old.`);
   }
 }
 

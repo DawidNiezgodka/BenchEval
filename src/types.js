@@ -77,29 +77,32 @@ class Config {
 }
 
 class EvaluationConfig {
-  constructor(
-    evaluationMethod,
-    thresholdValues,
-    comparisonOperators,
-    comparisonMargins,
-    thresholdUpper,
-    thresholdLower,
-    jumpDetectionThreshold,
-    movingAveWindowSize,
-    movingAveThreshold,
-    deltasThreshold
-  ) {
-    this.evaluationMethod = evaluationMethod
-    this.thresholdValues = thresholdValues
-    this.comparisonOperators = comparisonOperators
-    this.comparisonMargins = comparisonMargins
-    this.thresholdUpper = thresholdUpper
-    this.thresholdLower = thresholdLower
-    this.jumpDetectionThreshold = jumpDetectionThreshold
-    this.movingAveWindowSize = movingAveWindowSize
-    this.movingAveThreshold = movingAveThreshold
-    this.deltasThreshold = deltasThreshold
-  }
+
+    constructor(
+        evaluationMethod,
+        benchToCompare,
+        thresholdValues,
+        comparisonOperators,
+        comparisonMargins,
+        thresholdUpper,
+        thresholdLower,
+        jumpDetectionThreshold,
+        trendThreshold,
+        movingAveWindowSize,
+        trendDetNoSufficientDataStrategy
+    ) {
+        this.evaluationMethod = evaluationMethod
+        this.benchToCompare = benchToCompare
+        this.thresholdValues = thresholdValues
+        this.comparisonOperators = comparisonOperators
+        this.comparisonMargins = comparisonMargins
+        this.thresholdUpper = thresholdUpper
+        this.thresholdLower = thresholdLower
+        this.jumpDetectionThreshold = jumpDetectionThreshold
+        this.trendThreshold = trendThreshold
+        this.movingAveWindowSize = movingAveWindowSize
+        this.trendDetNoSufficientDataStrategy = trendDetNoSufficientDataStrategy
+    }
 }
 
 module.exports = {

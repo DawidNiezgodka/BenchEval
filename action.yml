@@ -44,13 +44,7 @@ inputs:
       to a file located in benchmark_data_file'
     required: false
     default: "true"
-  #### Evaluation input parameters
-  evaluation_method:
-    description: |
-      It refers to a reference point by which we determine whether the benchmark is successful or not.
-      The possible values are 'previous', 'previous_successful', 'threshold', 'jump_detection', 'trend_detection_moving_ave',
-      'trend_detection_delta_threshold'
-    required: true
+  # TODO: Probably can be deleted
   bench_type:
     description: |
       The type of benchmark. The benchmark type is determined by the structure of the file that describes the benchmark result.
@@ -59,11 +53,24 @@ inputs:
       and returns 1 or 0 to indicate whether the benchmark is successful or not.
     required: false
     default: "simple"
+  #### Evaluation input parameters
+  evaluation_method:
+    description: |
+      It refers to a reference point by which we determine whether the benchmark is successful or not.
+      The possible values are 'previous', 'previous_successful', 'threshold', 'jump_detection', 'trend_detection_moving_ave',
+      'trend_detection_delta_threshold'
+    required: true
   bench_to_compare:
     description: |
       The name of the benchmark to compare to.
       This input is only used when the reference is set to 'previous' or 'previous_successful.'
       If not specified, the benchmark with the same name as the current benchmark is used.
+    required: false
+  threshold_values:
+    description: 'Comma-separated list of threshold values for comparison.'
+    required: false
+  comparison_operators:
+    description: 'Comma-separated list of operators for threshold comparison.'
     required: false
   comparison_margins:
     description: |
@@ -73,12 +80,6 @@ inputs:
       and it is not the only function, please provide values of -1 for the remaining functions.
       For example, if you previously entered: smaller, smaller, range, and your range is 20%,
       this input should look as follows: "-1, -1, 20"
-  threshold_values:
-    description: 'Comma-separated list of threshold values for comparison.'
-    required: false
-  comparison_operators:
-    description: 'Comma-separated list of operators for threshold comparison.'
-    required: false
   threshold_upper:
     description: 'Comma-separated list of upper threshold values for range comparison.'
     required: false
@@ -88,11 +89,11 @@ inputs:
   jump_detection_threshold:
     description: 'The threshold value for jump detection.'
     required: false
-  moving_ave_window:
-    description: 'The window size for moving average trend detection.'
+  trend_threshold:
+    description: 'The threshold value for deltas trend detection.'
     required: false
-  moving_ave_threshold:
-    description: 'The threshold value for moving average trend detection.'
+  moving_ave_window_size:
+    description: 'The window size for moving average trend detection.'
     required: false
   trend_det_no_sufficient_data_strategy:
     description: | 
@@ -101,9 +102,6 @@ inputs:
     required: false
     default: "use_available"
 
-  deltas_threshold:
-    description: 'The threshold value for deltas trend detection.'
-    required: false
 
   failing_condition:
     description: |

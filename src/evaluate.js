@@ -1,4 +1,79 @@
 const core = require('@actions/core')
+
+module.exports.evaluateCurrentBenchmark = function (
+    currentBenchmark,
+    completeBenchData,
+    evaluationConfig
+) {
+  let evaluationResult;
+  switch (evaluationConfig.evaluationMethod) {
+    case 'threshold':
+      evaluationResult = module.exports.evaluateWithThreshold(completeBenchData, config);
+      break;
+    case 'threshold_range':
+      //evaluationResult = evaluateWithThresholdRange(currentBenchmark, evaluationConfig);
+      break;
+      // Additional evaluation methods to be implemented here
+    default:
+      throw new Error(`Unsupported evaluation method: ${config.evaluationMethod}`);
+  }
+  // Log or process evaluationResult as needed
+  console.log(evaluationResult);
+  return evaluationResult;
+}
+
+module.exports.evaluateWithThreshold = function (currentBenchmarkData, config) {
+  // Destructure the required fields from the config object
+  const { comparisonOperators, comparisonMargins, thresholdValues } = config;
+
+  const metricNames = [];
+  const metricUnits = [];
+  const shouldBe = [];
+  const thanValues = [];
+  const evaluationResults = [];
+
+  currentBenchmarkData.results.forEach((result, index) => {
+    const value = result.value;
+    const thresholdValue = thresholdValues[index];
+    const margin = comparisonMargins[index];
+    const operator = comparisonOperators[index];
+    let isPassed;
+
+    metricNames.push(result.name);
+    metricUnits.push(result.unit);
+    shouldBe.push(operator);
+    thanValues.push(thresholdValue);
+
+    switch (operator) {
+      case 'smaller':
+        isPassed = margin < 0 ? value < thresholdValue : value <= thresholdValue * (1 - margin / 100);
+        break;
+      case 'bigger':
+        isPassed = margin < 0 ? value > thresholdValue : value >= thresholdValue * (1 + margin / 100);
+        break;
+      case 'tolerance':
+        isPassed = margin < 0 ? value === thresholdValue : value >= thresholdValue * (1 - margin / 100) && value <= thresholdValue * (1 + margin / 100);
+        break;
+      default:
+
+        isPassed = false;
+        break;
+    }
+
+    evaluationResults.push(isPassed ? 'passed' : 'failed');
+  });
+
+  return {
+    "evaluation_method": "threshold",
+    "metric_names": metricNames,
+    "metric_units": metricUnits,
+    "should_be": shouldBe,
+    "than": thanValues,
+    "result": evaluationResults
+  };
+};
+
+
 module.exports.evaluateThresholds = function (
   currentBenchmark,
   thresholdArray,
@@ -139,5 +214,37 @@ module.exports.addResultToBenchmarkObject = function (
     currentBenchmark.benchSuccessful = module.exports.allFailed(resultArray)
   } else {
     currentBenchmark.benchSuccessful = true
+  }
+}
+
+function findClosestWeekOldBenchmark(benchmarkKey) {
+  const data = {
+    // ... the JSON data structure
+  };
+
+  const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000; // one week in milliseconds
+  const now = Date.now();
+
+  if (!data.entries.hasOwnProperty(benchmarkKey)) {
+    throw new Error(`No such benchmark key: '${benchmarkKey}' exists.`);
+  }
+
+  let benchmarks = data.entries[benchmarkKey];
+  let closestBenchmark = null;
+  let smallestDifference = Infinity;
+
+  benchmarks.forEach(benchmark => {
+    let difference = Math.abs(now - benchmark.date - ONE_WEEK_IN_MS);
+    if (difference < smallestDifference) {
+      smallestDifference = difference;
+      closestBenchmark = benchmark;
+    }
+  });
+
+  if (closestBenchmark === null) {
+    throw new Error(`No benchmark under '${benchmarkKey}' is close to one week old.`);
+  } else {
+    console.log(`The closest benchmark to one week old under '${benchmarkKey}' is:`, closestBenchmark);
+    return closestBenchmark;
   }
 }

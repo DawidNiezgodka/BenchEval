@@ -34,13 +34,10 @@ jobs:
           name: "Benchmark"
           bench_to_compare: "Benchmark2"
           current_bench_res_file: ./benchmark_results/curr.json
-          evaluation_method: trend_detection_moving_ave
-          moving_ave_window: 15
-          moving_ave_threshold: 5
-
-
+          evaluation_method: threshold
+          threshold_values: 20,20,20
+          comparison_margins: -1, 10, -1
           comparison_operators: smaller, bigger, tolerance
-          comparison_margins: -1, -1, 20
           failing_condition: none
           add_comment_to_commit: false
           save_curr_bench_res: false
