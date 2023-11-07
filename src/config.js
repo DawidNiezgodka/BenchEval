@@ -186,7 +186,7 @@ module.exports.validateAndFetchConfig = function (currentResultLength, benchToCo
       break
     case 'previous_successful':
       module.exports.validateOperatorsAndMargins(currentResultLength)
-      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare, 1);
+      module.exports.checkIfPreviousSuccessfulExists(benchmarkData, benchToCompare);
       break
     case 'threshold_range':
       module.exports.validateThresholdRangeConfig(currentResultLength)
@@ -415,5 +415,22 @@ module.exports.checkIfNthPreviousBenchmarkExists = function (
     )
   }
 }
+
+module.exports.checkIfPreviousSuccessfulExists = function(data, benchmarkKey) {
+  console.log(`Checking if previous successful benchmark exists under '${benchmarkKey}'`)
+  if (!data.entries.hasOwnProperty(benchmarkKey)) {
+    throw new Error(`No such benchmark key: '${benchmarkKey}' exists.`);
+  }
+
+  let benchmarks = data.entries[benchmarkKey];
+  let successfulBenchmarkExists = benchmarks.some(benchmark => benchmark.benchSuccessful);
+
+  if (successfulBenchmarkExists) {
+    console.log(`A previous successful benchmark under '${benchmarkKey}' exists.`);
+  } else {
+    console.log(`No successful benchmark under '${benchmarkKey}' exists.`);
+  }
+}
+
 
 
