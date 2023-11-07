@@ -72,22 +72,16 @@ module.exports.getLatestBenchmark = async (
   fileNameWithBenchData,
   n
 ) => {
-  const filePath = path.join(folderWithBenchData, fileNameWithBenchData)
 
   try {
-    const fileText = fss.readFileSync(filePath, 'utf8')
-
-    const benchmarkData = JSON.parse(fileText)
-
-    if (!benchmarkData || Object.keys(benchmarkData).length === 0) {
-      console.error('BENCHMARK_DATA is empty')
-      return null
-    }
+    const benchmarkData = await module.exports.getCompleteBenchData(
+        folderWithBenchData, fileNameWithBenchData
+    )
 
     if (!benchmarkData.entries.hasOwnProperty(benchmarkName)) {
       console.error(
-        'No data available for the given benchmark name:',
-        benchmarkName
+          'No data available for the given benchmark name:',
+          benchmarkName
       )
       return null
     }
@@ -139,4 +133,27 @@ module.exports.getLatestBenchmark = async (
     console.error('An error occurred:', error)
     return null
   }
+}
+
+module.exports.getCompleteBenchData = async (
+    folderWithBenchData,
+    fileNameWithBenchData
+) => {
+  const filePath = path.join(folderWithBenchData, fileNameWithBenchData)
+
+  try {
+    const fileText = fss.readFileSync(filePath, 'utf8')
+
+    const benchmarkData = JSON.parse(fileText)
+
+    if (!benchmarkData || Object.keys(benchmarkData).length === 0) {
+      console.error('BENCHMARK_DATA is empty')
+      return null
+    }
+
+    return benchmarkData;
+  } catch (error) {
+      console.error('An error occurred:', error)
+      return null
+    }
 }

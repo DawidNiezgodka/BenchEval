@@ -30008,22 +30008,16 @@ module.exports.getLatestBenchmark = async (
   fileNameWithBenchData,
   n
 ) => {
-  const filePath = path.join(folderWithBenchData, fileNameWithBenchData)
 
   try {
-    const fileText = fss.readFileSync(filePath, 'utf8')
-
-    const benchmarkData = JSON.parse(fileText)
-
-    if (!benchmarkData || Object.keys(benchmarkData).length === 0) {
-      console.error('BENCHMARK_DATA is empty')
-      return null
-    }
+    const benchmarkData = await module.exports.getCompleteBenchData(
+        folderWithBenchData, fileNameWithBenchData
+    )
 
     if (!benchmarkData.entries.hasOwnProperty(benchmarkName)) {
       console.error(
-        'No data available for the given benchmark name:',
-        benchmarkName
+          'No data available for the given benchmark name:',
+          benchmarkName
       )
       return null
     }
@@ -30075,6 +30069,29 @@ module.exports.getLatestBenchmark = async (
     console.error('An error occurred:', error)
     return null
   }
+}
+
+module.exports.getCompleteBenchData = async (
+    folderWithBenchData,
+    fileNameWithBenchData
+) => {
+  const filePath = path.join(folderWithBenchData, fileNameWithBenchData)
+
+  try {
+    const fileText = fss.readFileSync(filePath, 'utf8')
+
+    const benchmarkData = JSON.parse(fileText)
+
+    if (!benchmarkData || Object.keys(benchmarkData).length === 0) {
+      console.error('BENCHMARK_DATA is empty')
+      return null
+    }
+
+    return benchmarkData;
+  } catch (error) {
+      console.error('An error occurred:', error)
+      return null
+    }
 }
 
 
@@ -30522,6 +30539,7 @@ module.exports.getCommit = function () {
 const core = __nccwpck_require__(5127)
 const fs = __nccwpck_require__(7147)
 const { Config, EvaluationConfig} = __nccwpck_require__(510)
+const {getCompleteBenchData} = __nccwpck_require__(9790)
 
 module.exports.validateBooleanInput = function (input) {
   return input === 'true' || input === 'false'
@@ -30633,7 +30651,8 @@ module.exports.validateInputAndFetchConfig = function () {
   }
 
   // Part 4 (new): Check if evaluation_method is valid and carry out validation for this specific method
-  const evalConfig = module.exports.validateAndFetchConfig(itemCount);
+  const evalConfig = module.exports.validateAndFetchConfig(
+      itemCount, benchToCompare);
 
   // No need for extra validaiton
   const folderWithBenchData = core.getInput('folder_with_bench_data')
@@ -30670,7 +30689,7 @@ module.exports.camelToSnake = function (string) {
       .toLowerCase()
 }
 
-module.exports.validateAndFetchConfig = function (currentResultLength) {
+module.exports.validateAndFetchConfig = async (currentResultLength, benchToCompare) => {
   // Evaluation method
   const evaluationMethod = core.getInput('evaluation_method', { required: true })
   const validEvaluationMethods = [
@@ -30690,6 +30709,7 @@ module.exports.validateAndFetchConfig = function (currentResultLength) {
     )
   }
 
+  let benchmarkData = await getCompleteBenchData();
   switch (evaluationMethod) {
     case 'threshold':
       console.log('Validating threshold evaluation configuration.')
@@ -30697,18 +30717,20 @@ module.exports.validateAndFetchConfig = function (currentResultLength) {
       module.exports.validateThresholdConfig(currentResultLength)
       break
     case 'previous':
+
+      console.log('Validating previous evaluation configuration.')
       module.exports.validateOperatorsAndMargins(currentResultLength)
-      module.exports.checkIfNthPreviousBenchmarkExists(1);
+      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare, 1);
       break
     case 'previous_successful':
       module.exports.validateOperatorsAndMargins(currentResultLength)
-       module.exports.checkIfNthPreviousBenchmarkExists(1);
+      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare, 1);
       break
     case 'threshold_range':
       module.exports.validateThresholdRangeConfig(currentResultLength)
       break
     case 'jump_detection':
-       module.exports.checkIfNthPreviousBenchmarkExists(1);
+      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare, 1);
       module.exports.validateJumpDetectionConfig()
       break
     case 'trend_detection_moving_ave':
@@ -30759,7 +30781,12 @@ module.exports.createEvaluationConfig = function (...inputNames) {
       const inputValue = core.getInput(snakeCaseInputName)
 
       if (inputValue) {
-        // Check if the input contains commas, suggesting it's a list
+        if (inputName === 'comparisonOperators') {
+            return inputValue.split(',').map(operator => operator.trim())
+        }
+        if (inputName === 'evaluationMethod') {
+          return inputValue
+        }
         return inputValue.includes(',')
             ? inputValue.split(',').map(Number)
             : Number(inputValue)
@@ -31143,41 +31170,42 @@ async function run() {
     const config = validateInputAndFetchConfig()
     console.log('Config: ' + JSON.stringify(config))
     const currentBenchmark = createCurrBench(config)
-    const thresholds = config.thresholds
-    const comparisonModes = config.comparisonModes
-    const comparisonMargins = config.comparisonMargins
-    let resultArray
-    if (config.reference === 'threshold') {
-      resultArray = evaluateThresholds(
-        currentBenchmark,
-        thresholds,
-        comparisonModes,
-        comparisonMargins
-      )
-      addResultToBenchmarkObject(
-        currentBenchmark,
-        resultArray,
-        config.failingCondition
-      )
-    } else if (config.reference === 'previous') {
-      const prev = await getLatestBenchmark(
-        config.benchToCompare,
-        config.folderWithBenchData,
-        config.fileWithBenchData,
-        1
-      )
-      resultArray = compareWithPrev(
-        currentBenchmark,
-        prev,
-        comparisonModes,
-        comparisonMargins
-      )
-      addResultToBenchmarkObject(
-        currentBenchmark,
-        resultArray,
-        config.failingCondition
-      )
-    }
+
+    // const thresholds = config.thresholds
+    // const comparisonModes = config.comparisonModes
+    // const comparisonMargins = config.comparisonMargins
+    // let resultArray
+    // if (config.evaluationConfig === 'threshold') {
+    //   resultArray = evaluateThresholds(
+    //     currentBenchmark,
+    //     thresholds,
+    //     comparisonModes,
+    //     comparisonMargins
+    //   )
+    //   addResultToBenchmarkObject(
+    //     currentBenchmark,
+    //     resultArray,
+    //     config.failingCondition
+    //   )
+    // } else if (config.reference === 'previous') {
+    //   const prev = await getLatestBenchmark(
+    //     config.benchToCompare,
+    //     config.folderWithBenchData,
+    //     config.fileWithBenchData,
+    //     1
+    //   )
+    //   resultArray = compareWithPrev(
+    //     currentBenchmark,
+    //     prev,
+    //     comparisonModes,
+    //     comparisonMargins
+    //   )
+    //   addResultToBenchmarkObject(
+    //     currentBenchmark,
+    //     resultArray,
+    //     config.failingCondition
+    //   )
+    // }
 
     if (config.addComment) {
       core.debug("G'nna add comment to a commit")

@@ -1,6 +1,7 @@
 const core = require('@actions/core')
 const fs = require('fs')
 const { Config, EvaluationConfig} = require('./types')
+const {getCompleteBenchData} = require('./bench_data')
 
 module.exports.validateBooleanInput = function (input) {
   return input === 'true' || input === 'false'
@@ -112,7 +113,8 @@ module.exports.validateInputAndFetchConfig = function () {
   }
 
   // Part 4 (new): Check if evaluation_method is valid and carry out validation for this specific method
-  const evalConfig = module.exports.validateAndFetchConfig(itemCount);
+  const evalConfig = module.exports.validateAndFetchConfig(
+      itemCount, benchToCompare);
 
   // No need for extra validaiton
   const folderWithBenchData = core.getInput('folder_with_bench_data')
@@ -149,7 +151,7 @@ module.exports.camelToSnake = function (string) {
       .toLowerCase()
 }
 
-module.exports.validateAndFetchConfig = function (currentResultLength) {
+module.exports.validateAndFetchConfig = async (currentResultLength, benchToCompare) => {
   // Evaluation method
   const evaluationMethod = core.getInput('evaluation_method', { required: true })
   const validEvaluationMethods = [
@@ -169,6 +171,7 @@ module.exports.validateAndFetchConfig = function (currentResultLength) {
     )
   }
 
+  let benchmarkData = await getCompleteBenchData();
   switch (evaluationMethod) {
     case 'threshold':
       console.log('Validating threshold evaluation configuration.')
@@ -176,18 +179,20 @@ module.exports.validateAndFetchConfig = function (currentResultLength) {
       module.exports.validateThresholdConfig(currentResultLength)
       break
     case 'previous':
+
+      console.log('Validating previous evaluation configuration.')
       module.exports.validateOperatorsAndMargins(currentResultLength)
-      module.exports.checkIfNthPreviousBenchmarkExists(1);
+      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare, 1);
       break
     case 'previous_successful':
       module.exports.validateOperatorsAndMargins(currentResultLength)
-       module.exports.checkIfNthPreviousBenchmarkExists(1);
+      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare, 1);
       break
     case 'threshold_range':
       module.exports.validateThresholdRangeConfig(currentResultLength)
       break
     case 'jump_detection':
-       module.exports.checkIfNthPreviousBenchmarkExists(1);
+      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare, 1);
       module.exports.validateJumpDetectionConfig()
       break
     case 'trend_detection_moving_ave':
@@ -238,7 +243,12 @@ module.exports.createEvaluationConfig = function (...inputNames) {
       const inputValue = core.getInput(snakeCaseInputName)
 
       if (inputValue) {
-        // Check if the input contains commas, suggesting it's a list
+        if (inputName === 'comparisonOperators') {
+            return inputValue.split(',').map(operator => operator.trim())
+        }
+        if (inputName === 'evaluationMethod') {
+          return inputValue
+        }
         return inputValue.includes(',')
             ? inputValue.split(',').map(Number)
             : Number(inputValue)

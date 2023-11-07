@@ -27,41 +27,42 @@ async function run() {
     const config = validateInputAndFetchConfig()
     console.log('Config: ' + JSON.stringify(config))
     const currentBenchmark = createCurrBench(config)
-    const thresholds = config.thresholds
-    const comparisonModes = config.comparisonModes
-    const comparisonMargins = config.comparisonMargins
-    let resultArray
-    if (config.reference === 'threshold') {
-      resultArray = evaluateThresholds(
-        currentBenchmark,
-        thresholds,
-        comparisonModes,
-        comparisonMargins
-      )
-      addResultToBenchmarkObject(
-        currentBenchmark,
-        resultArray,
-        config.failingCondition
-      )
-    } else if (config.reference === 'previous') {
-      const prev = await getLatestBenchmark(
-        config.benchToCompare,
-        config.folderWithBenchData,
-        config.fileWithBenchData,
-        1
-      )
-      resultArray = compareWithPrev(
-        currentBenchmark,
-        prev,
-        comparisonModes,
-        comparisonMargins
-      )
-      addResultToBenchmarkObject(
-        currentBenchmark,
-        resultArray,
-        config.failingCondition
-      )
-    }
+
+    // const thresholds = config.thresholds
+    // const comparisonModes = config.comparisonModes
+    // const comparisonMargins = config.comparisonMargins
+    // let resultArray
+    // if (config.evaluationConfig === 'threshold') {
+    //   resultArray = evaluateThresholds(
+    //     currentBenchmark,
+    //     thresholds,
+    //     comparisonModes,
+    //     comparisonMargins
+    //   )
+    //   addResultToBenchmarkObject(
+    //     currentBenchmark,
+    //     resultArray,
+    //     config.failingCondition
+    //   )
+    // } else if (config.reference === 'previous') {
+    //   const prev = await getLatestBenchmark(
+    //     config.benchToCompare,
+    //     config.folderWithBenchData,
+    //     config.fileWithBenchData,
+    //     1
+    //   )
+    //   resultArray = compareWithPrev(
+    //     currentBenchmark,
+    //     prev,
+    //     comparisonModes,
+    //     comparisonMargins
+    //   )
+    //   addResultToBenchmarkObject(
+    //     currentBenchmark,
+    //     resultArray,
+    //     config.failingCondition
+    //   )
+    // }
 
     if (config.addComment) {
       core.debug("G'nna add comment to a commit")

@@ -34,14 +34,14 @@ jobs:
           name: "Benchmark"
           bench_to_compare: "Benchmark2"
           current_bench_res_file: ./benchmark_results/curr.json
-          evaluation_method: threshold
+          evaluation_method: previous
           threshold_values: 200,200,200
           comparison_operators: smaller, bigger, tolerance
           comparison_margins: -1, -1, 20
           failing_condition: none
-          add_comment_to_commit: true
+          add_comment_to_commit: false
+          save_curr_bench_res: false
           github_token: ${{ secrets.GH_TOKEN }}
-          save_curr_bench_res: true
 
       - name: print the content of the data file after the update
         run: cat benchmark_data/data.json
