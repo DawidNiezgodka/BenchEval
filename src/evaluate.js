@@ -85,7 +85,7 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, config) {
 
 module.exports.compareWithPrevious = function (currentBenchmarkData, completeBenchData, config) {
   // First, find the previous benchmark => we will get obj not json
-  const previousBenchmarkData = getLatestBenchmark(config.benchmarkName,
+  const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchmarkName,
       config.folderWithBenchData, config.fileWithBenchData, 1);
 
   core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
