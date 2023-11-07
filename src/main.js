@@ -12,7 +12,7 @@ const {
 
 const { camelToSnake } = require('./test')
 
-const { createCurrBench, checkIfNthPreviousBenchExists, f } = require('./bench')
+const { createCurrBench, checkIfNthPreviousBenchExists, createPrevBench } = require('./bench')
 
 const { createComment } = require('./comment')
 
@@ -23,11 +23,11 @@ const {
 
 async function run() {
   try {
-    console.log(checkIfNthPreviousBenchExists(1, 'test'))
+    console.log("Running new added create prev bench")
+    console.log(createPrevBench())
     console.log('not visible changes')
     console.log('testing cml2Snk')
     //const evalCfg = camelToSnake('evaluationMethod')
-    f()
     console.log('done testing cml2Snk')
 
     const config = validateInputAndFetchConfig()

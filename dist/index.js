@@ -29932,6 +29932,10 @@ module.exports.checkIfNthPreviousBenchExists = function (n, benchName) {
   return 'yo'
 }
 
+module.exports.createPrevBench = function (config) {
+  return 'createPrevBench'
+}
+
 
 /***/ }),
 
@@ -30868,7 +30872,7 @@ const {
 
 const { camelToSnake } = __nccwpck_require__(7428)
 
-const { createCurrBench, checkIfNthPreviousBenchExists, f } = __nccwpck_require__(501)
+const { createCurrBench, checkIfNthPreviousBenchExists, createPrevBench } = __nccwpck_require__(501)
 
 const { createComment } = __nccwpck_require__(3732)
 
@@ -30879,11 +30883,11 @@ const {
 
 async function run() {
   try {
-    console.log(checkIfNthPreviousBenchExists(1, 'test'))
+    console.log("Running new added create prev bench")
+    console.log(createPrevBench())
     console.log('not visible changes')
     console.log('testing cml2Snk')
     //const evalCfg = camelToSnake('evaluationMethod')
-    f()
     console.log('done testing cml2Snk')
 
     const config = validateInputAndFetchConfig()
