@@ -30737,9 +30737,11 @@ module.exports.validateAndFetchConfig = function (currentResultLength, benchToCo
       module.exports.validateJumpDetectionConfig()
       break
     case 'trend_detection_moving_ave':
+      console.log('Validating trend detection with moving average evaluation configuration.')
       module.exports.validateTrendDetectionMovingAveConfig()
       const movingAveWindowSize = core.getInput('moving_ave_window')
-       module.exports.checkIfNthPreviousBenchmarkExists(movingAveWindowSize);
+       module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare,
+           movingAveWindowSize);
       break
     case 'trend_detection_deltas':
       //module.exports.validateTrendDetectionDeltasConfig()
@@ -30903,25 +30905,15 @@ module.exports.validateJumpDetectionConfig = function () {
 }
 
 module.exports.validateTrendDetectionMovingAveConfig = function () {
-  // Destructuring the necessary properties from the config object
   const movingAveWindowSize = core.getInput('moving_ave_window_size')
   const movingAveThreshold = core.getInput('moving_ave_threshold')
 
-  // Check if both movingAveWindowSize and movingAveThreshold are present
   if (movingAveWindowSize == null || movingAveThreshold == null) {
     throw new Error(
         'Both movingAveWindowSize and movingAveThreshold must be provided for trend detection with moving average.'
     )
   }
 
-  // Use the checkIfPreviousNumberOfBenchmarksExists module.exports.to check the movingAveWindowSize
-  if (!checkIfNthPreviousBenchmarkExists(benchmarkData, movingAveWindowSize)) {
-    throw new Error(
-        `The provided movingAveWindowSize of ${movingAveWindowSize} exceeds the number of available benchmarks.`
-    )
-  }
-
-  // Validate movingAveThreshold to be within the range [0, 100]
   const movingAveThresholdValue = Number(movingAveThreshold)
   if (
       isNaN(movingAveThresholdValue) ||
