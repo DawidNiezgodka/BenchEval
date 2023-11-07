@@ -31051,7 +31051,7 @@ module.exports.evaluateCurrentBenchmark = function (
   let evaluationResult;
   switch (evaluationConfig.evaluationMethod) {
     case 'threshold':
-      evaluationResult = module.exports.evaluateWithThreshold(completeBenchData, evaluationConfig);
+      evaluationResult = module.exports.evaluateWithThreshold(currentBenchmark, evaluationConfig);
       break;
     case 'threshold_range':
       //evaluationResult = evaluateWithThresholdRange(currentBenchmark, evaluationConfig);
@@ -31066,6 +31066,8 @@ module.exports.evaluateCurrentBenchmark = function (
 }
 
 module.exports.evaluateWithThreshold = function (currentBenchmarkData, config) {
+  core.debug('Evaluating current benchmark with threshold method')
+
   // Destructure the required fields from the config object
   const { comparisonOperators, comparisonMargins, thresholdValues } = config;
 
