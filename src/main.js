@@ -21,7 +21,7 @@ const {
 
 async function run() {
   try {
-    checkIfNthPreviousBenchExists(1, 'test')
+    console.log(checkIfNthPreviousBenchExists(1, 'test'));
     const config = validateInputAndFetchConfig()
     const currentBenchmark = createCurrBench(config)
     const thresholds = config.thresholds
