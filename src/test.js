@@ -5,10 +5,6 @@ const {
 } = require('./evaluate')
 const { EvaluationConfig } = require('./types')
 
-module.exports.f = function () {
-  console.log('f')
-}
-
 // module.exports.createEvaluationConfig = function (...inputNames) {
 //   const validInputs = [
 //     'evaluationMethod',
