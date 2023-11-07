@@ -30779,7 +30779,7 @@ module.exports.createEvaluationConfig = function (...inputNames) {
     if (inputNames.includes(inputName)) {
       const snakeCaseInputName = module.exports.camelToSnake(inputName)
       const inputValue = core.getInput(snakeCaseInputName)
-
+      console.log(`Input value for ${snakeCaseInputName}: ${inputValue}`)
       if (inputValue) {
         if (inputName === 'comparisonOperators') {
             return inputValue.split(',').map(operator => operator.trim())
@@ -30935,52 +30935,23 @@ module.exports.checkIfNthPreviousBenchmarkExists = function (
     benchmarkName,
     numberOfBenchmarks
 ) {
-  // Check if benchmarkName exists in the benchmarkData
+  console.log(
+        `Checking if benchmark "${benchmarkName}" has ${numberOfBenchmarks} previous entries.`
+    )
+
   if (!benchmarkData.entries.hasOwnProperty(benchmarkName)) {
     throw new Error(`No benchmarks found with the name "${benchmarkName}"`)
   }
 
-  // Get the benchmarks array for the given benchmarkName
   const benchmarks = benchmarkData.entries[benchmarkName]
 
-  // Sort the benchmarks by date in descending order (most recent first)
   benchmarks.sort((a, b) => b.date - a.date)
 
-  // Check if there are enough benchmarks to satisfy the numberOfBenchmarks request
   if (numberOfBenchmarks <= 0 || numberOfBenchmarks > benchmarks.length) {
     throw new Error(
         `Cannot return ${numberOfBenchmarks} previous benchmark(s) - insufficient data.`
     )
   }
-
-  // Get the nth previous benchmark
-  return benchmarks[numberOfBenchmarks - 1] // because arrays are zero-indexed
-}
-
-module.exports.checkIfNthPreviousBenchmarkExists = function (
-    benchmarkData,
-    benchmarkName,
-    numberOfBenchmarks
-) {
-  // Check if benchmarkName exists in the benchmarkData
-  if (!benchmarkData.entries.hasOwnProperty(benchmarkName)) {
-    throw new Error(`No benchmarks found with the name "${benchmarkName}"`)
-  }
-
-  // Get the benchmarks array for the given benchmarkName
-  const benchmarks = benchmarkData.entries[benchmarkName]
-
-  // No need to sort since we are not returning the benchmark
-
-  // Check if the nth previous benchmark exists
-  if (numberOfBenchmarks <= 0 || numberOfBenchmarks > benchmarks.length) {
-    throw new Error(
-        `Benchmark "${benchmarkName}" does not have an nth previous entry.`
-    )
-  }
-
-  // If the function reaches this point, the nth previous benchmark exists
-  // There is no need to return anything
 }
 
 
