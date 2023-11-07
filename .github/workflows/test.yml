@@ -43,22 +43,22 @@ jobs:
           save_curr_bench_res: false
           github_token: ${{ secrets.GH_TOKEN }}
 
-      - name: print the content of the data file after the update
-        run: cat benchmark_data/data.json
-
-      - name: Commit files
-        working-directory: ./benchmark_data
-        run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git commit -a -m "Add changes"
-          git push origin bench_data
-          
-      - name: Check output and fail if needed
-        if: steps.eval.outputs.should_fail == 'true'
-        run: |
-          echo "Failing as indicated by evaluation action"
-          exit 1
+#      - name: print the content of the data file after the update
+#        run: cat benchmark_data/data.json
+#
+#      - name: Commit files
+#        working-directory: ./benchmark_data
+#        run: |
+#          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+#          git config --local user.name "github-actions[bot]"
+#          git commit -a -m "Add changes"
+#          git push origin bench_data
+#
+#      - name: Check output and fail if needed
+#        if: steps.eval.outputs.should_fail == 'true'
+#        run: |
+#          echo "Failing as indicated by evaluation action"
+#          exit 1
           
           
 

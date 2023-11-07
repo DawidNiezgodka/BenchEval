@@ -74,7 +74,7 @@ module.exports.getLatestBenchmark = async (
 ) => {
 
   try {
-    const benchmarkData = await module.exports.getCompleteBenchData(
+    const benchmarkData = module.exports.getCompleteBenchData(
         folderWithBenchData, fileNameWithBenchData
     )
 
@@ -135,10 +135,10 @@ module.exports.getLatestBenchmark = async (
   }
 }
 
-module.exports.getCompleteBenchData = async (
+module.exports.getCompleteBenchData = function (
     folderWithBenchData,
     fileNameWithBenchData
-) => {
+)  {
   const filePath = path.join(folderWithBenchData, fileNameWithBenchData)
 
   try {

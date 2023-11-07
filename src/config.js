@@ -151,8 +151,8 @@ module.exports.camelToSnake = function (string) {
       .toLowerCase()
 }
 
-module.exports.validateAndFetchConfig = async (currentResultLength, benchToCompare,
-                                               folderWithBenchData, fileWithBenchData) => {
+module.exports.validateAndFetchConfig = function (currentResultLength, benchToCompare,
+                                               folderWithBenchData, fileWithBenchData) {
   // Evaluation method
   const evaluationMethod = core.getInput('evaluation_method', { required: true })
   const validEvaluationMethods = [
@@ -172,7 +172,7 @@ module.exports.validateAndFetchConfig = async (currentResultLength, benchToCompa
     )
   }
 
-  let benchmarkData = await getCompleteBenchData(folderWithBenchData, fileWithBenchData);
+  let benchmarkData = getCompleteBenchData(folderWithBenchData, fileWithBenchData);
   switch (evaluationMethod) {
     case 'threshold':
       console.log('Validating threshold evaluation configuration.')
