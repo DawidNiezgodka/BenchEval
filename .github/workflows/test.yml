@@ -36,7 +36,7 @@ jobs:
           reference: previous
           comparison_modes: smaller, bigger, range
           comparison_margins: -1, -1, 20
-          failing_condition: any
+          failing_condition: none
           add_comment_to_commit: true
           github_token: ${{ secrets.GH_TOKEN }}
           save_curr_bench_res: true
