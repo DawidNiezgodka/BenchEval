@@ -10,7 +10,7 @@ const {
   compareWithPrev
 } = require('./evaluate')
 
-const { createCurrBench } = require('./bench')
+const { createCurrBench, checkIfNthPreviousBenchExists } = require('./bench')
 
 const { createComment } = require('./comment')
 
@@ -21,6 +21,7 @@ const {
 
 async function run() {
   try {
+    checkIfNthPreviousBenchExists(1, 'test')
     const config = validateInputAndFetchConfig()
     const currentBenchmark = createCurrBench(config)
     const thresholds = config.thresholds

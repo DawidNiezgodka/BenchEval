@@ -9666,6 +9666,10 @@ module.exports.createCurrBench = function (config) {
   )
 }
 
+module.exports.checkIfNthPreviousBenchExists = function (n, benchName) {
+  return 'yo'
+}
+
 
 /***/ }),
 
@@ -10600,7 +10604,7 @@ const {
   compareWithPrev
 } = __nccwpck_require__(8447)
 
-const { createCurrBench } = __nccwpck_require__(8421)
+const { createCurrBench, checkIfNthPreviousBenchExists } = __nccwpck_require__(8421)
 
 const { createComment } = __nccwpck_require__(427)
 
@@ -10611,6 +10615,7 @@ const {
 
 async function run() {
   try {
+    checkIfNthPreviousBenchExists(1, 'test')
     const config = validateInputAndFetchConfig()
     const currentBenchmark = createCurrBench(config)
     const thresholds = config.thresholds
