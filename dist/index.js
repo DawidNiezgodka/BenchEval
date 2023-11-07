@@ -30866,6 +30866,8 @@ const {
   compareWithPrev
 } = __nccwpck_require__(8447)
 
+const { camelToSnake } = __nccwpck_require__(7341)
+
 const { createCurrBench, checkIfNthPreviousBenchExists } = __nccwpck_require__(8421)
 
 const { createComment } = __nccwpck_require__(427)
@@ -30878,6 +30880,9 @@ const {
 async function run() {
   try {
     console.log('not visible changes')
+    console.log('testing cml2Snk')
+    console.log(camelToSnake('test'))
+    console.log('done testing cml2Snk')
     console.log(checkIfNthPreviousBenchExists(1, 'test'))
     const config = validateInputAndFetchConfig()
     const currentBenchmark = createCurrBench(config)
@@ -30989,6 +30994,20 @@ async function run() {
 
 module.exports = {
   run
+}
+
+
+/***/ }),
+
+/***/ 7341:
+/***/ ((module) => {
+
+module.exports.camelToSnake = function (string) {
+  return string
+    .replace(/\w([A-Z])/g, function (m) {
+      return m[0] + '_' + m[1]
+    })
+    .toLowerCase()
 }
 
 
