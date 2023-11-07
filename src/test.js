@@ -5,12 +5,8 @@ const {
 } = require('./evaluate')
 const { EvaluationConfig } = require('./types')
 
-module.exports.camelToSnake = function (string) {
-  return string
-    .replace(/\w([A-Z])/g, function (m) {
-      return m[0] + '_' + m[1]
-    })
-    .toLowerCase()
+module.exports.f = function () {
+  console.log('f')
 }
 
 // module.exports.createEvaluationConfig = function (...inputNames) {
