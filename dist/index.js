@@ -31051,14 +31051,14 @@ module.exports.evaluateCurrentBenchmark = function (
   let evaluationResult;
   switch (evaluationConfig.evaluationMethod) {
     case 'threshold':
-      evaluationResult = module.exports.evaluateWithThreshold(completeBenchData, config);
+      evaluationResult = module.exports.evaluateWithThreshold(completeBenchData, evaluationConfig);
       break;
     case 'threshold_range':
       //evaluationResult = evaluateWithThresholdRange(currentBenchmark, evaluationConfig);
       break;
       // Additional evaluation methods to be implemented here
     default:
-      throw new Error(`Unsupported evaluation method: ${config.evaluationMethod}`);
+      throw new Error(`Unsupported evaluation method: ${evaluationConfig.evaluationMethod}`);
   }
   // Log or process evaluationResult as needed
   console.log(evaluationResult);
@@ -31322,16 +31322,20 @@ async function run() {
   try {
 
     const completeConfig = validateInputAndFetchConfig()
-    console.log('Complete config: ' + JSON.stringify(completeConfig))
-    console.log("------------------------------------------------")
+    core.debug('Complete config: ' + JSON.stringify(completeConfig))
+    core.debug("------------------------------------------------")
     const evaluationConfig = completeConfig.evaluationConfig;
-    console.log('Evaluation config: ' + JSON.stringify(evaluationConfig))
-    console.log("------------------------------------------------")
+    core.debug('Evaluation config: ' + JSON.stringify(evaluationConfig))
+    core.debug("------------------------------------------------")
     const currentBenchmark = createCurrBench(completeConfig);
+    core.debug('Current benchmark: ' + JSON.stringify(currentBenchmark))
+    core.debug("------------------------------------------------")
     const completeBenchData = getCompleteBenchData(
         completeConfig.folderWithBenchData,
         completeConfig.fileWithBenchData
     );
+    core.debug('Complete benchmark data: ' + JSON.stringify(completeBenchData))
+    core.debug("------------------------------------------------")
 
     const evaluationResult = evaluateCurrentBenchmark(
         currentBenchmark,

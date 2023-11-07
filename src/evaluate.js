@@ -8,14 +8,14 @@ module.exports.evaluateCurrentBenchmark = function (
   let evaluationResult;
   switch (evaluationConfig.evaluationMethod) {
     case 'threshold':
-      evaluationResult = module.exports.evaluateWithThreshold(completeBenchData, config);
+      evaluationResult = module.exports.evaluateWithThreshold(completeBenchData, evaluationConfig);
       break;
     case 'threshold_range':
       //evaluationResult = evaluateWithThresholdRange(currentBenchmark, evaluationConfig);
       break;
       // Additional evaluation methods to be implemented here
     default:
-      throw new Error(`Unsupported evaluation method: ${config.evaluationMethod}`);
+      throw new Error(`Unsupported evaluation method: ${evaluationConfig.evaluationMethod}`);
   }
   // Log or process evaluationResult as needed
   console.log(evaluationResult);

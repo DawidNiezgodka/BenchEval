@@ -22,16 +22,20 @@ async function run() {
   try {
 
     const completeConfig = validateInputAndFetchConfig()
-    console.log('Complete config: ' + JSON.stringify(completeConfig))
-    console.log("------------------------------------------------")
+    core.debug('Complete config: ' + JSON.stringify(completeConfig))
+    core.debug("------------------------------------------------")
     const evaluationConfig = completeConfig.evaluationConfig;
-    console.log('Evaluation config: ' + JSON.stringify(evaluationConfig))
-    console.log("------------------------------------------------")
+    core.debug('Evaluation config: ' + JSON.stringify(evaluationConfig))
+    core.debug("------------------------------------------------")
     const currentBenchmark = createCurrBench(completeConfig);
+    core.debug('Current benchmark: ' + JSON.stringify(currentBenchmark))
+    core.debug("------------------------------------------------")
     const completeBenchData = getCompleteBenchData(
         completeConfig.folderWithBenchData,
         completeConfig.fileWithBenchData
     );
+    core.debug('Complete benchmark data: ' + JSON.stringify(completeBenchData))
+    core.debug("------------------------------------------------")
 
     const evaluationResult = evaluateCurrentBenchmark(
         currentBenchmark,
