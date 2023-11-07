@@ -30009,6 +30009,14 @@ module.exports.getLatestBenchmark = async (
   n
 ) => {
 
+  // Print all inputs in single console.log statement
+  console.log('Inputs for the getLatestBenchmark function')
+  console.log(`benchmarkName: ${benchmarkName}`)
+  console.log(`folderWithBenchData: ${folderWithBenchData}`)
+  console.log(`fileNameWithBenchData: ${fileNameWithBenchData}`)
+
+
+  console.log()
   try {
     const benchmarkData = module.exports.getCompleteBenchData(
         folderWithBenchData, fileNameWithBenchData
