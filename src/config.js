@@ -254,16 +254,16 @@ module.exports.validateAndFetchConfig = function (currentResultLength, benchToCo
 
 module.exports.createEvaluationConfig = function (...inputNames) {
   const validInputs = [
-    "evaluationMethod,",
-    "benchToCompare,",
-    "thresholdValues,",
-    "comparisonOperators,",
-    "comparisonMargins,",
-    "thresholdUpper,",
-    "thresholdLower,",
-    "jumpDetectionThreshold,",
-    "trendThreshold,",
-    "movingAveWindowSize,",
+    "evaluationMethod",
+    "benchToCompare",
+    "thresholdValues",
+    "comparisonOperators",
+    "comparisonMargins",
+    "thresholdUpper",
+    "thresholdLower",
+    "jumpDetectionThreshold",
+    "trendThreshold",
+    "movingAveWindowSize",
     "trendDetNoSufficientDataStrategy"
   ]
 
