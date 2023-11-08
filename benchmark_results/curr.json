@@ -10,17 +10,17 @@
   "results": [
     {
       "unit": "ms",
-      "value": 222,
+      "value": 123,
       "name": "metric2"
     },
     {
       "unit": "op/s",
-      "value": 222,
+      "value": 345,
       "name": "metric4"
     },
     {
       "unit": "%",
-      "value": 25,
+      "value": 456,
       "name": "metric3"
     }
   ]

@@ -42,7 +42,6 @@ module.exports.evaluateCurrentBenchmark = function (
 module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluationConfig) {
   core.debug('Evaluating current benchmark with threshold method')
   core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData))
-  // Destructure the required fields from the evaluationConfig object
   const { comparisonOperators, comparisonMargins, thresholdValues } = evaluationConfig;
 
   const actualValues = [];

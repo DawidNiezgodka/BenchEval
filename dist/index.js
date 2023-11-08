@@ -30087,7 +30087,9 @@ const {
 
 module.exports.addCompleteBenchmarkToFile = async (
   benchmarkInstance,
-  currentDataFileName
+  currentDataFileName,
+  evaluationResult,
+  evaluationConfig
 ) => {
   try {
     let jsonData
@@ -30124,7 +30126,12 @@ module.exports.addCompleteBenchmarkToFile = async (
         value: metric.value,
         unit: metric.unit
       })),
-      benchSuccessful: benchmarkInstance.benchSuccessful
+      benchSuccessful: benchmarkInstance.benchSuccessful,
+      evaluation: {
+        evaluationConfig: evaluationConfig,
+        evaluationResult: evaluationResult
+      }
+
     }
 
     console.log('Benchmark name: ' + benchmarkInstance.benchmarkName)
@@ -31307,7 +31314,6 @@ module.exports.evaluateCurrentBenchmark = function (
 module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluationConfig) {
   core.debug('Evaluating current benchmark with threshold method')
   core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData))
-  // Destructure the required fields from the evaluationConfig object
   const { comparisonOperators, comparisonMargins, thresholdValues } = evaluationConfig;
 
   const actualValues = [];
@@ -31737,16 +31743,13 @@ async function run() {
         completeConfig
     );
 
-    console.log('Evaluation result: ' + evaluationResult);
-
-
-
-
     if (completeConfig.saveCurrBenchRes) {
       core.debug('Saving current benchmark results to file')
       await addCompleteBenchmarkToFile(
         completeBenchmarkObject,
-        completeConfig.fileWithBenchData
+        completeConfig.fileWithBenchData,
+          evaluationResult,
+          completeConfig.evaluationConfig
       )
     }
     core.setOutput('should_fail', 'false')

@@ -11,7 +11,9 @@ const {
 
 module.exports.addCompleteBenchmarkToFile = async (
   benchmarkInstance,
-  currentDataFileName
+  currentDataFileName,
+  evaluationResult,
+  evaluationConfig
 ) => {
   try {
     let jsonData
@@ -48,7 +50,12 @@ module.exports.addCompleteBenchmarkToFile = async (
         value: metric.value,
         unit: metric.unit
       })),
-      benchSuccessful: benchmarkInstance.benchSuccessful
+      benchSuccessful: benchmarkInstance.benchSuccessful,
+      evaluation: {
+        evaluationConfig: evaluationConfig,
+        evaluationResult: evaluationResult
+      }
+
     }
 
     console.log('Benchmark name: ' + benchmarkInstance.benchmarkName)
