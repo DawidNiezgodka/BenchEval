@@ -373,7 +373,6 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
     const isPassedWeekAgo = weekAgoMetric === undefined || evaluateChange(weekAgoMetric, currentValue, currentThreshold);
     const isPassedLastStable = lastStableMetric === undefined || evaluateChange(lastStableMetric, currentValue, currentThreshold);
 
-    // add to metricToDifferentBenchValues the current metric name and the values of the different benchmarks
     metricToDifferentBenchValues.set(currentName, {
         "current": currentValue,
         "previous": previousMetric,
@@ -384,11 +383,10 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
     const isPassed = isPassedPrevious && isPassedWeekAgo && isPassedLastStable;
     evaluationResults.push(isPassed ? 'passed' : 'failed');
-    // if failed, add to failedExplanation "benchmark failed for the metric_name because one of the following benchmarks failed
-    // to be within the threshold: previous, week ago, last stable release"
     if (!isPassed) {
       const failedExplanation = `benchmark failed for the metric ${currentName}
-      because one of the reference benchmarks failed to be within the threshold: ${X[index]}`;
+      because one of the reference benchmarks failed to be within the threshold: ${X[index]}
+      or there is no data for the reference benchmark`;
       failedExplanations.push(failedExplanation);
     } else {
       failedExplanations.push('N/A');
