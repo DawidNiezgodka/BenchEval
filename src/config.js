@@ -3,33 +3,10 @@ const fs = require('fs')
 const { Config, EvaluationConfig} = require('./types')
 const {getCompleteBenchData} = require('./bench_data')
 
-module.exports.validateBooleanInput = function (input) {
-  return input === 'true' || input === 'false'
-}
-
 module.exports.validateBenchType = function (benchmarkType) {
   const validTypes = ['simple', 'simple-multi', 'complex', 'complex-multi']
   if (!validTypes.includes(benchmarkType)) {
     throw new Error(`Invalid benchmark type: ${benchmarkType}`)
-  }
-}
-
-module.exports.validateReference = function (
-  reference,
-  currentBenchName,
-  benchToCompare
-) {
-  const validReferences = ['previous', 'threshold', 'previous-successful']
-
-  if (currentBenchName !== benchToCompare) {
-    const validReferences = ['previous', 'previous-successful']
-    if (!validReferences.includes(reference)) {
-      throw new Error(`Invalid reference: ${reference}`)
-    }
-  }
-
-  if (!validReferences.includes(reference)) {
-    throw new Error(`Invalid reference: ${reference}`)
   }
 }
 
@@ -55,16 +32,6 @@ module.exports.validateItemCountForBenchType = function (itemCount, benchType) {
   }
 }
 
-module.exports.getCommaSepInputAsArray = function (inputString) {
-  inputString = inputString.trim()
-  if (inputString.includes(',')) {
-    const array = inputString.split(',').map(str => str.trim())
-    return array.filter(str => str !== '')
-  } else {
-    return [inputString]
-  }
-}
-
 module.exports.getBoolInput = function (inputName) {
   const input = core.getInput(inputName)
   if (!input) {
@@ -76,10 +43,6 @@ module.exports.getBoolInput = function (inputName) {
     )
   }
   return input === 'true'
-}
-
-module.exports.convertSingleJsonObjectToArr = function (obj) {
-  return [obj]
 }
 
 module.exports.validateInputAndFetchConfig = function () {
@@ -115,7 +78,7 @@ module.exports.validateInputAndFetchConfig = function () {
   const folderWithBenchData = core.getInput('folder_with_bench_data')
   const fileWithBenchData = core.getInput('file_with_bench_data')
   // Part 4 (new): Check if evaluation_method is valid and carry out validation for this specific method
-  const evalConfig = module.exports.validateAndFetchConfig(
+  const evalConfig = module.exports.validateAndFetchEvaluationConfig(
       itemCount, benchToCompare, folderWithBenchData, fileWithBenchData);
 
   // No need for extra validaiton
@@ -151,8 +114,8 @@ module.exports.camelToSnake = function (string) {
       .toLowerCase()
 }
 
-module.exports.validateAndFetchConfig = function (currentResultLength, benchToCompare,
-                                               folderWithBenchData, fileWithBenchData) {
+module.exports.validateAndFetchEvaluationConfig = function (currentResultLength, benchToCompare,
+                                                            folderWithBenchData, fileWithBenchData) {
   // Evaluation method
   const evaluationMethod = core.getInput('evaluation_method', { required: true })
   const validEvaluationMethods = [
@@ -196,12 +159,12 @@ module.exports.validateAndFetchConfig = function (currentResultLength, benchToCo
     case 'jump_detection':
       console.log('Validating jump detection evaluation configuration.')
       module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare, 1);
-      module.exports.validateJumpDetectionConfig()
+      module.exports.validateJumpDetectionConfig(currentResultLength)
       break
     case 'trend_detection_moving_ave':
       console.log('Validating trend detection with moving average evaluation configuration.')
-      module.exports.validateTrendDetectionMovingAveConfig()
-      const movingAveWindowSize = core.getInput('moving_ave_window')
+      module.exports.validateTrendDetectionMovingAveConfig(currentResultLength)
+      const movingAveWindowSize = core.getInput('moving_ave_window_size')
         try {
           module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare,
               movingAveWindowSize);
@@ -215,8 +178,8 @@ module.exports.validateAndFetchConfig = function (currentResultLength, benchToCo
                 const numberOfBenchsForName = benchmarkData.entries[benchToCompare].length;
                 const stringOfNumberOfBenchs= numberOfBenchsForName.toString();
                 console.log(`Not enough data for trend detection with moving average. Using available data.`)
-                process.env[`INPUT_MOVING_AVE_WINDOW`] = stringOfNumberOfBenchs;
-                const newVal = core.getInput('moving_ave_window');
+                process.env[`INPUT_MOVING_AVE_WINDOW_SIZE`] = stringOfNumberOfBenchs;
+                const newVal = core.getInput('moving_ave_window_size');
               console.log(`New value for moving_ave_window: ${newVal}`)
             } else {
                 throw new Error(`Invalid value for trend_det_no_sufficient_data_strategy: 
@@ -245,8 +208,8 @@ module.exports.validateAndFetchConfig = function (currentResultLength, benchToCo
       'comparisonMargins',
       'thresholdUpper',
       'thresholdLower',
-      'jumpDetectionThreshold',
-      'trendThreshold',
+      'jumpDetectionThresholds',
+      'trendThresholds',
       'movingAveWindowSize',
       'trendDetNoSufficientDataStrategy',
   )
@@ -261,8 +224,8 @@ module.exports.createEvaluationConfig = function (...inputNames) {
     "comparisonMargins",
     "thresholdUpper",
     "thresholdLower",
-    "jumpDetectionThreshold",
-    "trendThreshold",
+    "jumpDetectionThresholds",
+    "trendThresholds",
     "movingAveWindowSize",
     "trendDetNoSufficientDataStrategy"
   ]
@@ -370,46 +333,51 @@ module.exports.validateThresholdRangeConfig = function (currentResultLength) {
   }
 }
 
-module.exports.validateJumpDetectionConfig = function () {
-  const jumpDetectionThresholdInput = core.getInput('jump_detection_threshold')
+module.exports.validateJumpDetectionConfig = function (currentResultLength) {
+  const jumpDetectionThresholdsInput = core.getInput('jump_detection_thresholds')
 
-  if (jumpDetectionThresholdInput.trim() === '') {
+  if (jumpDetectionThresholdsInput.trim() === '') {
     throw new Error('Jump detection threshold must be provided.')
   }
 
-  const jumpDetectionThreshold = Number(jumpDetectionThresholdInput.trim())
+  const jumpDetectionThresholds = jumpDetectionThresholdsInput.split(',').map(Number)
 
-  if (isNaN(jumpDetectionThreshold)) {
-    throw new Error('Jump detection threshold must be a valid number.')
-  }
-
-  if (jumpDetectionThreshold < 0 || jumpDetectionThreshold > 100) {
+  if (jumpDetectionThresholds.length !== currentResultLength) {
     throw new Error(
-        'Jump detection threshold must be within the range [0, 100].'
+        'The number of upper thresholds must match the number metrics.'
     )
   }
+  jumpDetectionThresholds.forEach(value => {
+    if (value < 0 || value > 100) {
+      throw new Error(`Value ${value} is out of range [0,100]`);
+    }
+  });
 
-  return jumpDetectionThreshold
+  return jumpDetectionThresholds
 }
 
-module.exports.validateTrendDetectionMovingAveConfig = function () {
+module.exports.validateTrendDetectionMovingAveConfig = function (currentResultLength) {
   const movingAveWindowSize = core.getInput('moving_ave_window_size')
-  const trendThreshold = core.getInput('trend_threshold')
+  const trendThresholds = core.getInput('trend_thresholds')
 
-  if (movingAveWindowSize == null || trendThreshold == null) {
+  if (movingAveWindowSize == null || trendThresholds == null) {
     throw new Error(
-        'Both movingAveWindowSize and trendThreshold must be provided for trend detection with moving average.'
+        'Both movingAveWindowSize and trendThresholds must be provided for trend detection with moving average.'
     )
   }
 
-  const movingAveThresholdValue = Number(trendThreshold)
-  if (
-      isNaN(movingAveThresholdValue) ||
-      movingAveThresholdValue < 0 ||
-      movingAveThresholdValue > 100
-  ) {
-    throw new Error('trendThreshold must be a number between 0 and 100.')
+  const movingAveThresholdValue = trendThresholds.split(',').map(Number)
+
+  if (movingAveThresholdValue.length !== currentResultLength) {
+    throw new Error(
+        'The number of upper thresholds must match the number metrics.'
+    )
   }
+  movingAveThresholdValue.forEach(value => {
+    if (value < 0 || value > 100) {
+      throw new Error(`Value ${value} is out of range [0,100]`);
+    }
+  });
 }
 
 module.exports.checkIfNthPreviousBenchmarkExists = function (
@@ -453,21 +421,21 @@ module.exports.checkIfPreviousSuccessfulExists = function(data, benchmarkKey) {
 }
 
 module.exports.validateTrendDetectionDeltasConfig = function () {
-  const trendThreshold = core.getInput('trend_threshold')
+  const trendThresholds = core.getInput('trend_thresholds')
 
-  if (trendThreshold == null) {
+  if (trendThresholds == null) {
     throw new Error(
-        'trendThreshold must be provided for trend detection.'
+        'trendThresholds must be provided for trend detection.'
     )
   }
 
-  const trendThresholdNum = Number(trendThreshold)
+  const trendThresholdsNum = Number(trendThresholds)
   if (
-      isNaN(trendThresholdNum) ||
-      trendThresholdNum < 0 ||
-      trendThresholdNum > 100
+      isNaN(trendThresholdsNum) ||
+      trendThresholdsNum < 0 ||
+      trendThresholdsNum > 100
   ) {
-    throw new Error('trendThreshold must be a number between 0 and 100.')
+    throw new Error('trendThresholds must be a number between 0 and 100.')
   }
 }
 

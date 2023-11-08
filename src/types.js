@@ -86,8 +86,8 @@ class EvaluationConfig {
         comparisonMargins,
         thresholdUpper,
         thresholdLower,
-        jumpDetectionThreshold,
-        trendThreshold,
+        jumpDetectionThresholds,
+        trendThresholds,
         movingAveWindowSize,
         trendDetNoSufficientDataStrategy
     ) {
@@ -98,8 +98,8 @@ class EvaluationConfig {
         this.comparisonMargins = comparisonMargins
         this.thresholdUpper = thresholdUpper
         this.thresholdLower = thresholdLower
-        this.jumpDetectionThreshold = jumpDetectionThreshold
-        this.trendThreshold = trendThreshold
+        this.jumpDetectionThresholds = jumpDetectionThresholds
+        this.trendThresholds = trendThresholds
         this.movingAveWindowSize = movingAveWindowSize
         this.trendDetNoSufficientDataStrategy = trendDetNoSufficientDataStrategy
     }

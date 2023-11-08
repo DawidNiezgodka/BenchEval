@@ -29906,20 +29906,15 @@ const { BenchmarkInfo } = __nccwpck_require__(510)
 module.exports.createCurrBench = function (config) {
   const currBenchResJson = config.currBenchResJson
   const benchInfoJson = currBenchResJson.benchInfo
-  core.debug('Complete JSON: ' + JSON.stringify(currBenchResJson))
   const benchInfo = new BenchmarkInfo(
     benchInfoJson.executionTime,
     benchInfoJson.parametrization,
     benchInfoJson.otherInfo
   )
-  core.debug('BenchInfo: ' + JSON.stringify(benchInfo))
   const metricResults = currBenchResJson.results.map(
     item => new SimpleMetricResult(item.name, item.value, item.unit)
   )
-
-  core.debug('MetricResults: ' + JSON.stringify(metricResults))
   const commit = getCommit()
-  core.debug('Commit info: ' + JSON.stringify(commit))
   return new CompleteBenchmark(
     config.benchName,
     benchInfo,
@@ -30002,81 +29997,22 @@ module.exports.addCompleteBenchmarkToFile = async (
   }
 }
 
-module.exports.getLatestBenchmark = async (
+module.exports.getLatestBenchmark = function (
   benchmarkName,
   folderWithBenchData,
   fileNameWithBenchData,
-  n
-) => {
+  n,
+  successful = false
+)  {
 
-  // Print all inputs in single console.log statement
-  console.log('Inputs for the getLatestBenchmark function')
-  console.log(`benchmarkName: ${benchmarkName}`)
-  console.log(`folderWithBenchData: ${folderWithBenchData}`)
-  console.log(`fileNameWithBenchData: ${fileNameWithBenchData}`)
-
-
-  console.log()
-  try {
-    const benchmarkData = module.exports.getCompleteBenchData(
-        folderWithBenchData, fileNameWithBenchData
-    )
-
-    if (!benchmarkData.entries.hasOwnProperty(benchmarkName)) {
-      console.error(
-          'No data available for the given benchmark name:',
-          benchmarkName
-      )
-      return null
-    }
-
-    const sortedBenchmarkData = benchmarkData.entries[benchmarkName].sort(
-      (a, b) => b.date - a.date
-    )
-
-    if (sortedBenchmarkData.length < n) {
-      console.error(`Less than ${n} benchmarks available`)
-      return null
-    }
-
-    console.log('The amount of benchs', sortedBenchmarkData.length)
+  const sortedBenchmarkData = module.exports.getSortedBenchmarkData(
+      folderWithBenchData, fileNameWithBenchData, benchmarkName, n, successful
+  )
 
     const nthLatestBenchmarkData = sortedBenchmarkData[n - 1]
-    console.log(
-      'nthLatestBenchmarkData',
-      JSON.stringify(nthLatestBenchmarkData)
-    )
+    core.debug(`nthLatestBenchmarkData.metrics ${JSON.stringify(nthLatestBenchmarkData)}`)
+    return convertBenchDataToCompleteBenchmarkInstance(nthLatestBenchmarkData, benchmarkName)
 
-    const exeTime = nthLatestBenchmarkData.executionTime
-    const parametrization = nthLatestBenchmarkData.parametrization
-    const otherInfo = nthLatestBenchmarkData.otherInfo
-    const benchmarkInfo = new BenchmarkInfo(exeTime, parametrization, otherInfo)
-    const benchSuccessful = nthLatestBenchmarkData.benchSuccessful
-
-    const simpleMetricResults = nthLatestBenchmarkData.metrics.map(
-      metric => new SimpleMetricResult(metric.name, metric.value, metric.unit)
-    )
-
-    const commitInfo = new Commit(
-      nthLatestBenchmarkData.commit.author,
-      nthLatestBenchmarkData.commit.committer,
-      nthLatestBenchmarkData.commit.id,
-      nthLatestBenchmarkData.commit.message,
-      nthLatestBenchmarkData.commit.timestamp,
-      nthLatestBenchmarkData.commit.url
-    )
-
-    return new CompleteBenchmark(
-      benchmarkName,
-      benchmarkInfo,
-      simpleMetricResults,
-      commitInfo,
-      benchSuccessful
-    )
-  } catch (error) {
-    console.error('An error occurred:', error)
-    return null
-  }
 }
 
 module.exports.getCompleteBenchData = function (
@@ -30101,6 +30037,122 @@ module.exports.getCompleteBenchData = function (
       return null
     }
 }
+
+function convertBenchDataToCompleteBenchmarkInstance(data, benchmarkName) {
+  const exeTime = data.executionTime;
+  const parametrization = data.parametrization;
+  const otherInfo = data.otherInfo;
+  const benchmarkInfo = new BenchmarkInfo(exeTime, parametrization, otherInfo);
+  const benchSuccessful = data.benchSuccessful;
+
+  const simpleMetricResults = data.metrics.map(
+      metric => new SimpleMetricResult(metric.name, metric.value, metric.unit)
+  );
+
+  const commitInfo = new Commit(
+      data.commit.author,
+      data.commit.committer,
+      data.commit.id,
+      data.commit.message,
+      data.commit.timestamp,
+      data.commit.url
+  );
+
+  return new CompleteBenchmark(
+      benchmarkName,
+      benchmarkInfo,
+      simpleMetricResults,
+      commitInfo,
+      benchSuccessful
+  );
+}
+
+module.exports.getNLatestBenchmarks = function (
+    benchmarkName,
+    folderWithBenchData,
+    fileNameWithBenchData,
+    n,
+    successful = false
+) {
+  try {
+    const sortedBenchmarkData = module.exports.getSortedBenchmarkData(
+        folderWithBenchData, fileNameWithBenchData, benchmarkName, n, successful
+    )
+
+    return sortedBenchmarkData.slice(0, n).map(data => {
+      return convertBenchDataToCompleteBenchmarkInstance(data, benchmarkName);
+    });
+  } catch (error) {
+    console.error('An error occurred:', error);
+    return null;
+  }
+}
+
+module.exports.getSortedBenchmarkData = function (folderWithBenchData, fileNameWithBenchData,
+                                                  benchmarkName, n, successful = false) {
+
+  try {
+    const benchmarkData = module.exports.getCompleteBenchData(
+        folderWithBenchData, fileNameWithBenchData
+    );
+    if (!benchmarkData.entries.hasOwnProperty(benchmarkName)) {
+      console.error(
+          'No data available for the given benchmark name:',
+          benchmarkName
+      );
+      return null;
+    }
+
+    let sortedBenchmarkData = benchmarkData.entries[benchmarkName].sort(
+        (a, b) => b.date - a.date
+    );
+
+    if (successful) {
+      sortedBenchmarkData = sortedBenchmarkData.filter(entry => entry.benchSuccessful);
+    }
+
+    if (sortedBenchmarkData.length < n) {
+      console.error(`Less than ${n} ${successful ? 'successful ' : ''}benchmarks available`);
+      return null;
+    }
+
+    return sortedBenchmarkData;
+  } catch (error) {
+    console.error('An error occurred:', error);
+    return null;
+  }
+}
+
+module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchData, fileNameWithBenchData) {
+
+  const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+
+  let data = module.exports.getCompleteBenchData(
+      folderWithBenchData, fileNameWithBenchData
+  );
+
+  let benchmarks = data.entries[benchToCompare];
+  let closestBenchmark = null;
+  let smallestDifference = Infinity;
+
+  benchmarks.forEach(benchmark => {
+    let difference = Math.abs(now - benchmark.date - ONE_WEEK_IN_MS);
+    if (difference < smallestDifference) {
+      smallestDifference = difference;
+      closestBenchmark = benchmark;
+    }
+  });
+
+  if (closestBenchmark === null) {
+    throw new Error(`No benchmark under '${benchToCompare}' is close to one week old.`);
+  } else {
+    console.log(`The closest benchmark to one week old under '${benchToCompare}' is:`, closestBenchmark);
+    return convertBenchDataToCompleteBenchmarkInstance(closestBenchmark, benchToCompare);
+  }
+}
+
+
 
 
 /***/ }),
@@ -30549,33 +30601,10 @@ const fs = __nccwpck_require__(7147)
 const { Config, EvaluationConfig} = __nccwpck_require__(510)
 const {getCompleteBenchData} = __nccwpck_require__(9790)
 
-module.exports.validateBooleanInput = function (input) {
-  return input === 'true' || input === 'false'
-}
-
 module.exports.validateBenchType = function (benchmarkType) {
   const validTypes = ['simple', 'simple-multi', 'complex', 'complex-multi']
   if (!validTypes.includes(benchmarkType)) {
     throw new Error(`Invalid benchmark type: ${benchmarkType}`)
-  }
-}
-
-module.exports.validateReference = function (
-  reference,
-  currentBenchName,
-  benchToCompare
-) {
-  const validReferences = ['previous', 'threshold', 'previous-successful']
-
-  if (currentBenchName !== benchToCompare) {
-    const validReferences = ['previous', 'previous-successful']
-    if (!validReferences.includes(reference)) {
-      throw new Error(`Invalid reference: ${reference}`)
-    }
-  }
-
-  if (!validReferences.includes(reference)) {
-    throw new Error(`Invalid reference: ${reference}`)
   }
 }
 
@@ -30601,16 +30630,6 @@ module.exports.validateItemCountForBenchType = function (itemCount, benchType) {
   }
 }
 
-module.exports.getCommaSepInputAsArray = function (inputString) {
-  inputString = inputString.trim()
-  if (inputString.includes(',')) {
-    const array = inputString.split(',').map(str => str.trim())
-    return array.filter(str => str !== '')
-  } else {
-    return [inputString]
-  }
-}
-
 module.exports.getBoolInput = function (inputName) {
   const input = core.getInput(inputName)
   if (!input) {
@@ -30622,10 +30641,6 @@ module.exports.getBoolInput = function (inputName) {
     )
   }
   return input === 'true'
-}
-
-module.exports.convertSingleJsonObjectToArr = function (obj) {
-  return [obj]
 }
 
 module.exports.validateInputAndFetchConfig = function () {
@@ -30661,7 +30676,7 @@ module.exports.validateInputAndFetchConfig = function () {
   const folderWithBenchData = core.getInput('folder_with_bench_data')
   const fileWithBenchData = core.getInput('file_with_bench_data')
   // Part 4 (new): Check if evaluation_method is valid and carry out validation for this specific method
-  const evalConfig = module.exports.validateAndFetchConfig(
+  const evalConfig = module.exports.validateAndFetchEvaluationConfig(
       itemCount, benchToCompare, folderWithBenchData, fileWithBenchData);
 
   // No need for extra validaiton
@@ -30697,8 +30712,8 @@ module.exports.camelToSnake = function (string) {
       .toLowerCase()
 }
 
-module.exports.validateAndFetchConfig = function (currentResultLength, benchToCompare,
-                                               folderWithBenchData, fileWithBenchData) {
+module.exports.validateAndFetchEvaluationConfig = function (currentResultLength, benchToCompare,
+                                                            folderWithBenchData, fileWithBenchData) {
   // Evaluation method
   const evaluationMethod = core.getInput('evaluation_method', { required: true })
   const validEvaluationMethods = [
@@ -30742,12 +30757,12 @@ module.exports.validateAndFetchConfig = function (currentResultLength, benchToCo
     case 'jump_detection':
       console.log('Validating jump detection evaluation configuration.')
       module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare, 1);
-      module.exports.validateJumpDetectionConfig()
+      module.exports.validateJumpDetectionConfig(currentResultLength)
       break
     case 'trend_detection_moving_ave':
       console.log('Validating trend detection with moving average evaluation configuration.')
-      module.exports.validateTrendDetectionMovingAveConfig()
-      const movingAveWindowSize = core.getInput('moving_ave_window')
+      module.exports.validateTrendDetectionMovingAveConfig(currentResultLength)
+      const movingAveWindowSize = core.getInput('moving_ave_window_size')
         try {
           module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare,
               movingAveWindowSize);
@@ -30761,8 +30776,8 @@ module.exports.validateAndFetchConfig = function (currentResultLength, benchToCo
                 const numberOfBenchsForName = benchmarkData.entries[benchToCompare].length;
                 const stringOfNumberOfBenchs= numberOfBenchsForName.toString();
                 console.log(`Not enough data for trend detection with moving average. Using available data.`)
-                process.env[`INPUT_MOVING_AVE_WINDOW`] = stringOfNumberOfBenchs;
-                const newVal = core.getInput('moving_ave_window');
+                process.env[`INPUT_MOVING_AVE_WINDOW_SIZE`] = stringOfNumberOfBenchs;
+                const newVal = core.getInput('moving_ave_window_size');
               console.log(`New value for moving_ave_window: ${newVal}`)
             } else {
                 throw new Error(`Invalid value for trend_det_no_sufficient_data_strategy: 
@@ -30791,8 +30806,8 @@ module.exports.validateAndFetchConfig = function (currentResultLength, benchToCo
       'comparisonMargins',
       'thresholdUpper',
       'thresholdLower',
-      'jumpDetectionThreshold',
-      'trendThreshold',
+      'jumpDetectionThresholds',
+      'trendThresholds',
       'movingAveWindowSize',
       'trendDetNoSufficientDataStrategy',
   )
@@ -30807,8 +30822,8 @@ module.exports.createEvaluationConfig = function (...inputNames) {
     "comparisonMargins",
     "thresholdUpper",
     "thresholdLower",
-    "jumpDetectionThreshold",
-    "trendThreshold",
+    "jumpDetectionThresholds",
+    "trendThresholds",
     "movingAveWindowSize",
     "trendDetNoSufficientDataStrategy"
   ]
@@ -30916,46 +30931,51 @@ module.exports.validateThresholdRangeConfig = function (currentResultLength) {
   }
 }
 
-module.exports.validateJumpDetectionConfig = function () {
-  const jumpDetectionThresholdInput = core.getInput('jump_detection_threshold')
+module.exports.validateJumpDetectionConfig = function (currentResultLength) {
+  const jumpDetectionThresholdsInput = core.getInput('jump_detection_thresholds')
 
-  if (jumpDetectionThresholdInput.trim() === '') {
+  if (jumpDetectionThresholdsInput.trim() === '') {
     throw new Error('Jump detection threshold must be provided.')
   }
 
-  const jumpDetectionThreshold = Number(jumpDetectionThresholdInput.trim())
+  const jumpDetectionThresholds = jumpDetectionThresholdsInput.split(',').map(Number)
 
-  if (isNaN(jumpDetectionThreshold)) {
-    throw new Error('Jump detection threshold must be a valid number.')
-  }
-
-  if (jumpDetectionThreshold < 0 || jumpDetectionThreshold > 100) {
+  if (jumpDetectionThresholds.length !== currentResultLength) {
     throw new Error(
-        'Jump detection threshold must be within the range [0, 100].'
+        'The number of upper thresholds must match the number metrics.'
     )
   }
+  jumpDetectionThresholds.forEach(value => {
+    if (value < 0 || value > 100) {
+      throw new Error(`Value ${value} is out of range [0,100]`);
+    }
+  });
 
-  return jumpDetectionThreshold
+  return jumpDetectionThresholds
 }
 
-module.exports.validateTrendDetectionMovingAveConfig = function () {
+module.exports.validateTrendDetectionMovingAveConfig = function (currentResultLength) {
   const movingAveWindowSize = core.getInput('moving_ave_window_size')
-  const trendThreshold = core.getInput('trend_threshold')
+  const trendThresholds = core.getInput('trend_thresholds')
 
-  if (movingAveWindowSize == null || trendThreshold == null) {
+  if (movingAveWindowSize == null || trendThresholds == null) {
     throw new Error(
-        'Both movingAveWindowSize and trendThreshold must be provided for trend detection with moving average.'
+        'Both movingAveWindowSize and trendThresholds must be provided for trend detection with moving average.'
     )
   }
 
-  const movingAveThresholdValue = Number(trendThreshold)
-  if (
-      isNaN(movingAveThresholdValue) ||
-      movingAveThresholdValue < 0 ||
-      movingAveThresholdValue > 100
-  ) {
-    throw new Error('trendThreshold must be a number between 0 and 100.')
+  const movingAveThresholdValue = trendThresholds.split(',').map(Number)
+
+  if (movingAveThresholdValue.length !== currentResultLength) {
+    throw new Error(
+        'The number of upper thresholds must match the number metrics.'
+    )
   }
+  movingAveThresholdValue.forEach(value => {
+    if (value < 0 || value > 100) {
+      throw new Error(`Value ${value} is out of range [0,100]`);
+    }
+  });
 }
 
 module.exports.checkIfNthPreviousBenchmarkExists = function (
@@ -30999,21 +31019,21 @@ module.exports.checkIfPreviousSuccessfulExists = function(data, benchmarkKey) {
 }
 
 module.exports.validateTrendDetectionDeltasConfig = function () {
-  const trendThreshold = core.getInput('trend_threshold')
+  const trendThresholds = core.getInput('trend_thresholds')
 
-  if (trendThreshold == null) {
+  if (trendThresholds == null) {
     throw new Error(
-        'trendThreshold must be provided for trend detection.'
+        'trendThresholds must be provided for trend detection.'
     )
   }
 
-  const trendThresholdNum = Number(trendThreshold)
+  const trendThresholdsNum = Number(trendThresholds)
   if (
-      isNaN(trendThresholdNum) ||
-      trendThresholdNum < 0 ||
-      trendThresholdNum > 100
+      isNaN(trendThresholdsNum) ||
+      trendThresholdsNum < 0 ||
+      trendThresholdsNum > 100
   ) {
-    throw new Error('trendThreshold must be a number between 0 and 100.')
+    throw new Error('trendThresholds must be a number between 0 and 100.')
   }
 }
 
@@ -31051,7 +31071,7 @@ module.exports.checkForWeekOldBenchmark = function(data, benchmarkKey) {
 
 const core = __nccwpck_require__(5127)
 
-const { getLatestBenchmark } = __nccwpck_require__(9790)
+const { getLatestBenchmark, getNLatestBenchmarks, getBenchFromWeekAgo } = __nccwpck_require__(9790)
 
 
 module.exports.evaluateCurrentBenchmark = function (
@@ -31065,22 +31085,35 @@ module.exports.evaluateCurrentBenchmark = function (
       evaluationResult = module.exports.evaluateWithThreshold(currentBenchmark, completeConfig.evaluationConfig);
       break;
     case 'previous':
-      evaluationResult = module.exports.compareWithPrevious(currentBenchmark, completeBenchData, completeConfig);
+      evaluationResult = module.exports.compareWithPrevious(currentBenchmark, completeBenchData, completeConfig, false);
       break;
-      // Additional evaluation methods to be implemented here
+    case 'previous_successful':
+      evaluationResult = module.exports.compareWithPrevious(currentBenchmark, completeBenchData, completeConfig, true);
+      break;
+    case 'threshold_range':
+      evaluationResult = module.exports.evaluateWithThresholdRanges(currentBenchmark, completeConfig.evaluationConfig);
+      break;
+    case 'jump_detection':
+        evaluationResult = module.exports.evaluateWithJumpDetection(currentBenchmark, completeConfig);
+        break;
+    case 'trend_detection_moving_ave':
+        evaluationResult = module.exports.trendDetectionMovingAve(currentBenchmark, completeConfig);
+        break;
+    case 'trend_detection_deltas':
+        evaluationResult = module.exports.trendDetectionDeltas(currentBenchmark, completeConfig);
+        break;
     default:
       throw new Error(`Unsupported evaluation method: ${completeConfig.evaluationConfig.evaluationMethod}`);
   }
-  // Log or process evaluationResult as needed
   console.log(evaluationResult);
   return evaluationResult;
 }
 
-module.exports.evaluateWithThreshold = function (currentBenchmarkData, config) {
+module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluationConfig) {
   core.debug('Evaluating current benchmark with threshold method')
   core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData))
-  // Destructure the required fields from the config object
-  const { comparisonOperators, comparisonMargins, thresholdValues } = config;
+  // Destructure the required fields from the evaluationConfig object
+  const { comparisonOperators, comparisonMargins, thresholdValues } = evaluationConfig;
 
   const actualValues = [];
   const metricNames = [];
@@ -31134,9 +31167,9 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, config) {
   };
 };
 
-module.exports.compareWithPrevious = function (currentBenchmarkData, completeBenchData, completeConfig) {
-  const previousBenchmarkData = getLatestBenchmark(completeConfig.benchName,
-      completeConfig.folderWithBenchData, completeConfig.fileWithBenchData, 1);
+module.exports.compareWithPrevious = function (currentBenchmarkData, completeBenchData, completeConfig, successful) {
+  const previousBenchmarkData = getLatestBenchmark(completeConfig.benchToCompare,
+      completeConfig.folderWithBenchData, completeConfig.fileWithBenchData, 1, successful);
   // First, find the previous benchmark => we will get obj not json
   core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
 
@@ -31144,6 +31177,7 @@ module.exports.compareWithPrevious = function (currentBenchmarkData, completeBen
 
   const metricNames = [];
   const metricUnits = [];
+  const actualValues = [];
   const shouldBe = [];
   const thanValues = [];
   const evaluationResults = [];
@@ -31154,6 +31188,7 @@ module.exports.compareWithPrevious = function (currentBenchmarkData, completeBen
   currentBenchmarkData.simpleMetricResults.forEach((result, index) => {
     const currentName = result.name;
     const currentValue = result.value;
+    actualValues.push(currentValue);
     const previousResult = previousResultsMap.get(currentName);
     let isPassed = 'no data';
 
@@ -31191,12 +31226,145 @@ module.exports.compareWithPrevious = function (currentBenchmarkData, completeBen
     }
   });
 
+  const evaluationMethod = successful ? "previous_successful" : "previous";
   return {
-    "evaluation_method": "comparison",
+    "evaluation_method": evaluationMethod,
     "metric_names": metricNames,
     "metric_units": metricUnits,
+    "is": actualValues,
     "should_be": shouldBe,
     "than": thanValues,
+    "result": evaluationResults
+  };
+};
+
+module.exports.evaluateWithThresholdRanges = function (currentBenchmarkData, config) {
+  core.debug('Evaluating current benchmark with threshold ranges method')
+  const { thresholdLower, thresholdUpper } = config;
+
+  const metricNames = [];
+  const metricUnits = [];
+  const actualValues = [];
+  const shouldBeBetween = [];
+  const evaluationResults = [];
+
+  currentBenchmarkData.simpleMetricResults.forEach((result, index) => {
+    const value = result.value;
+    const lowerThreshold = thresholdLower[index];
+    const upperThreshold = thresholdUpper[index];
+
+    metricNames.push(result.name);
+    metricUnits.push(result.unit);
+    actualValues.push(value);
+    shouldBeBetween.push(`[${lowerThreshold}, ${upperThreshold}]`);
+
+    const isPassed = value >= lowerThreshold && value <= upperThreshold;
+    evaluationResults.push(isPassed ? 'passed' : 'failed');
+  });
+
+  return {
+    "evaluation_method": "threshold_ranges",
+    "metric_names": metricNames,
+    "metric_units": metricUnits,
+    "is": actualValues,
+    "should_be": shouldBeBetween,
+    "result": evaluationResults
+  };
+};
+
+module.exports.evaluateWithJumpDetection = function (currentBenchmarkData, config) {
+
+  const previousBenchmarkData = getLatestBenchmark(config.benchToCompare,
+      config.folderWithBenchData, config.fileWithBenchData, 1, false);
+
+  const { jumpDetectionThresholds } = config.evaluationConfig;
+  core.debug('Jump detection thresholds: ' + JSON.stringify(jumpDetectionThresholds));
+
+  const map = new Map(
+      previousBenchmarkData.simpleMetricResults.map(item => [item.name, { value: item.value, unit: item.unit }]));
+
+  const metricNames = [];
+  const metricUnits = [];
+  const ratios = [];
+  const shouldBe = [];
+  const evaluationResults = [];
+
+  currentBenchmarkData.simpleMetricResults.forEach((result, index) => {
+    core.debug('Current benchmark data jump det: ' + JSON.stringify(result));
+    const currentName = result.name;
+    const currentValue = result.value;
+    const previousResult = map.get(currentName);
+    const threshold = jumpDetectionThresholds[index];
+
+    metricNames.push(currentName);
+    metricUnits.push(result.unit);
+    shouldBe.push(threshold);
+
+    if (previousResult) {
+      const ratio = (currentValue / previousResult.value - 1) * 100;
+      ratios.push(ratio.toFixed(2));
+      const isPassed = Math.abs(ratio) < threshold;
+      evaluationResults.push(isPassed ? 'passed' : 'failed');
+    } else {
+      ratios.push('N/A');
+      evaluationResults.push('N/A');
+    }
+  });
+
+  return {
+    "evaluation_method": "jump_detection",
+    "metric_names": metricNames,
+    "metric_units": metricUnits,
+    "is": ratios,
+    "should_be": shouldBe,
+    "result": evaluationResults
+  };
+};
+
+module.exports.trendDetectionMovingAve = function (currentBenchmarkData, completeConfig) {
+
+  const { trendThresholds: t, movingAveWindowSize: b } = completeConfig.evaluationConfig;
+
+  // First get the previous b benchmarks
+  const previousBenchmarkDataArray = getNLatestBenchmarks(completeConfig.evaluationConfig.benchToCompare,
+        completeConfig.folderWithBenchData, completeConfig.fileWithBenchData, b, false);
+  core.debug('Retrieved the following number of benchmarks: ' + previousBenchmarkDataArray.length);
+
+  const metricNames = [];
+  const evaluationResults = [];
+  const metricUnits = [];
+  const percentageIncreases = [];
+  const should_be = [];
+
+  currentBenchmarkData.simpleMetricResults.forEach((currentResult, index) => {
+    const currentThreshold = t[index];
+    should_be.push(currentThreshold);
+    const currentName = currentResult.name;
+    const currentValue = currentResult.value;
+    metricNames.push(currentName);
+    metricUnits.push(currentResult.unit);
+
+    const previousMetrics = previousBenchmarkDataArray
+        .map(build => build.simpleMetricResults.find(result => result.name === currentName))
+        .filter(Boolean)
+
+    core.debug(`Number of benchmarks that have the current metric: ${previousMetrics.length}`);
+
+    const sumOfPreviousMetrics = previousMetrics.reduce((acc, metric) => acc + metric.value, 0);
+    const movingAverage = sumOfPreviousMetrics / Math.min(b, previousMetrics.length);
+
+    const percentageIncrease = (currentValue / movingAverage - 1) * 100;
+    percentageIncreases.push(percentageIncrease.toFixed(2));
+    const isPassed = currentThreshold >= percentageIncrease;
+    evaluationResults.push(isPassed ? 'passed' : 'failed');
+  });
+
+  return {
+    "evaluation_method": "trend_detection_moving_ave",
+    "metric_names": metricNames,
+    "metric_units": metricUnits,
+    "is": percentageIncreases,
+    "should_be": should_be,
     "result": evaluationResults
   };
 };
@@ -31223,37 +31391,60 @@ module.exports.addResultToBenchmarkObject = function (
   }
 }
 
-function findClosestWeekOldBenchmark(benchmarkKey) {
-  const data = {
-    // ... the JSON data structure
+module.exports.trendDetectionDeltas = function (currentBenchmarkData,
+                                                lastStableReleaseBench, config) {
+
+  const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchToCompare,
+        config.folderWithBenchData, config.fileWithBenchData, 1, false);
+
+  const benchFromWeekAgo = getBenchFromWeekAgo(config.evaluationConfig.benchToCompare,
+        config.folderWithBenchData, config.fileWithBenchData);
+
+  //const lastStableReleaseBench =
+
+  const { deltaThreshold: X } = config;
+
+
+  const metricNames = [];
+  const evaluationResults = [];
+
+  const calculatePercentageChange = (oldValue, newValue) => {
+    return ((newValue - oldValue) / oldValue) * 100;
   };
 
-  const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000; // one week in milliseconds
-  const now = Date.now();
+  const evaluateChange = (oldValue, newValue, threshold) => {
+    const percentageChange = calculatePercentageChange(oldValue, newValue);
+    return Math.abs(percentageChange) <= threshold;
+  };
 
-  if (!data.entries.hasOwnProperty(benchmarkKey)) {
-    throw new Error(`No such benchmark key: '${benchmarkKey}' exists.`);
-  }
+  currentBenchmarkData.results.forEach((currentResult) => {
+    const currentName = currentResult.name;
+    const currentValue = currentResult.value;
 
-  let benchmarks = data.entries[benchmarkKey];
-  let closestBenchmark = null;
-  let smallestDifference = Infinity;
+    const previousMetric = previousBenchmarkData.simpleMetricResults.find(r => r.name === currentName)?.value;
+    const weekAgoMetric = benchFromWeekAgo.simpleMetricResults.find(r => r.name === currentName)?.value;
+    const lastStableMetric = lastStableReleaseBench.simpleMetricResults.find(r => r.name === currentName)?.value;
 
-  benchmarks.forEach(benchmark => {
-    let difference = Math.abs(now - benchmark.date - ONE_WEEK_IN_MS);
-    if (difference < smallestDifference) {
-      smallestDifference = difference;
-      closestBenchmark = benchmark;
-    }
+    metricNames.push(currentName);
+
+    const isPassedPrevious = previousMetric === undefined || evaluateChange(previousMetric, currentValue, X);
+    const isPassedWeekAgo = weekAgoMetric === undefined || evaluateChange(weekAgoMetric, currentValue, X);
+    const isPassedLastStable = lastStableMetric === undefined || evaluateChange(lastStableMetric, currentValue, X);
+
+    const isPassed = isPassedPrevious && isPassedWeekAgo && isPassedLastStable;
+    evaluationResults.push(isPassed ? 'passed' : 'failed');
   });
 
-  if (closestBenchmark === null) {
-    throw new Error(`No benchmark under '${benchmarkKey}' is close to one week old.`);
-  } else {
-    console.log(`The closest benchmark to one week old under '${benchmarkKey}' is:`, closestBenchmark);
-    return closestBenchmark;
-  }
-}
+  // Construct the result JSON
+  const resultJSON = {
+    "evaluation_method": "trend_detection_deltas",
+    "metric_names": metricNames,
+    "result": evaluationResults
+  };
+
+  return resultJSON;
+};
+
 
 
 /***/ }),
@@ -31438,8 +31629,8 @@ class EvaluationConfig {
         comparisonMargins,
         thresholdUpper,
         thresholdLower,
-        jumpDetectionThreshold,
-        trendThreshold,
+        jumpDetectionThresholds,
+        trendThresholds,
         movingAveWindowSize,
         trendDetNoSufficientDataStrategy
     ) {
@@ -31450,8 +31641,8 @@ class EvaluationConfig {
         this.comparisonMargins = comparisonMargins
         this.thresholdUpper = thresholdUpper
         this.thresholdLower = thresholdLower
-        this.jumpDetectionThreshold = jumpDetectionThreshold
-        this.trendThreshold = trendThreshold
+        this.jumpDetectionThresholds = jumpDetectionThresholds
+        this.trendThresholds = trendThresholds
         this.movingAveWindowSize = movingAveWindowSize
         this.trendDetNoSufficientDataStrategy = trendDetNoSufficientDataStrategy
     }

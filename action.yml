@@ -86,10 +86,10 @@ inputs:
   threshold_lower:
     description: 'Comma-separated list of lower threshold values for range comparison.'
     required: false
-  jump_detection_threshold:
-    description: 'The threshold value for jump detection.'
+  jump_detection_thresholds:
+    description: 'The threshold values for jump detection.'
     required: false
-  trend_threshold:
+  trend_thresholds:
     description: 'The threshold value for deltas trend detection.'
     required: false
   moving_ave_window_size:
