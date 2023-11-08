@@ -31941,8 +31941,7 @@ module.exports = {
   Config,
   Commit,
   BenchmarkInfo,
-  EvaluationConfig,
-    EvaluationResult
+  EvaluationConfig
 }
 
 
