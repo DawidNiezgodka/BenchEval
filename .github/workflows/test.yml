@@ -34,7 +34,7 @@ jobs:
           file_with_bench_data: data.json
           bench_to_compare: "Benchmark"
           current_bench_res_file: ./benchmark_results/curr.json
-          evaluation_method: range_threshold
+          evaluation_method: threshold_range
           threshold_lower: 100,200,300
           threshold_upper: 200,300,400
           failing_condition: none
