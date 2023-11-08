@@ -345,6 +345,7 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
   const evaluationResults = [];
   const metricUnits = [];
   const failedExplanations = [];
+  const metricToDifferentBenchValues = new Map();
 
   const calculatePercentageChange = (oldValue, newValue) => {
     return ((newValue - oldValue) / oldValue) * 100;
@@ -372,6 +373,15 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
     const isPassedWeekAgo = weekAgoMetric === undefined || evaluateChange(weekAgoMetric, currentValue, currentThreshold);
     const isPassedLastStable = lastStableMetric === undefined || evaluateChange(lastStableMetric, currentValue, currentThreshold);
 
+    // add to metricToDifferentBenchValues the current metric name and the values of the different benchmarks
+    metricToDifferentBenchValues.set(currentName, {
+        "current": currentValue,
+        "previous": previousMetric,
+        "week_ago": weekAgoMetric,
+        "last_stable_release": lastStableMetric
+    });
+
+
     const isPassed = isPassedPrevious && isPassedWeekAgo && isPassedLastStable;
     evaluationResults.push(isPassed ? 'passed' : 'failed');
     // if failed, add to failedExplanation "benchmark failed for the metric_name because one of the following benchmarks failed
@@ -396,7 +406,8 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
         "previous": previousBenchmarkData,
         "week_ago": benchFromWeekAgo,
         "last_stable_release": lastStableReleaseBench
-    }
+    },
+    "metric_to_different_bench_values": metricToDifferentBenchValues
   };
 };
 
