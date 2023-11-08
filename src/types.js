@@ -46,35 +46,63 @@ class Config {
     benchName,
     currBenchResJson,
     benchType,
+
+    failingCondition,
+
+    benchToCompare,
+
+    evaluationConfig,
+
     folderWithBenchData,
     fileWithBenchData,
     githubToken,
     addComment,
     addJobSummary,
     saveCurrBenchRes,
-    reference,
-    benchToCompare,
-    thresholds,
-    comparisonModes,
-    comparisonMargins,
-    failingCondition
   ) {
     this.benchName = benchName
     this.currBenchResJson = currBenchResJson
     this.benchType = benchType
+    this.failingCondition = failingCondition
+    this.benchToCompare = benchToCompare
+    this.evaluationConfig = evaluationConfig
     this.folderWithBenchData = folderWithBenchData
     this.fileWithBenchData = fileWithBenchData
     this.githubToken = githubToken
     this.addComment = addComment
     this.addJobSummary = addJobSummary
     this.saveCurrBenchRes = saveCurrBenchRes
-    this.reference = reference
-    this.thresholds = thresholds
-    this.benchToCompare = benchToCompare
-    this.comparisonModes = comparisonModes
-    this.comparisonMargins = comparisonMargins
-    this.failingCondition = failingCondition
+
   }
+}
+
+class EvaluationConfig {
+
+    constructor(
+        evaluationMethod,
+        benchToCompare,
+        thresholdValues,
+        comparisonOperators,
+        comparisonMargins,
+        thresholdUpper,
+        thresholdLower,
+        jumpDetectionThresholds,
+        trendThresholds,
+        movingAveWindowSize,
+        trendDetNoSufficientDataStrategy
+    ) {
+        this.evaluationMethod = evaluationMethod
+        this.benchToCompare = benchToCompare
+        this.thresholdValues = thresholdValues
+        this.comparisonOperators = comparisonOperators
+        this.comparisonMargins = comparisonMargins
+        this.thresholdUpper = thresholdUpper
+        this.thresholdLower = thresholdLower
+        this.jumpDetectionThresholds = jumpDetectionThresholds
+        this.trendThresholds = trendThresholds
+        this.movingAveWindowSize = movingAveWindowSize
+        this.trendDetNoSufficientDataStrategy = trendDetNoSufficientDataStrategy
+    }
 }
 
 module.exports = {
@@ -82,5 +110,6 @@ module.exports = {
   SimpleMetricResult,
   Config,
   Commit,
-  BenchmarkInfo
+  BenchmarkInfo,
+  EvaluationConfig
 }

@@ -44,7 +44,7 @@ inputs:
       to a file located in benchmark_data_file'
     required: false
     default: "true"
-  #### Evaluation input parameters
+  # TODO: Probably can be deleted
   bench_type:
     description: |
       The type of benchmark. The benchmark type is determined by the structure of the file that describes the benchmark result.
@@ -53,10 +53,12 @@ inputs:
       and returns 1 or 0 to indicate whether the benchmark is successful or not.
     required: false
     default: "simple"
-  reference:
+  #### Evaluation input parameters
+  evaluation_method:
     description: |
       It refers to a reference point by which we determine whether the benchmark is successful or not.
-      The possible values are 'previous,' 'previous_successful,' and 'threshold.'
+      The possible values are 'previous', 'previous_successful', 'threshold', 'jump_detection', 'trend_detection_moving_ave',
+      'trend_detection_deltas'
     required: true
   bench_to_compare:
     description: |
@@ -64,19 +66,12 @@ inputs:
       This input is only used when the reference is set to 'previous' or 'previous_successful.'
       If not specified, the benchmark with the same name as the current benchmark is used.
     required: false
-  thresholds:
-    description: |
-      The threshold value that is used to determine whether the benchmark is successful or not.
-      The threshold value is used when the reference is set to 'threshold.'
-      If the bench_type is simple, specify a single value.
-      If the bench_type is simple-multi, specify a list of values as a comma-separated string.
+  threshold_values:
+    description: 'Comma-separated list of threshold values for comparison.'
     required: false
-  comparison_modes:
-    description: |
-      Specifies how, in relation to the threshold or a previous benchmark,
-      the value from the current benchmark is evaluated.
-      The possible values are smaller if the benchmark-measured value should be smaller than the threshold / prev;
-      bigger if it should be larger, and range if it should fall within the percentage range defined by another parameter.
+  comparison_operators:
+    description: 'Comma-separated list of operators for threshold comparison.'
+    required: false
   comparison_margins:
     description: |
       Describes by how much percentage a given value can deviate from the desired
@@ -85,6 +80,35 @@ inputs:
       and it is not the only function, please provide values of -1 for the remaining functions.
       For example, if you previously entered: smaller, smaller, range, and your range is 20%,
       this input should look as follows: "-1, -1, 20"
+  threshold_upper:
+    description: 'Comma-separated list of upper threshold values for range comparison.'
+    required: false
+  threshold_lower:
+    description: 'Comma-separated list of lower threshold values for range comparison.'
+    required: false
+  jump_detection_thresholds:
+    description: 'The threshold values for jump detection.'
+    required: false
+  trend_thresholds:
+    description: 'The threshold value for both deltas trend detection and moving average.'
+    required: false
+  moving_ave_window_size:
+    description: 'The window size for moving average trend detection.'
+    required: false
+  trend_det_no_sufficient_data_strategy:
+    description: | 
+      The strategy to use when there is not enough data to perform trend detection.
+      The possible values are use_available and fail.
+    required: false
+    default: "use_available"
+  trend_det_successful_release_branch:
+    description: |
+      The name of the branch that contains the successful benchmark result
+      in a release branch.
+      If not specified, main branch will be used.
+    required: false
+    default: "main"
+
 
   failing_condition:
     description: |
