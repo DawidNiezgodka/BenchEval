@@ -221,4 +221,23 @@ module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchDa
   }
 }
 
+module.exports.getBenchmarkOfStableBranch = function (benchToCompare, folderWithBenchData,
+                                                      fileNameWithBenchData, latestBenchSha) {
+
+  let data = module.exports.getCompleteBenchData(
+        folderWithBenchData, fileNameWithBenchData
+    );
+  let benchmarks = data.entries[benchToCompare];
+  // find benchmark with commit sha == latestBenchSha
+  let benchmark = benchmarks.find(benchmark => benchmark.commit.id === latestBenchSha);
+  core.debug(`Benchmark of stable branch: ${JSON.stringify(benchmark)}`);
+
+    if (benchmark === undefined) {
+        throw new Error(`No benchmark under '${benchToCompare}' with commit sha ${latestBenchSha} found.`);
+    } else {
+        console.log(`The benchmark of the stable branch under '${benchToCompare}' is:`, benchmark);
+        return convertBenchDataToCompleteBenchmarkInstance(benchmark, benchToCompare);
+    }
+}
+
 

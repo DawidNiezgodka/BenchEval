@@ -190,7 +190,7 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
 
       break
     case 'trend_detection_deltas':
-      module.exports.validateTrendDetectionDeltasConfig();
+      module.exports.validateTrendThreshold(currentResultLength);
       module.exports.checkForWeekOldBenchmark(benchmarkData, benchToCompare);
       module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare,1);
       break
@@ -344,7 +344,7 @@ module.exports.validateJumpDetectionConfig = function (currentResultLength) {
 
   if (jumpDetectionThresholds.length !== currentResultLength) {
     throw new Error(
-        'The number of upper thresholds must match the number metrics.'
+        'The number of jump det thresholds must match the number metrics.'
     )
   }
   jumpDetectionThresholds.forEach(value => {
@@ -356,11 +356,10 @@ module.exports.validateJumpDetectionConfig = function (currentResultLength) {
   return jumpDetectionThresholds
 }
 
-module.exports.validateTrendDetectionMovingAveConfig = function (currentResultLength) {
-  const movingAveWindowSize = core.getInput('moving_ave_window_size')
+module.exports.validateTrendThreshold = function (currentResultLength) {
   const trendThresholds = core.getInput('trend_thresholds')
 
-  if (movingAveWindowSize == null || trendThresholds == null) {
+  if (trendThresholds == null) {
     throw new Error(
         'Both movingAveWindowSize and trendThresholds must be provided for trend detection with moving average.'
     )
@@ -378,6 +377,19 @@ module.exports.validateTrendDetectionMovingAveConfig = function (currentResultLe
       throw new Error(`Value ${value} is out of range [0,100]`);
     }
   });
+}
+
+module.exports.validateTrendDetectionMovingAveConfig = function (currentResultLength) {
+  validateTrendThreshold(currentResultLength);
+
+  // window size part
+  const movingAveWindowSize = core.getInput('moving_ave_window_size')
+  if (movingAveWindowSize == null) {
+    throw new Error(
+        'Both movingAveWindowSize must be provided for trend detection with moving average.'
+    )
+  }
+
 }
 
 module.exports.checkIfNthPreviousBenchmarkExists = function (

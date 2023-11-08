@@ -58,7 +58,7 @@ inputs:
     description: |
       It refers to a reference point by which we determine whether the benchmark is successful or not.
       The possible values are 'previous', 'previous_successful', 'threshold', 'jump_detection', 'trend_detection_moving_ave',
-      'trend_detection_delta_threshold'
+      'trend_detection_deltas'
     required: true
   bench_to_compare:
     description: |
@@ -90,7 +90,7 @@ inputs:
     description: 'The threshold values for jump detection.'
     required: false
   trend_thresholds:
-    description: 'The threshold value for deltas trend detection.'
+    description: 'The threshold value for both deltas trend detection and moving average.'
     required: false
   moving_ave_window_size:
     description: 'The window size for moving average trend detection.'
@@ -101,6 +101,13 @@ inputs:
       The possible values are use_available and fail.
     required: false
     default: "use_available"
+  trend_det_successful_release_branch:
+    description: |
+      The name of the branch that contains the successful benchmark result
+      in a release branch.
+      If not specified, main branch will be used.
+    required: false
+    default: "main"
 
 
   failing_condition:

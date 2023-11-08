@@ -1,6 +1,7 @@
 const core = require('@actions/core')
 
-const { getLatestBenchmark, getNLatestBenchmarks, getBenchFromWeekAgo } = require('./bench_data')
+const { getLatestBenchmark, getNLatestBenchmarks, getBenchFromWeekAgo,
+  getBenchmarkOfStableBranch} = require('./bench_data')
 
 
 module.exports.evaluateCurrentBenchmark = function (
@@ -320,18 +321,23 @@ module.exports.addResultToBenchmarkObject = function (
   }
 }
 
-module.exports.trendDetectionDeltas = function (currentBenchmarkData,
-                                                lastStableReleaseBench, config) {
+module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
   const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchToCompare,
         config.folderWithBenchData, config.fileWithBenchData, 1, false);
+  core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
 
   const benchFromWeekAgo = getBenchFromWeekAgo(config.evaluationConfig.benchToCompare,
         config.folderWithBenchData, config.fileWithBenchData);
+    core.debug('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
 
-  //const lastStableReleaseBench =
+  const lastStableReleaseBench = getBenchmarkOfStableBranch(
+        config.evaluationConfig.benchToCompare, config.folderWithBenchData,
+      config.fileWithBenchData, config.latestBenchSha);
+    core.debug('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
 
-  const { deltaThreshold: X } = config;
+
+  const { trendThresholds: X } = config.evaluationConfig;
 
 
   const metricNames = [];
@@ -346,31 +352,29 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData,
     return Math.abs(percentageChange) <= threshold;
   };
 
-  currentBenchmarkData.results.forEach((currentResult) => {
+  currentBenchmarkData.results.forEach((currentResult, index) => {
     const currentName = currentResult.name;
     const currentValue = currentResult.value;
-
+    const currentThreshold = X[index];
     const previousMetric = previousBenchmarkData.simpleMetricResults.find(r => r.name === currentName)?.value;
     const weekAgoMetric = benchFromWeekAgo.simpleMetricResults.find(r => r.name === currentName)?.value;
     const lastStableMetric = lastStableReleaseBench.simpleMetricResults.find(r => r.name === currentName)?.value;
 
     metricNames.push(currentName);
 
-    const isPassedPrevious = previousMetric === undefined || evaluateChange(previousMetric, currentValue, X);
-    const isPassedWeekAgo = weekAgoMetric === undefined || evaluateChange(weekAgoMetric, currentValue, X);
-    const isPassedLastStable = lastStableMetric === undefined || evaluateChange(lastStableMetric, currentValue, X);
+    const isPassedPrevious = previousMetric === undefined || evaluateChange(previousMetric, currentValue, currentThreshold);
+    const isPassedWeekAgo = weekAgoMetric === undefined || evaluateChange(weekAgoMetric, currentValue, currentThreshold);
+    const isPassedLastStable = lastStableMetric === undefined || evaluateChange(lastStableMetric, currentValue, currentThreshold);
 
     const isPassed = isPassedPrevious && isPassedWeekAgo && isPassedLastStable;
     evaluationResults.push(isPassed ? 'passed' : 'failed');
   });
 
   // Construct the result JSON
-  const resultJSON = {
+  return {
     "evaluation_method": "trend_detection_deltas",
     "metric_names": metricNames,
     "result": evaluationResults
   };
-
-  return resultJSON;
 };
 

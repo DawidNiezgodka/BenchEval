@@ -3509,6 +3509,151 @@ module.exports = parseParams
 
 /***/ }),
 
+/***/ 9597:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+// pkg/dist-src/index.js
+var dist_src_exports = {};
+__export(dist_src_exports, {
+  Octokit: () => Octokit,
+  customFetch: () => customFetch,
+  getProxyAgent: () => getProxyAgent
+});
+module.exports = __toCommonJS(dist_src_exports);
+var import_core = __nccwpck_require__(6461);
+var import_auth_action = __nccwpck_require__(3417);
+var import_plugin_paginate_rest = __nccwpck_require__(9883);
+var import_plugin_rest_endpoint_methods = __nccwpck_require__(6752);
+
+// pkg/dist-src/version.js
+var VERSION = "6.0.6";
+
+// pkg/dist-src/index.js
+var import_undici = __nccwpck_require__(9164);
+var DEFAULTS = {
+  authStrategy: import_auth_action.createActionAuth,
+  baseUrl: getApiBaseUrl(),
+  userAgent: `octokit-action.js/${VERSION}`
+};
+function getProxyAgent() {
+  const httpProxy = process.env["HTTP_PROXY"] || process.env["http_proxy"];
+  if (httpProxy) {
+    return new import_undici.ProxyAgent(httpProxy);
+  }
+  const httpsProxy = process.env["HTTPS_PROXY"] || process.env["https_proxy"];
+  if (httpsProxy) {
+    return new import_undici.ProxyAgent(httpsProxy);
+  }
+  return void 0;
+}
+var customFetch = async function(url, opts) {
+  return await (0, import_undici.fetch)(url, {
+    dispatcher: getProxyAgent(),
+    ...opts
+  });
+};
+var Octokit = import_core.Octokit.plugin(
+  import_plugin_paginate_rest.paginateRest,
+  import_plugin_rest_endpoint_methods.legacyRestEndpointMethods
+).defaults(function buildDefaults(options) {
+  return {
+    ...DEFAULTS,
+    ...options,
+    request: {
+      fetch: customFetch,
+      ...options.request
+    }
+  };
+});
+function getApiBaseUrl() {
+  return process.env["GITHUB_API_URL"] || "https://api.github.com";
+}
+// Annotate the CommonJS export names for ESM import in node:
+0 && (0);
+
+
+/***/ }),
+
+/***/ 3417:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+// pkg/dist-src/index.js
+var dist_src_exports = {};
+__export(dist_src_exports, {
+  createActionAuth: () => createActionAuth
+});
+module.exports = __toCommonJS(dist_src_exports);
+var import_auth_token = __nccwpck_require__(8426);
+var createActionAuth = function createActionAuth2() {
+  if (!process.env.GITHUB_ACTION) {
+    throw new Error(
+      "[@octokit/auth-action] `GITHUB_ACTION` environment variable is not set. @octokit/auth-action is meant to be used in GitHub Actions only."
+    );
+  }
+  const definitions = [
+    process.env.GITHUB_TOKEN,
+    process.env.INPUT_GITHUB_TOKEN,
+    process.env.INPUT_TOKEN
+  ].filter(Boolean);
+  if (definitions.length === 0) {
+    throw new Error(
+      "[@octokit/auth-action] `GITHUB_TOKEN` variable is not set. It must be set on either `env:` or `with:`. See https://github.com/octokit/auth-action.js#createactionauth"
+    );
+  }
+  if (definitions.length > 1) {
+    throw new Error(
+      "[@octokit/auth-action] The token variable is specified more than once. Use either `with.token`, `with.GITHUB_TOKEN`, or `env.GITHUB_TOKEN`. See https://github.com/octokit/auth-action.js#createactionauth"
+    );
+  }
+  const token = definitions.pop();
+  return (0, import_auth_token.createTokenAuth)(token);
+};
+// Annotate the CommonJS export names for ESM import in node:
+0 && (0);
+
+
+/***/ }),
+
 /***/ 8426:
 /***/ ((module) => {
 
@@ -30152,6 +30297,25 @@ module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchDa
   }
 }
 
+module.exports.getBenchmarkOfStableBranch = function (benchToCompare, folderWithBenchData,
+                                                      fileNameWithBenchData, latestBenchSha) {
+
+  let data = module.exports.getCompleteBenchData(
+        folderWithBenchData, fileNameWithBenchData
+    );
+  let benchmarks = data.entries[benchToCompare];
+  // find benchmark with commit sha == latestBenchSha
+  let benchmark = benchmarks.find(benchmark => benchmark.commit.id === latestBenchSha);
+  core.debug(`Benchmark of stable branch: ${JSON.stringify(benchmark)}`);
+
+    if (benchmark === undefined) {
+        throw new Error(`No benchmark under '${benchToCompare}' with commit sha ${latestBenchSha} found.`);
+    } else {
+        console.log(`The benchmark of the stable branch under '${benchToCompare}' is:`, benchmark);
+        return convertBenchDataToCompleteBenchmarkInstance(benchmark, benchToCompare);
+    }
+}
+
 
 
 
@@ -30590,6 +30754,24 @@ module.exports.getCommit = function () {
   }
 }
 
+// get commit hash of the last successful commit to main branch
+const { Octokit } = __nccwpck_require__(9597)
+const { context } = __nccwpck_require__(3134)
+
+module.exports.getLastCommitSha = async function (branchName) {
+  const octokit = new Octokit()
+  const response = await octokit.rest.repos.listCommits({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    sha: branchName,
+    per_page: 1
+  })
+
+  const lastCommitSha = response.data[0].sha
+  console.log(`The SHA of the last commit to master is ${lastCommitSha}`)
+  return lastCommitSha
+}
+
 
 /***/ }),
 
@@ -30788,7 +30970,7 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
 
       break
     case 'trend_detection_deltas':
-      module.exports.validateTrendDetectionDeltasConfig();
+      module.exports.validateTrendThreshold(currentResultLength);
       module.exports.checkForWeekOldBenchmark(benchmarkData, benchToCompare);
       module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare,1);
       break
@@ -30942,7 +31124,7 @@ module.exports.validateJumpDetectionConfig = function (currentResultLength) {
 
   if (jumpDetectionThresholds.length !== currentResultLength) {
     throw new Error(
-        'The number of upper thresholds must match the number metrics.'
+        'The number of jump det thresholds must match the number metrics.'
     )
   }
   jumpDetectionThresholds.forEach(value => {
@@ -30954,11 +31136,10 @@ module.exports.validateJumpDetectionConfig = function (currentResultLength) {
   return jumpDetectionThresholds
 }
 
-module.exports.validateTrendDetectionMovingAveConfig = function (currentResultLength) {
-  const movingAveWindowSize = core.getInput('moving_ave_window_size')
+module.exports.validateTrendThreshold = function (currentResultLength) {
   const trendThresholds = core.getInput('trend_thresholds')
 
-  if (movingAveWindowSize == null || trendThresholds == null) {
+  if (trendThresholds == null) {
     throw new Error(
         'Both movingAveWindowSize and trendThresholds must be provided for trend detection with moving average.'
     )
@@ -30976,6 +31157,19 @@ module.exports.validateTrendDetectionMovingAveConfig = function (currentResultLe
       throw new Error(`Value ${value} is out of range [0,100]`);
     }
   });
+}
+
+module.exports.validateTrendDetectionMovingAveConfig = function (currentResultLength) {
+  validateTrendThreshold(currentResultLength);
+
+  // window size part
+  const movingAveWindowSize = core.getInput('moving_ave_window_size')
+  if (movingAveWindowSize == null) {
+    throw new Error(
+        'Both movingAveWindowSize must be provided for trend detection with moving average.'
+    )
+  }
+
 }
 
 module.exports.checkIfNthPreviousBenchmarkExists = function (
@@ -31071,7 +31265,8 @@ module.exports.checkForWeekOldBenchmark = function(data, benchmarkKey) {
 
 const core = __nccwpck_require__(5127)
 
-const { getLatestBenchmark, getNLatestBenchmarks, getBenchFromWeekAgo } = __nccwpck_require__(9790)
+const { getLatestBenchmark, getNLatestBenchmarks, getBenchFromWeekAgo,
+  getBenchmarkOfStableBranch} = __nccwpck_require__(9790)
 
 
 module.exports.evaluateCurrentBenchmark = function (
@@ -31391,18 +31586,23 @@ module.exports.addResultToBenchmarkObject = function (
   }
 }
 
-module.exports.trendDetectionDeltas = function (currentBenchmarkData,
-                                                lastStableReleaseBench, config) {
+module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
   const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchToCompare,
         config.folderWithBenchData, config.fileWithBenchData, 1, false);
+  core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
 
   const benchFromWeekAgo = getBenchFromWeekAgo(config.evaluationConfig.benchToCompare,
         config.folderWithBenchData, config.fileWithBenchData);
+    core.debug('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
 
-  //const lastStableReleaseBench =
+  const lastStableReleaseBench = getBenchmarkOfStableBranch(
+        config.evaluationConfig.benchToCompare, config.folderWithBenchData,
+      config.fileWithBenchData, config.latestBenchSha);
+    core.debug('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
 
-  const { deltaThreshold: X } = config;
+
+  const { trendThresholds: X } = config.evaluationConfig;
 
 
   const metricNames = [];
@@ -31417,32 +31617,30 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData,
     return Math.abs(percentageChange) <= threshold;
   };
 
-  currentBenchmarkData.results.forEach((currentResult) => {
+  currentBenchmarkData.results.forEach((currentResult, index) => {
     const currentName = currentResult.name;
     const currentValue = currentResult.value;
-
+    const currentThreshold = X[index];
     const previousMetric = previousBenchmarkData.simpleMetricResults.find(r => r.name === currentName)?.value;
     const weekAgoMetric = benchFromWeekAgo.simpleMetricResults.find(r => r.name === currentName)?.value;
     const lastStableMetric = lastStableReleaseBench.simpleMetricResults.find(r => r.name === currentName)?.value;
 
     metricNames.push(currentName);
 
-    const isPassedPrevious = previousMetric === undefined || evaluateChange(previousMetric, currentValue, X);
-    const isPassedWeekAgo = weekAgoMetric === undefined || evaluateChange(weekAgoMetric, currentValue, X);
-    const isPassedLastStable = lastStableMetric === undefined || evaluateChange(lastStableMetric, currentValue, X);
+    const isPassedPrevious = previousMetric === undefined || evaluateChange(previousMetric, currentValue, currentThreshold);
+    const isPassedWeekAgo = weekAgoMetric === undefined || evaluateChange(weekAgoMetric, currentValue, currentThreshold);
+    const isPassedLastStable = lastStableMetric === undefined || evaluateChange(lastStableMetric, currentValue, currentThreshold);
 
     const isPassed = isPassedPrevious && isPassedWeekAgo && isPassedLastStable;
     evaluationResults.push(isPassed ? 'passed' : 'failed');
   });
 
   // Construct the result JSON
-  const resultJSON = {
+  return {
     "evaluation_method": "trend_detection_deltas",
     "metric_names": metricNames,
     "result": evaluationResults
   };
-
-  return resultJSON;
 };
 
 
@@ -31461,6 +31659,10 @@ const {
   anyFailed,
   evaluateCurrentBenchmark
 } = __nccwpck_require__(248)
+
+const {
+  getLastCommitSha
+} = __nccwpck_require__(1175)
 
 const { createCurrBench} = __nccwpck_require__(501)
 
@@ -31489,8 +31691,14 @@ async function run() {
         completeConfig.folderWithBenchData,
         completeConfig.fileWithBenchData
     );
-    //core.debug('Complete benchmark data: ' + JSON.stringify(completeBenchData))
-    //core.debug("------------------------------------------------")
+
+    let latestBenchSha = null;
+    if (core.getInput('trend_det_successful_release_branch') !== 'null') {
+      const branchName = core.getInput('trend_det_successful_release_branch');
+      latestBenchSha = await getLastCommitSha(branchName);
+      core.debug('Latest bench sha: ' + latestBenchSha);
+      completeConfig.latestBenchSha = latestBenchSha;
+    }
 
     const evaluationResult = evaluateCurrentBenchmark(
         completeBenchmarkObject,

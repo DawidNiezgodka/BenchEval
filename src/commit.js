@@ -35,3 +35,21 @@ module.exports.getCommit = function () {
     )
   }
 }
+
+// get commit hash of the last successful commit to main branch
+const { Octokit } = require('@octokit/action')
+const { context } = require('@actions/github')
+
+module.exports.getLastCommitSha = async function (branchName) {
+  const octokit = new Octokit()
+  const response = await octokit.rest.repos.listCommits({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    sha: branchName,
+    per_page: 1
+  })
+
+  const lastCommitSha = response.data[0].sha
+  console.log(`The SHA of the last commit to master is ${lastCommitSha}`)
+  return lastCommitSha
+}

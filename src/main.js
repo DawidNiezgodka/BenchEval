@@ -8,6 +8,10 @@ const {
   evaluateCurrentBenchmark
 } = require('./evaluate')
 
+const {
+  getLastCommitSha
+} = require('./commit')
+
 const { createCurrBench} = require('./bench')
 
 const { createComment } = require('./comment')
@@ -35,8 +39,14 @@ async function run() {
         completeConfig.folderWithBenchData,
         completeConfig.fileWithBenchData
     );
-    //core.debug('Complete benchmark data: ' + JSON.stringify(completeBenchData))
-    //core.debug("------------------------------------------------")
+
+    let latestBenchSha = null;
+    if (core.getInput('trend_det_successful_release_branch') !== 'null') {
+      const branchName = core.getInput('trend_det_successful_release_branch');
+      latestBenchSha = await getLastCommitSha(branchName);
+      core.debug('Latest bench sha: ' + latestBenchSha);
+      completeConfig.latestBenchSha = latestBenchSha;
+    }
 
     const evaluationResult = evaluateCurrentBenchmark(
         completeBenchmarkObject,
