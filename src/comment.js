@@ -2,14 +2,8 @@ const core = require('@actions/core')
 const github = require('@actions/github')
 
 module.exports.createComment = function (
-  currentBenchmark,
-  githubToken,
-  reference,
-  previousBenchmark, // for reference === 'previous'
-  thresholdArray,
-  comparisonModes, // for reference === 'threshold'
-  comparisonMargins, // for both
-  failingCondition
+    githubToken,
+  completeConfig
 ) {
   // if github token is not provided, it won't be possible to create a comment
   if (githubToken === null || githubToken === undefined) {
@@ -19,22 +13,30 @@ module.exports.createComment = function (
   }
 
   let commentBody
-  if (reference === 'previous') {
-    commentBody = module.exports.createCommentBodyForComparisonWithPrevBench(
-      currentBenchmark,
-      previousBenchmark,
-      comparisonModes,
-      comparisonMargins,
-      failingCondition
-    )
-  } else {
-    core.debug('Creating comment body for comparison with threshold')
-    commentBody = module.exports.createCommentBodyForComparisonWithThreshold(
-      currentBenchmark,
-      thresholdArray,
-      comparisonModes,
-      comparisonMargins
-    )
+  switch (completeConfig.evaluationConfig.evaluationMethod) {
+    case 'threshold':
+      commentBody = module.exports.evaluateWithThreshold(currentBenchmark, completeConfig.evaluationConfig);
+      break;
+    case 'previous':
+      commentBody = module.exports.compareWithPrevious(currentBenchmark, completeBenchData, completeConfig, false);
+      break;
+    case 'previous_successful':
+      commentBody = module.exports.compareWithPrevious(currentBenchmark, completeBenchData, completeConfig, true);
+      break;
+    case 'threshold_range':
+      commentBody = module.exports.evaluateWithThresholdRanges(currentBenchmark, completeConfig.evaluationConfig);
+      break;
+    case 'jump_detection':
+      commentBody = module.exports.evaluateWithJumpDetection(currentBenchmark, completeConfig);
+      break;
+    case 'trend_detection_moving_ave':
+      commentBody = module.exports.trendDetectionMovingAve(currentBenchmark, completeConfig);
+      break;
+    case 'trend_detection_deltas':
+      commentBody = module.exports.trendDetectionDeltas(currentBenchmark, completeConfig);
+      break;
+    default:
+      throw new Error(`Unsupported evaluation method: ${completeConfig.evaluationConfig.evaluationMethod}`);
   }
 
   module.exports.leaveComment(
@@ -53,52 +55,30 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
 ) {
   const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
 
-  lines.push('## Benchmark information')
-
   const currentBenchName = currentBenchmark.benchmarkName
   const previousBenchName = previousBenchmark.benchmarkName
-  console.log('Current bench name', currentBenchName)
-  console.log('Previous bench name', previousBenchName)
+
   if (currentBenchName !== previousBenchName) {
     lines.push(
       "Please note that you're comparing benchmarks with different names!"
     )
   }
-  // Call the function to generate bench_data text
+
   const benchDataText = module.exports.createBenchDataTextForCompWithPrev(
     currentBenchmark,
     previousBenchmark
   )
 
-  // Append bench_data text to the lines array
   lines.push(benchDataText)
   lines.push('', '', '', '', '')
   lines.push('## Results')
   lines.push('', '', '', '', '')
-
-  core.debug(`Current benchmark commit info: ${currentBenchmark.commitInfo.id}`)
-  core.debug(
-    `Current benchmark commit info: ${previousBenchmark.commitInfo.id}`
-  )
 
   lines.push(
     `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Condition | Result |`
   )
   lines.push('|-|-|-|-|-|')
 
-  core.debug(`Metrics for ${currentBenchmark.benchmarkName}:`)
-  currentBenchmark.simpleMetricResults.forEach(metric => {
-    core.debug(`  ${metric.name}: ${metric.value}`)
-  })
-
-  core.debug(`Metrics for ${previousBenchmark.benchmarkName}:`)
-  previousBenchmark.simpleMetricResults.forEach(metric => {
-    core.debug(`  ${metric.name}: ${metric.value}`)
-  })
-
-  let anyFailed = false
-  let failsArr = []
-  let allFailed = false
   for (const [
     i,
     currentMetric
@@ -113,39 +93,7 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
     let currentBetter
 
     if (prev) {
-      if (comparisonMode === 'bigger') {
-        if (comparisonMargin === '-1') {
-          currentBetter = currentMetric.value > prev.value
-        } else {
-          const lowerLimit = prev.value * (1 + comparisonMargin / 100)
-          currentBetter = currentMetric.value >= lowerLimit
-        }
-      } else if (comparisonMode === 'smaller') {
-        if (comparisonMargin === '-1') {
-          console.log('Comparing smaller with margin -1')
-          currentBetter = currentMetric.value < prev.value
-          console.log('Current better: ' + currentBetter)
-        } else {
-          const upperLimit = prev.value * (1 - comparisonMargin / 100)
-          currentBetter = currentMetric.value <= upperLimit
-        }
-      } else if (comparisonMode === 'range') {
-        const lowerLimit = prev.value * (1 - comparisonMargin / 100)
-        const upperLimit = prev.value * (1 + comparisonMargin / 100)
-        currentBetter =
-          currentMetric.value >= lowerLimit && currentMetric.value <= upperLimit
-      } else {
-        throw new Error(`Unknown threshold comparison mode: ${comparisonMode}`)
-      }
-      core.debug(
-        'Creating a line for metric ' +
-          currentMetric.name +
-          ' with value ' +
-          currentMetric.value
-      )
-      if (!currentBetter) {
-        anyFailed = true
-      }
+
       failsArr.push(currentBetter)
       let betterOrWorse = currentBetter ? '🟢' : '🔴'
       line = `| \`${currentMetric.name}\` | ${module.exports.fetchValueAndUnit(

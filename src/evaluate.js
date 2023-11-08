@@ -3,6 +3,7 @@ const core = require('@actions/core')
 const { getLatestBenchmark, getNLatestBenchmarks, getBenchFromWeekAgo,
   getBenchmarkOfStableBranch} = require('./bench_data')
 
+const {createEvaluationObject } = require('./types')
 
 module.exports.evaluateCurrentBenchmark = function (
     currentBenchmark,
@@ -85,15 +86,21 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluatio
     evaluationResults.push(isPassed ? 'passed' : 'failed');
   });
 
-  return {
+
+
+  return createEvaluationObject({
     "evaluation_method": "threshold",
     "metric_names": metricNames,
     "metric_units": metricUnits,
     "is": actualValues,
     "should_be": shouldBe,
     "than": thanValues,
-    "result": evaluationResults
-  };
+    "result": evaluationResults,
+    "reference_benchmarks": {
+      "current": currentBenchmarkData
+    }
+  });
+
 };
 
 module.exports.compareWithPrevious = function (currentBenchmarkData, completeBenchData, completeConfig, successful) {
@@ -156,15 +163,21 @@ module.exports.compareWithPrevious = function (currentBenchmarkData, completeBen
   });
 
   const evaluationMethod = successful ? "previous_successful" : "previous";
-  return {
-    "evaluation_method": evaluationMethod,
-    "metric_names": metricNames,
-    "metric_units": metricUnits,
-    "is": actualValues,
-    "should_be": shouldBe,
-    "than": thanValues,
-    "result": evaluationResults
-  };
+  return createEvaluationObject(
+      {
+        "evaluation_method": evaluationMethod,
+        "metric_names": metricNames,
+        "metric_units": metricUnits,
+        "is": actualValues,
+        "should_be": shouldBe,
+        "than": thanValues,
+        "result": evaluationResults,
+        "reference_benchmarks": {
+          "current": currentBenchmarkData,
+          "previous": previousBenchmarkData
+        }
+      }
+  );
 };
 
 module.exports.evaluateWithThresholdRanges = function (currentBenchmarkData, config) {
@@ -191,14 +204,19 @@ module.exports.evaluateWithThresholdRanges = function (currentBenchmarkData, con
     evaluationResults.push(isPassed ? 'passed' : 'failed');
   });
 
-  return {
-    "evaluation_method": "threshold_ranges",
-    "metric_names": metricNames,
-    "metric_units": metricUnits,
-    "is": actualValues,
-    "should_be": shouldBeBetween,
-    "result": evaluationResults
-  };
+  return createEvaluationObject(
+      {
+        "evaluation_method": "threshold_range",
+        "metric_names": metricNames,
+        "metric_units": metricUnits,
+        "is": actualValues,
+        "should_be": shouldBeBetween,
+        "result": evaluationResults,
+        "reference_benchmarks": {
+          "current": currentBenchmarkData
+        }
+      }
+  );
 };
 
 module.exports.evaluateWithJumpDetection = function (currentBenchmarkData, config) {
@@ -240,14 +258,18 @@ module.exports.evaluateWithJumpDetection = function (currentBenchmarkData, confi
     }
   });
 
-  return {
+  return createEvaluationObject({
     "evaluation_method": "jump_detection",
     "metric_names": metricNames,
     "metric_units": metricUnits,
     "is": ratios,
     "should_be": shouldBe,
-    "result": evaluationResults
-  };
+    "result": evaluationResults,
+    "reference_benchmarks": {
+      "current": currentBenchmarkData,
+      "previous": previousBenchmarkData
+    }
+  });
 };
 
 module.exports.trendDetectionMovingAve = function (currentBenchmarkData, completeConfig) {
@@ -288,14 +310,18 @@ module.exports.trendDetectionMovingAve = function (currentBenchmarkData, complet
     evaluationResults.push(isPassed ? 'passed' : 'failed');
   });
 
-  return {
+  return createEvaluationObject({
     "evaluation_method": "trend_detection_moving_ave",
     "metric_names": metricNames,
     "metric_units": metricUnits,
     "is": percentageIncreases,
     "should_be": should_be,
-    "result": evaluationResults
-  };
+    "result": evaluationResults,
+    "reference_benchmarks": {
+        "previous": previousBenchmarkDataArray,
+        "current": currentBenchmarkData
+    }
+  });
 };
 
 module.exports.allFailed = function (resultArray) {
@@ -393,18 +419,19 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
   });
 
-  return {
+  return createEvaluationObject({
     "evaluation_method": "trend_detection_deltas",
     "metric_names": metricNames,
     "metric_units": metricUnits,
     "result": evaluationResults,
     "failed_explanations": failedExplanations,
     "reference_benchmarks": {
-        "previous": previousBenchmarkData,
-        "week_ago": benchFromWeekAgo,
-        "last_stable_release": lastStableReleaseBench
+      "current": currentBenchmarkData,
+      "previous": previousBenchmarkData,
+      "week_ago": benchFromWeekAgo,
+      "last_stable_release": lastStableReleaseBench
     },
     "metric_to_different_bench_values": metricToDifferentBenchValues
-  };
+  });
 };
 

@@ -105,6 +105,74 @@ class EvaluationConfig {
     }
 }
 
+class ReferenceBenchmarks {
+    constructor(current, previous, weekAgo, lastStableRelease) {
+        this.current = current;
+        this.previous = previous;
+        this.week_ago = weekAgo;
+        this.last_stable_release = lastStableRelease;
+    }
+}
+
+class EvalParameters {
+    constructor(evaluationMethod, metricNames, metricUnits, options = {}) {
+        this.evaluation_method = evaluationMethod;
+        this.metric_names = metricNames;
+        this.metric_units = metricUnits;
+
+
+        this.failed_explanations = options.failed_explanations || [];
+        this.metric_to_different_bench_values = options.metric_to_different_bench_values || {};
+        this.is = options.is || [];
+        this.should_be = options.should_be || [];
+        this.than = options.than || [];
+    }
+}
+
+class Results {
+    constructor(result) {
+        this.result = result;
+    }
+}
+
+class Evaluation {
+    constructor(results, evalParameters, referenceBenchmarks) {
+        this.results = results;
+        this.eval_parameters = evalParameters;
+        this.reference_benchmarks = referenceBenchmarks;
+    }
+}
+
+module.exports.createEvaluationObject = function(data) {
+    const results = new Results(data.result);
+    const evalParameters = new EvalParameters(
+        data.evaluation_method,
+        data.metric_names,
+        data.metric_units,
+        {
+            failed_explanations: data.failed_explanations,
+            metric_to_different_bench_values: data.metric_to_different_bench_values,
+            is: data.is,
+            should_be: data.should_be,
+            than: data.than
+        }
+    );
+
+    let referenceBenchmarks = null;
+    if (data.reference_benchmarks) {
+        referenceBenchmarks = new ReferenceBenchmarks(
+            data.reference_benchmarks.current,
+            data.reference_benchmarks.previous,
+            data.reference_benchmarks.week_ago,
+            data.reference_benchmarks.last_stable_release
+        );
+    }
+
+    return new Evaluation(results, evalParameters, referenceBenchmarks);
+}
+
+
+
 module.exports = {
   CompleteBenchmark,
   SimpleMetricResult,

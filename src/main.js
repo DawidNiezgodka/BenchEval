@@ -54,28 +54,30 @@ async function run() {
         completeConfig
     );
 
+    core.debug('Evaluation result: ' + JSON.stringify(evaluationResult))
+
     if (completeConfig.saveCurrBenchRes) {
       core.debug('Saving current benchmark results to file')
-      await addCompleteBenchmarkToFile(
-        completeBenchmarkObject,
-        completeConfig.fileWithBenchData,
-          evaluationResult,
-          completeConfig.evaluationConfig
+      await addCompleteBenchmarkToFile(completeBenchmarkObject, completeConfig.fileWithBenchData,
+          evaluationResult, completeConfig.evaluationConfig
       )
     }
+
+    // adding comment
+
+    // adding summary
+
+    // failing
     core.setOutput('should_fail', 'false')
+    const resultArray = evaluationResult.result
     if (completeConfig.failingCondition === 'any') {
-      console.log("Fail condition is 'any")
-      resultArray.forEach(element => console.log(element))
       let anyF = anyFailed(resultArray)
-      console.log('anyF: ' + anyF)
       if (anyFailed(resultArray)) {
         core.setOutput('should_fail', 'true')
       }
     }
     if (completeConfig.failingCondition === 'all') {
       if (allFailed(resultArray)) {
-        console.log("Fail condition is 'any")
         core.setOutput('should_fail', 'true')
       }
     }
