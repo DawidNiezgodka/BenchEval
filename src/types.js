@@ -143,41 +143,15 @@ class Evaluation {
     }
 }
 
-module.exports.createEvaluationObject = function(data) {
-    const results = new Results(data.result);
-    const evalParameters = new EvalParameters(
-        data.evaluation_method,
-        data.metric_names,
-        data.metric_units,
-        {
-            failed_explanations: data.failed_explanations,
-            metric_to_different_bench_values: data.metric_to_different_bench_values,
-            is: data.is,
-            should_be: data.should_be,
-            than: data.than
-        }
-    );
-
-    let referenceBenchmarks = null;
-    if (data.reference_benchmarks) {
-        referenceBenchmarks = new ReferenceBenchmarks(
-            data.reference_benchmarks.current,
-            data.reference_benchmarks.previous,
-            data.reference_benchmarks.week_ago,
-            data.reference_benchmarks.last_stable_release
-        );
-    }
-
-    return new Evaluation(results, evalParameters, referenceBenchmarks);
-}
-
-
-
 module.exports = {
   CompleteBenchmark,
   SimpleMetricResult,
   Config,
   Commit,
   BenchmarkInfo,
-  EvaluationConfig
+  EvaluationConfig,
+    ReferenceBenchmarks,
+    EvalParameters,
+    Results,
+    Evaluation
 }

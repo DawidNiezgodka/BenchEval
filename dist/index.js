@@ -31223,7 +31223,7 @@ const core = __nccwpck_require__(5127)
 const { getLatestBenchmark, getNLatestBenchmarks, getBenchFromWeekAgo,
   getBenchmarkOfStableBranch} = __nccwpck_require__(9790)
 
-const {createEvaluationObject } = __nccwpck_require__(510)
+const { ReferenceBenchmarks, EvalParameters, Results, Evaluation} = __nccwpck_require__(510)
 
 module.exports.evaluateCurrentBenchmark = function (
     currentBenchmark,
@@ -31308,7 +31308,7 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluatio
 
 
 
-  return createEvaluationObject({
+  return module.exports.createEvaluationObject({
     "evaluation_method": "threshold",
     "metric_names": metricNames,
     "metric_units": metricUnits,
@@ -31383,7 +31383,7 @@ module.exports.compareWithPrevious = function (currentBenchmarkData, completeBen
   });
 
   const evaluationMethod = successful ? "previous_successful" : "previous";
-  return createEvaluationObject(
+  return module.exports.createEvaluationObject(
       {
         "evaluation_method": evaluationMethod,
         "metric_names": metricNames,
@@ -31424,7 +31424,7 @@ module.exports.evaluateWithThresholdRanges = function (currentBenchmarkData, con
     evaluationResults.push(isPassed ? 'passed' : 'failed');
   });
 
-  return createEvaluationObject(
+  return module.exports.createEvaluationObject(
       {
         "evaluation_method": "threshold_range",
         "metric_names": metricNames,
@@ -31478,7 +31478,7 @@ module.exports.evaluateWithJumpDetection = function (currentBenchmarkData, confi
     }
   });
 
-  return createEvaluationObject({
+  return module.exports.createEvaluationObject({
     "evaluation_method": "jump_detection",
     "metric_names": metricNames,
     "metric_units": metricUnits,
@@ -31530,7 +31530,7 @@ module.exports.trendDetectionMovingAve = function (currentBenchmarkData, complet
     evaluationResults.push(isPassed ? 'passed' : 'failed');
   });
 
-  return createEvaluationObject({
+  return module.exports.createEvaluationObject({
     "evaluation_method": "trend_detection_moving_ave",
     "metric_names": metricNames,
     "metric_units": metricUnits,
@@ -31639,7 +31639,7 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
   });
 
-  return createEvaluationObject({
+  return module.exports.createEvaluationObject({
     "evaluation_method": "trend_detection_deltas",
     "metric_names": metricNames,
     "metric_units": metricUnits,
@@ -31654,6 +31654,34 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
     "metric_to_different_bench_values": metricToDifferentBenchValues
   });
 };
+
+module.exports.createEvaluationObject = function(data) {
+  const results = new Results(data.result);
+  const evalParameters = new EvalParameters(
+      data.evaluation_method,
+      data.metric_names,
+      data.metric_units,
+      {
+        failed_explanations: data.failed_explanations,
+        metric_to_different_bench_values: data.metric_to_different_bench_values,
+        is: data.is,
+        should_be: data.should_be,
+        than: data.than
+      }
+  );
+
+  let referenceBenchmarks = null;
+  if (data.reference_benchmarks) {
+    referenceBenchmarks = new ReferenceBenchmarks(
+        data.reference_benchmarks.current,
+        data.reference_benchmarks.previous,
+        data.reference_benchmarks.week_ago,
+        data.reference_benchmarks.last_stable_release
+    );
+  }
+
+  return new Evaluation(results, evalParameters, referenceBenchmarks);
+}
 
 
 
@@ -31905,43 +31933,17 @@ class Evaluation {
     }
 }
 
-module.exports.createEvaluationObject = function(data) {
-    const results = new Results(data.result);
-    const evalParameters = new EvalParameters(
-        data.evaluation_method,
-        data.metric_names,
-        data.metric_units,
-        {
-            failed_explanations: data.failed_explanations,
-            metric_to_different_bench_values: data.metric_to_different_bench_values,
-            is: data.is,
-            should_be: data.should_be,
-            than: data.than
-        }
-    );
-
-    let referenceBenchmarks = null;
-    if (data.reference_benchmarks) {
-        referenceBenchmarks = new ReferenceBenchmarks(
-            data.reference_benchmarks.current,
-            data.reference_benchmarks.previous,
-            data.reference_benchmarks.week_ago,
-            data.reference_benchmarks.last_stable_release
-        );
-    }
-
-    return new Evaluation(results, evalParameters, referenceBenchmarks);
-}
-
-
-
 module.exports = {
   CompleteBenchmark,
   SimpleMetricResult,
   Config,
   Commit,
   BenchmarkInfo,
-  EvaluationConfig
+  EvaluationConfig,
+    ReferenceBenchmarks,
+    EvalParameters,
+    Results,
+    Evaluation
 }
 
 
