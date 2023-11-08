@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1699453408727,
+    "lastUpdate": 1699469730972,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -1549,6 +1549,152 @@
                             "failed",
                             "failed"
                         ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "8d0f2351a32aaefbc6c07136e60bd1822ff3f77c",
+                    "message": "move func",
+                    "timestamp": "2023-11-08T19:55:18+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/8d0f2351a32aaefbc6c07136e60bd1822ff3f77c"
+                },
+                "date": 1699469730972,
+                "executionTime": "1 m",
+                "parametrization": {
+                    "ack": "2",
+                    "read-in-ram": true
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "metric2",
+                        "value": 123,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "metric4",
+                        "value": 345,
+                        "unit": "op/s"
+                    },
+                    {
+                        "name": "metric3",
+                        "value": 456,
+                        "unit": "%"
+                    }
+                ],
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "threshold_range",
+                        "benchToCompare": "Benchmark",
+                        "thresholdValues": null,
+                        "comparisonOperators": null,
+                        "comparisonMargins": null,
+                        "thresholdUpper": [
+                            200,
+                            300,
+                            400
+                        ],
+                        "thresholdLower": [
+                            100,
+                            200,
+                            300
+                        ],
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": null,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationResult": {
+                        "results": {
+                            "result": [
+                                "passed",
+                                "failed",
+                                "failed"
+                            ]
+                        },
+                        "eval_parameters": {
+                            "evaluation_method": "threshold_range",
+                            "metric_names": [
+                                "metric2",
+                                "metric4",
+                                "metric3"
+                            ],
+                            "metric_units": [
+                                "ms",
+                                "op/s",
+                                "%"
+                            ],
+                            "failed_explanations": [],
+                            "metric_to_different_bench_values": {},
+                            "is": [
+                                123,
+                                345,
+                                456
+                            ],
+                            "should_be": [
+                                "[100, 200]",
+                                "[200, 300]",
+                                "[300, 400]"
+                            ],
+                            "than": []
+                        },
+                        "reference_benchmarks": {
+                            "current": {
+                                "benchmarkName": "Benchmark",
+                                "benchmarkInfo": {
+                                    "executionTime": "1 m",
+                                    "parametrization": {
+                                        "ack": "2",
+                                        "read-in-ram": true
+                                    },
+                                    "otherInfo": "kafka, v2.3"
+                                },
+                                "simpleMetricResults": [
+                                    {
+                                        "name": "metric2",
+                                        "value": 123,
+                                        "unit": "ms"
+                                    },
+                                    {
+                                        "name": "metric4",
+                                        "value": 345,
+                                        "unit": "op/s"
+                                    },
+                                    {
+                                        "name": "metric3",
+                                        "value": 456,
+                                        "unit": "%"
+                                    }
+                                ],
+                                "commitInfo": {
+                                    "author": {
+                                        "email": "dawid.niezgodka@gmail.com",
+                                        "name": "Dawid Niezgódka",
+                                        "username": "DawidNiezgodka"
+                                    },
+                                    "committer": {
+                                        "email": "dawid.niezgodka@gmail.com",
+                                        "name": "Dawid Niezgódka",
+                                        "username": "DawidNiezgodka"
+                                    },
+                                    "id": "8d0f2351a32aaefbc6c07136e60bd1822ff3f77c",
+                                    "message": "move func",
+                                    "timestamp": "2023-11-08T19:55:18+01:00",
+                                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/8d0f2351a32aaefbc6c07136e60bd1822ff3f77c"
+                                }
+                            }
+                        }
                     }
                 }
             }
