@@ -339,9 +339,10 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
   const { trendThresholds: X } = config.evaluationConfig;
 
-
   const metricNames = [];
   const evaluationResults = [];
+  const metricUnits = [];
+  const failedExplanations = [];
 
   const calculatePercentageChange = (oldValue, newValue) => {
     return ((newValue - oldValue) / oldValue) * 100;
@@ -352,9 +353,11 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
     return Math.abs(percentageChange) <= threshold;
   };
 
-  currentBenchmarkData.results.forEach((currentResult, index) => {
+  currentBenchmarkData.simpleMetricResults.forEach((currentResult, index) => {
     const currentName = currentResult.name;
     const currentValue = currentResult.value;
+    const currentUnit = currentResult.unit;
+    metricUnits.push(currentUnit);
     const currentThreshold = X[index];
     const previousMetric = previousBenchmarkData.simpleMetricResults.find(r => r.name === currentName)?.value;
     const weekAgoMetric = benchFromWeekAgo.simpleMetricResults.find(r => r.name === currentName)?.value;
@@ -368,13 +371,29 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
     const isPassed = isPassedPrevious && isPassedWeekAgo && isPassedLastStable;
     evaluationResults.push(isPassed ? 'passed' : 'failed');
+    // if failed, add to failedExplanation "benchmark failed for the metric_name because one of the following benchmarks failed
+    // to be within the threshold: previous, week ago, last stable release"
+    if (!isPassed) {
+      const failedExplanation = `benchmark failed for the metric ${currentName}
+      because one of the reference benchmarks failed to be within the threshold: ${X[index]}`;
+      failedExplanations.push(failedExplanation);
+    } else {
+      failedExplanations.push('N/A');
+    }
+
   });
 
-  // Construct the result JSON
   return {
     "evaluation_method": "trend_detection_deltas",
     "metric_names": metricNames,
-    "result": evaluationResults
+    "metric_units": metricUnits,
+    "result": evaluationResults,
+    "failed_explanations": failedExplanations,
+    "reference_benchmarks": {
+        "previous": previousBenchmarkData,
+        "week_ago": benchFromWeekAgo,
+        "last_stable_release": lastStableReleaseBench
+    }
   };
 };
 
