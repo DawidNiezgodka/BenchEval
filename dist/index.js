@@ -30426,7 +30426,7 @@ module.exports.createBodyForComparisonWithPrev = function (
     let valueAndUnit = actualValue + ' ' + metricUnit
     if (resultStatus === 'failed' || resultStatus === 'passed') {
       let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴'
-      line = `| \`${metricName}\` | \`${valueAndUnit}\` | ${comparisonMode} | ${previousBenchRes} | ${betterOrWorse} |`
+      line = `| \`${metricName}\` | \`${valueAndUnit}\` | ${comparisonMode} | \`${previousBenchRes}\` | ${betterOrWorse} |`
     } else {
       // If the previous benchmark does not contain the current metric, mark it.
       line = `| \`${metricName}\` | \'${valueAndUnit}\' | - | N/A | 🔘 |`
@@ -30435,34 +30435,27 @@ module.exports.createBodyForComparisonWithPrev = function (
     lines.push(line)
   }
   lines.push('', '', '', '', '')
-  const anyFailed = evaluationResults.some(element => element === 'failed')
-  if (completeConfig.failingCondition === 'any' && anyFailed) {
-    lines.push('## Benchmark failed')
-    lines.push(
-      "The chosen failing condition is 'any', and at least one metric didn't satisfy the condition."
-    )
-  } else {
-    lines.push('## Benchmark passed')
-    lines.push(
-      "The chosen failing condition is 'any', and all metrics satisfied the condition."
-    )
+  const { failingCondition } = completeConfig;
+  const benchmarkPassed =
+      failingCondition === 'any' ? !evaluationResults.includes('failed') :
+          failingCondition === 'all' ? !evaluationResults.includes('passed') :
+              failingCondition === 'none' ? true : null;
+
+  const conditionMessage =
+      failingCondition === 'any' ? (benchmarkPassed ? "all metrics satisfied" : "at least one metric didn't satisfy") :
+          failingCondition === 'all' ? (benchmarkPassed ? "all metrics passed" : "all metrics failed") :
+              "the benchmark passes regardless of results.";
+
+  lines.push(`## Benchmark ${benchmarkPassed ? 'passed' : 'failed'}`);
+  lines.push(`The chosen failing condition is '${failingCondition}', and ${conditionMessage} the condition.`);
+
+  if (!benchmarkPassed) {
+    cc = ['@DawidNiezgodka']
+    if (cc.length > 0) {
+      lines.push('', `CC: ${cc.join(' ')}`);
+    }
   }
 
-  const allFailed = evaluationResults.every(element => element === 'failed')
-  if (completeConfig.failingCondition === 'all' && allFailed) {
-    lines.push('## Benchmark failed')
-    lines.push("The chosen failing condition is 'all', and all metrics failed.")
-  } else {
-    lines.push('## Benchmark passed')
-    lines.push("The chosen failing condition is 'all', and all metric passed.")
-  }
-
-  if (completeConfig.failingCondition === 'none') {
-    lines.push('## Benchmark passed')
-    lines.push(
-      "The chosen failing condition is 'none' so the benchmark passes regardless of results."
-    )
-  }
 
   return lines.join('\n')
 }
