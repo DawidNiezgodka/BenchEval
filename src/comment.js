@@ -76,24 +76,35 @@ module.exports.createBodyForComparisonWithPrev = function (
   lines.push('|-|-|-|-|-|')
 
   const evaluationResults = evaluationResult.results.result
-  core.debug('Evaluation results: ' + evaluationResults)
   const evaluationParameters = evaluationResult.evalParameters
-  core.debug('Evaluation parameters: ' + evaluationParameters)
+  const evaluationConfiguration = completeConfig.evaluationConfig
+
   for (let i = 0; i < evaluationResults.length; i++) {
-    core.debug("Entering the for loop")
+    const comparisonMargin = evaluationConfiguration.comparisonMargins[i];
     const resultStatus = evaluationResults[i];
     const metricName = evaluationParameters.metricNames[i];
     const metricUnit = evaluationParameters.metricUnits[i];
     const actualValue = evaluationParameters.is[i];
     const comparisonMode = evaluationParameters.shouldBe[i];
     const previousBenchRes = evaluationParameters.than[i];
+    const prevBenchValAndUnit = previousBenchRes + ' ' + metricUnit;
     let line
     let valueAndUnit = actualValue + ' ' + metricUnit
+
+    let comparisonResult;
+
+    if (comparisonMargin >= 0 && comparisonMargin <= 100 && (comparisonMode === 'smaller' || comparisonMode === 'bigger')) {
+      comparisonResult = `Must be up to ${comparisonMargin} % ${comparisonMode}`;
+    } else if (comparisonMargin === -1 && (comparisonMode === 'smaller' || comparisonMode === 'bigger')) {
+      comparisonResult = `Must be strictly ${comparisonMode}`;
+    } else if (comparisonMode === 'tolerance') {
+      comparisonResult = 'Should be in a range of ' + comparisonMargin + ' %';
+    }
+
     if (resultStatus === 'failed' || resultStatus === 'passed') {
       let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴'
-      line = `| \`${metricName}\` | \`${valueAndUnit}\` | ${comparisonMode} | \`${previousBenchRes}\` | ${betterOrWorse} |`
+      line = `| \`${metricName}\` | \`${valueAndUnit}\` | ${comparisonResult} | \`${prevBenchValAndUnit}\` | ${betterOrWorse} |`
     } else {
-      // If the previous benchmark does not contain the current metric, mark it.
       line = `| \`${metricName}\` | \'${valueAndUnit}\' | - | N/A | 🔘 |`
     }
 
