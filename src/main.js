@@ -65,6 +65,9 @@ async function run() {
     }
 
     // adding comment
+    if (completeConfig.addComment) {
+      createComment(completeConfig, evaluationResult)
+    }
 
 
     // adding summary

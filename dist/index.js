@@ -30406,7 +30406,7 @@ module.exports.createBodyForComparisonWithPrev = function (
   lines.push('', '', '', '', '')
 
   lines.push(
-    `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Condition | Result |`
+    `| Metric name | Current: ${currentBenchmark.commitInfo.id} | should be: | than (previous): ${previousBenchmark.commitInfo.id} | Result |`
   )
   lines.push('|-|-|-|-|-|')
 
@@ -30418,42 +30418,44 @@ module.exports.createBodyForComparisonWithPrev = function (
     const metricName = evaluationParameters.metric_names[i];
     const metricUnit = evaluationParameters.metric_units[i];
     const actualValue = evaluationParameters.is[i];
-    const expectedRange = evaluationParameters.should_be[i];
-    const than = evaluationParameters.than[i];
+    const comparisonMode = evaluationParameters.should_be[i];
+    const previousBenchRes = evaluationParameters.than[i];
     let line
+    let valueAndUnit = actualValue + ' ' + metricUnit
     if (resultStatus === 'failed' || resultStatus === 'passed') {
       let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴'
-      let valueAndUnit = actualValue + ' ' + metricUnit
-      line = `| \`${metricName}\` | \`${valueAndUnit}\` | ${module.exports.fetchValueAndUnit(prev)} | ${comparisonMode} | ${betterOrWorse} |`
-
+      line = `| \`${metricName}\` | \`${valueAndUnit}\` | ${comparisonMode} | ${previousBenchRes} | ${betterOrWorse} |`
     } else {
       // If the previous benchmark does not contain the current metric, mark it.
-      line = `| \`${currentMetric.name}\` | ${module.exports.fetchValueAndUnit(
-        currentMetric
-      )} | - | - | 🔘 |`
+      line = `| \`${metricName}\` | \'${valueAndUnit}\' | - | N/A | 🔘 |`
     }
 
     lines.push(line)
   }
   lines.push('', '', '', '', '')
-  console.log('Failing condition: ' + failingCondition)
-  console.log('Any failed: ' + anyFailed)
-  if (failingCondition === 'any' && anyFailed) {
+  const anyFailed = evaluationResults.some(element => element === 'failed')
+  if (completeConfig.failingCondition === 'any' && anyFailed) {
     lines.push('## Benchmark failed')
     lines.push(
-      "The chosen failing condition is 'any', and at least one metric failed."
+      "The chosen failing condition is 'any', and at least one metric didn't satisfy the condition."
+    )
+  } else {
+    lines.push('## Benchmark passed')
+    lines.push(
+      "The chosen failing condition is 'any', and all metrics satisfied the condition."
     )
   }
 
-  if (
-    failingCondition === 'all' &&
-    failsArr.every(element => element === false)
-  ) {
+  const allFailed = evaluationResults.every(element => element === 'failed')
+  if (completeConfig.failingCondition === 'all' && allFailed) {
     lines.push('## Benchmark failed')
     lines.push("The chosen failing condition is 'all', and all metrics failed.")
+  } else {
+    lines.push('## Benchmark passed')
+    lines.push("The chosen failing condition is 'all', and all metric passed.")
   }
 
-  if (failingCondition === 'none') {
+  if (completeConfig.failingCondition === 'none') {
     lines.push('## Benchmark passed')
     lines.push(
       "The chosen failing condition is 'none' so the benchmark passes regardless of results."
@@ -31749,6 +31751,9 @@ async function run() {
     }
 
     // adding comment
+    if (completeConfig.addComment) {
+      createComment(completeConfig, evaluationResult)
+    }
 
 
     // adding summary
