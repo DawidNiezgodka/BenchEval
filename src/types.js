@@ -109,22 +109,22 @@ class ReferenceBenchmarks {
     constructor(current, previous, weekAgo, lastStableRelease) {
         this.current = current;
         this.previous = previous;
-        this.week_ago = weekAgo;
-        this.last_stable_release = lastStableRelease;
+        this.weekAgo = weekAgo;
+        this.lastStableRelease = lastStableRelease;
     }
 }
 
 class EvalParameters {
     constructor(evaluationMethod, metricNames, metricUnits, options = {}) {
-        this.evaluation_method = evaluationMethod;
-        this.metric_names = metricNames;
-        this.metric_units = metricUnits;
+        this.evaluationMethod = evaluationMethod;
+        this.metricNames = metricNames;
+        this.metricUnits = metricUnits;
 
 
-        this.failed_explanations = options.failed_explanations || [];
-        this.metric_to_different_bench_values = options.metric_to_different_bench_values || {};
+        this.failedExplanations = options.failed_explanations || [];
+        this.metricToDifferentBenchValues = options.metric_to_different_bench_values || {};
         this.is = options.is || [];
-        this.should_be = options.should_be || [];
+        this.shouldBe = options.should_be || [];
         this.than = options.than || [];
     }
 }
@@ -138,8 +138,8 @@ class Results {
 class Evaluation {
     constructor(results, evalParameters, referenceBenchmarks) {
         this.results = results;
-        this.eval_parameters = evalParameters;
-        this.reference_benchmarks = referenceBenchmarks;
+        this.evalParameters = evalParameters;
+        this.referenceBenchmarks = referenceBenchmarks;
     }
 }
 

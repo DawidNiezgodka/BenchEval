@@ -13,6 +13,7 @@ module.exports.addCompleteBenchmarkToFile = async (
   benchmarkInstance,
   currentDataFileName,
   evaluationResult,
+  evaluationParams,
   evaluationConfig
 ) => {
   try {
@@ -53,6 +54,7 @@ module.exports.addCompleteBenchmarkToFile = async (
       benchSuccessful: benchmarkInstance.benchSuccessful,
       evaluation: {
         evaluationConfig: evaluationConfig,
+        evaluationParams: evaluationParams,
         evaluationResult: evaluationResult
       }
 

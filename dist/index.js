@@ -30089,6 +30089,7 @@ module.exports.addCompleteBenchmarkToFile = async (
   benchmarkInstance,
   currentDataFileName,
   evaluationResult,
+  evaluationParams,
   evaluationConfig
 ) => {
   try {
@@ -30129,6 +30130,7 @@ module.exports.addCompleteBenchmarkToFile = async (
       benchSuccessful: benchmarkInstance.benchSuccessful,
       evaluation: {
         evaluationConfig: evaluationConfig,
+        evaluationParams: evaluationParams,
         evaluationResult: evaluationResult
       }
 
@@ -30335,11 +30337,10 @@ const core = __nccwpck_require__(5127)
 const github = __nccwpck_require__(3134)
 
 module.exports.createComment = function (
-    githubToken,
-  completeConfig
+    completeConfig,
+    evaluationResult
 ) {
-  // if github token is not provided, it won't be possible to create a comment
-  if (githubToken === null || githubToken === undefined) {
+  if (completeConfig.githubToken === null || completeConfig.githubToken === undefined) {
     throw new Error(
       'Github token is not provided, so no comment will be created'
     )
@@ -30348,44 +30349,42 @@ module.exports.createComment = function (
   let commentBody
   switch (completeConfig.evaluationConfig.evaluationMethod) {
     case 'threshold':
-      commentBody = module.exports.evaluateWithThreshold(currentBenchmark, completeConfig.evaluationConfig);
+      commentBody = module.exports.createBodyForComparisonWithThreshold(evaluationResult, completeConfig);
       break;
     case 'previous':
-      commentBody = module.exports.compareWithPrevious(currentBenchmark, completeBenchData, completeConfig, false);
+      commentBody = module.exports.createBodyForComparisonWithPrev(evaluationResult, completeConfig);
       break;
     case 'previous_successful':
-      commentBody = module.exports.compareWithPrevious(currentBenchmark, completeBenchData, completeConfig, true);
+      commentBody = module.exports.createBodyForComparisonWithPrevSucc(evaluationResult, completeConfig);
       break;
     case 'threshold_range':
-      commentBody = module.exports.evaluateWithThresholdRanges(currentBenchmark, completeConfig.evaluationConfig);
+      commentBody = module.exports.createBodyForComparisonWithThresholdRange(evaluationResult, completeConfig);
       break;
     case 'jump_detection':
-      commentBody = module.exports.evaluateWithJumpDetection(currentBenchmark, completeConfig);
+      commentBody = module.exports.createBodyForComparisonWithJumpDet(evaluationResult, completeConfig);
       break;
     case 'trend_detection_moving_ave':
-      commentBody = module.exports.trendDetectionMovingAve(currentBenchmark, completeConfig);
+      commentBody = module.exports.createBodyForComparisonWithTrendDetMovAve(evaluationResult, completeConfig);
       break;
     case 'trend_detection_deltas':
-      commentBody = module.exports.trendDetectionDeltas(currentBenchmark, completeConfig);
+      commentBody = module.exports.createBodyForComparisonWithTrendDetDeltas(evaluationResult, completeConfig);
       break;
     default:
       throw new Error(`Unsupported evaluation method: ${completeConfig.evaluationConfig.evaluationMethod}`);
   }
 
   module.exports.leaveComment(
-    currentBenchmark.commitInfo.id,
+    evaluationResult.referenceBenchmarks.current.commitInfo.id,
     commentBody,
-    githubToken
+    completeConfig.githubToken
   )
 }
 
-module.exports.createCommentBodyForComparisonWithPrevBench = function (
-  currentBenchmark,
-  previousBenchmark,
-  comparisonModes,
-  comparisonMargins,
-  failingCondition
+module.exports.createBodyForComparisonWithPrev = function (
+    evaluationResult, completeConfig
 ) {
+  const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+  const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
   const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
 
   const currentBenchName = currentBenchmark.benchmarkName
@@ -30396,7 +30395,6 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
       "Please note that you're comparing benchmarks with different names!"
     )
   }
-
   const benchDataText = module.exports.createBenchDataTextForCompWithPrev(
     currentBenchmark,
     previousBenchmark
@@ -30412,28 +30410,22 @@ module.exports.createCommentBodyForComparisonWithPrevBench = function (
   )
   lines.push('|-|-|-|-|-|')
 
-  for (const [
-    i,
-    currentMetric
-  ] of currentBenchmark.simpleMetricResults.entries()) {
-    const prev = previousBenchmark.simpleMetricResults.find(
-      j => j.name === currentMetric.name
-    )
-    core.debug(prev)
+  const evaluationResults = evaluationResult.results.result
+  const evaluationParameters = evaluationResult.evalParameters
+  for (let i = 0; i < evaluationResults.length; i++) {
+    // Access and store the corresponding values from each object
+    const resultStatus = evaluationResults[i];
+    const metricName = evaluationParameters.metric_names[i];
+    const metricUnit = evaluationParameters.metric_units[i];
+    const actualValue = evaluationParameters.is[i];
+    const expectedRange = evaluationParameters.should_be[i];
+    const than = evaluationParameters.than[i];
     let line
-    let comparisonMode = comparisonModes[i]
-    let comparisonMargin = comparisonMargins[i]
-    let currentBetter
+    if (resultStatus === 'failed' || resultStatus === 'passed') {
+      let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴'
+      let valueAndUnit = actualValue + ' ' + metricUnit
+      line = `| \`${metricName}\` | \`${valueAndUnit}\` | ${module.exports.fetchValueAndUnit(prev)} | ${comparisonMode} | ${betterOrWorse} |`
 
-    if (prev) {
-
-      failsArr.push(currentBetter)
-      let betterOrWorse = currentBetter ? '🟢' : '🔴'
-      line = `| \`${currentMetric.name}\` | ${module.exports.fetchValueAndUnit(
-        currentMetric
-      )} | ${module.exports.fetchValueAndUnit(
-        prev
-      )} | ${comparisonMode} | ${betterOrWorse} |`
     } else {
       // If the previous benchmark does not contain the current metric, mark it.
       line = `| \`${currentMetric.name}\` | ${module.exports.fetchValueAndUnit(
@@ -31751,11 +31743,13 @@ async function run() {
     if (completeConfig.saveCurrBenchRes) {
       core.debug('Saving current benchmark results to file')
       await addCompleteBenchmarkToFile(completeBenchmarkObject, completeConfig.fileWithBenchData,
-          evaluationResult, completeConfig.evaluationConfig
+          evaluationResult.results, evaluationResult.evalParameters,
+          completeConfig.evaluationConfig
       )
     }
 
     // adding comment
+
 
     // adding summary
 
@@ -31899,22 +31893,22 @@ class ReferenceBenchmarks {
     constructor(current, previous, weekAgo, lastStableRelease) {
         this.current = current;
         this.previous = previous;
-        this.week_ago = weekAgo;
-        this.last_stable_release = lastStableRelease;
+        this.weekAgo = weekAgo;
+        this.lastStableRelease = lastStableRelease;
     }
 }
 
 class EvalParameters {
     constructor(evaluationMethod, metricNames, metricUnits, options = {}) {
-        this.evaluation_method = evaluationMethod;
-        this.metric_names = metricNames;
-        this.metric_units = metricUnits;
+        this.evaluationMethod = evaluationMethod;
+        this.metricNames = metricNames;
+        this.metricUnits = metricUnits;
 
 
-        this.failed_explanations = options.failed_explanations || [];
-        this.metric_to_different_bench_values = options.metric_to_different_bench_values || {};
+        this.failedExplanations = options.failed_explanations || [];
+        this.metricToDifferentBenchValues = options.metric_to_different_bench_values || {};
         this.is = options.is || [];
-        this.should_be = options.should_be || [];
+        this.shouldBe = options.should_be || [];
         this.than = options.than || [];
     }
 }
@@ -31928,8 +31922,8 @@ class Results {
 class Evaluation {
     constructor(results, evalParameters, referenceBenchmarks) {
         this.results = results;
-        this.eval_parameters = evalParameters;
-        this.reference_benchmarks = referenceBenchmarks;
+        this.evalParameters = evalParameters;
+        this.referenceBenchmarks = referenceBenchmarks;
     }
 }
 

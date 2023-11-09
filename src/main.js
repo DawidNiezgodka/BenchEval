@@ -59,11 +59,13 @@ async function run() {
     if (completeConfig.saveCurrBenchRes) {
       core.debug('Saving current benchmark results to file')
       await addCompleteBenchmarkToFile(completeBenchmarkObject, completeConfig.fileWithBenchData,
-          evaluationResult, completeConfig.evaluationConfig
+          evaluationResult.results, evaluationResult.evalParameters,
+          completeConfig.evaluationConfig
       )
     }
 
     // adding comment
+
 
     // adding summary
 
