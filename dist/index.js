@@ -30411,9 +30411,11 @@ module.exports.createBodyForComparisonWithPrev = function (
   lines.push('|-|-|-|-|-|')
 
   const evaluationResults = evaluationResult.results.result
+  core.debug('Evaluation results: ' + evaluationResults)
   const evaluationParameters = evaluationResult.evalParameters
+  core.debug('Evaluation parameters: ' + evaluationParameters)
   for (let i = 0; i < evaluationResults.length; i++) {
-    // Access and store the corresponding values from each object
+    core.debug("Entering the for loop")
     const resultStatus = evaluationResults[i];
     const metricName = evaluationParameters.metric_names[i];
     const metricUnit = evaluationParameters.metric_units[i];
@@ -30494,12 +30496,13 @@ module.exports.createBenchDataTextForCompWithPrev = function (
   currentBenchmark,
   previousBenchmark
 ) {
+  core.debug("Current benchmark: " + JSON.stringify(currentBenchmark))
+  core.debug("Previous benchmark: " + JSON.stringify(previousBenchmark))
   const currentBenchInfo = currentBenchmark.benchmarkInfo
   const previousBenchInfo = previousBenchmark
     ? previousBenchmark.benchmarkInfo
     : null
 
-  console.log('Prev benchmark info: ' + JSON.stringify(previousBenchInfo))
   let benchDataLines = []
   if (currentBenchmark.benchmarkName === previousBenchmark.benchmarkName) {
     benchDataLines = [
@@ -30545,6 +30548,7 @@ module.exports.createBenchDataTextForCompWithPrev = function (
     } |`
   )
 
+  core.debug("Bench data lines: " + JSON.stringify(benchDataLines))
   return benchDataLines.join('\n')
 }
 
