@@ -64,32 +64,33 @@ async function run() {
       )
     }
 
-    if (completeConfig.addComment) {
-      createComment(completeConfig, evaluationResult)
-    }
-
-    const addJobSummary = core.getInput('add_action_page_job_summary');
-    if (addJobSummary) {
-      createWorkflowSummary(evaluationResult);
-    }
-
-
-
-
-    // failing
-    core.setOutput('should_fail', 'false')
-    const resultArray = evaluationResult.result
+    let shouldFail = false;
+    const resultArray = evaluationResult.results.result
     if (completeConfig.failingCondition === 'any') {
-      let anyF = anyFailed(resultArray)
+      shouldFail = anyFailed(resultArray)
       if (anyFailed(resultArray)) {
-        core.setOutput('should_fail', 'true')
+
       }
     }
     if (completeConfig.failingCondition === 'all') {
-      if (allFailed(resultArray)) {
-        core.setOutput('should_fail', 'true')
-      }
+      shouldFail = allFailed(resultArray)
     }
+    if (completeConfig.failingCondition === 'none') {
+        shouldFail = false
+    }
+
+    const addCommentOption = completeConfig.addComment;
+
+    if (addCommentOption === 'on' || (addCommentOption === 'if_failed' && shouldFail)) {
+      createComment(completeConfig, evaluationResult)
+    }
+
+    const addJobSummary = completeConfig.addJobSummary;
+    if (addJobSummary === 'on' || (addJobSummary === 'if_failed' && shouldFail)) {
+      createWorkflowSummary(evaluationResult);
+    }
+
+    core.setOutput('should_fail', shouldFail)
   } catch (error) {
     core.setFailed(error.message)
   }

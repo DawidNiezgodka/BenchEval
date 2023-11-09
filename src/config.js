@@ -85,9 +85,11 @@ module.exports.validateInputAndFetchConfig = function () {
   const githubToken = core.getInput('github_token')
 
   // Variables concerning git repo manipulations
-  const addComment = module.exports.getBoolInput('add_comment_to_commit')
-  const addJobSummary = module.exports.getBoolInput('add_action_job_summary')
+  const addComment = module.exports.validateAndGet('add_comment_to_commit')
+  const addJobSummary = module.exports.validateAndGet('add_action_page_job_summary')
   const saveCurrBenchRes = module.exports.getBoolInput('save_curr_bench_res')
+
+  const alertUsersIfBenchFailed = module.exports.validateUsersToBeAlerted()
 
 
   return new Config(
@@ -103,7 +105,30 @@ module.exports.validateInputAndFetchConfig = function () {
       addComment,
       addJobSummary,
       saveCurrBenchRes,
+      alertUsersIfBenchFailed
   )
+}
+
+module.exports.validateUsersToBeAlerted = function () {
+  const alertUsersIfBenchFailed = core.getInput('alert_users_if_bench_failed');
+  const users = alertUsersIfBenchFailed.split(',').map(u => u.trim());
+  for (const u of users) {
+    if (!u.startsWith('@')) {
+      throw new Error(`User name in 'alert_users_if_bench_failed' input must start with '@' but got '${u}'`);
+    }
+  }
+  return alertUsersIfBenchFailed;
+}
+
+module.exports.validateAndGet = function (inputName) {
+    const input = core.getInput(inputName);
+  // check if input is either "on", "off", or "if_failed"
+    if (input !== 'on' && input !== 'off' && input !== 'if_failed') {
+        throw new Error(
+            `'${inputName}' input must be either 'on', 'off', or 'if_failed' but got '${input}'`
+        )
+    }
+    return input
 }
 
 module.exports.camelToSnake = function (string) {

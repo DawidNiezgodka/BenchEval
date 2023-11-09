@@ -392,9 +392,6 @@ module.exports.createWorkflowSummary = function (evaluationResult) {
             data: graphicalRepresentationOfRes,
         },
     ])
-
-
-
   }
 
   core.summary

@@ -59,6 +59,7 @@ class Config {
     addComment,
     addJobSummary,
     saveCurrBenchRes,
+    alertUsersIfBenchFailed
   ) {
     this.benchName = benchName
     this.currBenchResJson = currBenchResJson
@@ -72,7 +73,7 @@ class Config {
     this.addComment = addComment
     this.addJobSummary = addJobSummary
     this.saveCurrBenchRes = saveCurrBenchRes
-
+    this.alertUsersIfBenchFailed = alertUsersIfBenchFailed
   }
 }
 

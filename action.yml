@@ -30,18 +30,18 @@ inputs:
     required: false
   add_comment_to_commit:
     description: |
-      Leave a comment with benchmark result comparison.
-      To enable this feature, github-token input must be given as well
+      Add commit comment with the detailed benchmark info.
+      Possible values are on, off, if_failed.
     required: false
-    default: "false"
+    default: "if_failed"
   alert_users_if_bench_failed:
     description: |
       Commas-separated list of users to alert if the benchmark failed.
     required: false
   add_action_page_job_summary:
-    description: 'Leave a job summary with benchmark result comparison in the actions tab of a repo'
+    description: 'Leave a short summary on the workflow page. Possible values are on, off, if_failed'
     required: false
-    default: "false"
+    default: "on"
   save_curr_bench_res:
     description: |
       Save the benchmark data pointed to by current_bench_res_file

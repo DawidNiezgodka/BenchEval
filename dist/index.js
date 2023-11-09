@@ -30727,9 +30727,6 @@ module.exports.createWorkflowSummary = function (evaluationResult) {
             data: graphicalRepresentationOfRes,
         },
     ])
-
-
-
   }
 
   core.summary
@@ -30893,9 +30890,11 @@ module.exports.validateInputAndFetchConfig = function () {
   const githubToken = core.getInput('github_token')
 
   // Variables concerning git repo manipulations
-  const addComment = module.exports.getBoolInput('add_comment_to_commit')
-  const addJobSummary = module.exports.getBoolInput('add_action_job_summary')
+  const addComment = module.exports.validateAndGet('add_comment_to_commit')
+  const addJobSummary = module.exports.validateAndGet('add_action_page_job_summary')
   const saveCurrBenchRes = module.exports.getBoolInput('save_curr_bench_res')
+
+  const alertUsersIfBenchFailed = module.exports.validateUsersToBeAlerted()
 
 
   return new Config(
@@ -30911,7 +30910,30 @@ module.exports.validateInputAndFetchConfig = function () {
       addComment,
       addJobSummary,
       saveCurrBenchRes,
+      alertUsersIfBenchFailed
   )
+}
+
+module.exports.validateUsersToBeAlerted = function () {
+  const alertUsersIfBenchFailed = core.getInput('alert_users_if_bench_failed');
+  const users = alertUsersIfBenchFailed.split(',').map(u => u.trim());
+  for (const u of users) {
+    if (!u.startsWith('@')) {
+      throw new Error(`User name in 'alert_users_if_bench_failed' input must start with '@' but got '${u}'`);
+    }
+  }
+  return alertUsersIfBenchFailed;
+}
+
+module.exports.validateAndGet = function (inputName) {
+    const input = core.getInput(inputName);
+  // check if input is either "on", "off", or "if_failed"
+    if (input !== 'on' && input !== 'off' && input !== 'if_failed') {
+        throw new Error(
+            `'${inputName}' input must be either 'on', 'off', or 'if_failed' but got '${input}'`
+        )
+    }
+    return input
 }
 
 module.exports.camelToSnake = function (string) {
@@ -31829,32 +31851,33 @@ async function run() {
       )
     }
 
-    if (completeConfig.addComment) {
-      createComment(completeConfig, evaluationResult)
-    }
-
-    const addJobSummary = core.getInput('add_action_page_job_summary');
-    if (addJobSummary) {
-      createWorkflowSummary(evaluationResult);
-    }
-
-
-
-
-    // failing
-    core.setOutput('should_fail', 'false')
-    const resultArray = evaluationResult.result
+    let shouldFail = false;
+    const resultArray = evaluationResult.results.result
     if (completeConfig.failingCondition === 'any') {
-      let anyF = anyFailed(resultArray)
+      shouldFail = anyFailed(resultArray)
       if (anyFailed(resultArray)) {
-        core.setOutput('should_fail', 'true')
+
       }
     }
     if (completeConfig.failingCondition === 'all') {
-      if (allFailed(resultArray)) {
-        core.setOutput('should_fail', 'true')
-      }
+      shouldFail = allFailed(resultArray)
     }
+    if (completeConfig.failingCondition === 'none') {
+        shouldFail = false
+    }
+
+    const addCommentOption = completeConfig.addComment;
+
+    if (addCommentOption === 'on' || (addCommentOption === 'if_failed' && shouldFail)) {
+      createComment(completeConfig, evaluationResult)
+    }
+
+    const addJobSummary = completeConfig.addJobSummary;
+    if (addJobSummary === 'on' || (addJobSummary === 'if_failed' && shouldFail)) {
+      createWorkflowSummary(evaluationResult);
+    }
+
+    core.setOutput('should_fail', shouldFail)
   } catch (error) {
     core.setFailed(error.message)
   }
@@ -31931,6 +31954,7 @@ class Config {
     addComment,
     addJobSummary,
     saveCurrBenchRes,
+    alertUsersIfBenchFailed
   ) {
     this.benchName = benchName
     this.currBenchResJson = currBenchResJson
@@ -31944,7 +31968,7 @@ class Config {
     this.addComment = addComment
     this.addJobSummary = addJobSummary
     this.saveCurrBenchRes = saveCurrBenchRes
-
+    this.alertUsersIfBenchFailed = alertUsersIfBenchFailed
   }
 }
 
