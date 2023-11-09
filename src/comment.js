@@ -115,9 +115,9 @@ module.exports.createBodyForComparisonWithPrev = function (
   lines.push(`The chosen failing condition is '${failingCondition}', and ${conditionMessage} the condition.`);
 
   if (!benchmarkPassed) {
-    cc = ['@DawidNiezgodka']
-    if (cc.length > 0) {
-      lines.push('', `CC: ${cc.join(' ')}`);
+    let usersToBeAlerted = ['@DawidNiezgodka']
+    if (usersToBeAlerted.length > 0) {
+      lines.push('', `CC: ${usersToBeAlerted.join(' ')}`);
     }
   }
 
