@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout the main branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: checkout the bench_data branch to a given folder
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: 'bench_data'
           sparse-checkout: |

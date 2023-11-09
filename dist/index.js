@@ -30916,12 +30916,15 @@ module.exports.validateInputAndFetchConfig = function () {
 
 module.exports.validateUsersToBeAlerted = function () {
   const alertUsersIfBenchFailed = core.getInput('alert_users_if_bench_failed');
-  const users = alertUsersIfBenchFailed.split(',').map(u => u.trim());
-  for (const u of users) {
-    if (!u.startsWith('@')) {
-      throw new Error(`User name in 'alert_users_if_bench_failed' input must start with '@' but got '${u}'`);
+  if (alertUsersIfBenchFailed !== '' || alertUsersIfBenchFailed !== null) {
+    const users = alertUsersIfBenchFailed.split(',').map(u => u.trim());
+    for (const u of users) {
+      if (!u.startsWith('@')) {
+        throw new Error(`User name in 'alert_users_if_bench_failed' input must start with '@' but got '${u}'`);
+      }
     }
   }
+
   return alertUsersIfBenchFailed;
 }
 
