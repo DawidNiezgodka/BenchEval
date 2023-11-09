@@ -30917,7 +30917,7 @@ module.exports.validateInputAndFetchConfig = function () {
 module.exports.validateUsersToBeAlerted = function () {
   const alertUsersIfBenchFailed = core.getInput('alert_users_if_bench_failed');
   console.log("Usaers", alertUsersIfBenchFailed);
-  if (alertUsersIfBenchFailed !== '' || alertUsersIfBenchFailed !== null) {
+  if (alertUsersIfBenchFailed !== '') {
     const users = alertUsersIfBenchFailed.split(',').map(u => u.trim());
     for (const u of users) {
       if (!u.startsWith('@')) {
@@ -30925,8 +30925,7 @@ module.exports.validateUsersToBeAlerted = function () {
       }
     }
   }
-
-  return alertUsersIfBenchFailed;
+    return alertUsersIfBenchFailed;
 }
 
 module.exports.validateAndGet = function (inputName) {
