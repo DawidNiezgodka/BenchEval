@@ -71,7 +71,7 @@ module.exports.createBodyForComparisonWithPrev = function (
   lines.push('', '', '', '', '')
 
   lines.push(
-    `| Metric name | Current: ${currentBenchmark.commitInfo.id} | should be: | than (previous): ${previousBenchmark.commitInfo.id} | Result |`
+    `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Condition for current | Result |`
   )
   lines.push('|-|-|-|-|-|')
 
@@ -103,9 +103,9 @@ module.exports.createBodyForComparisonWithPrev = function (
 
     if (resultStatus === 'failed' || resultStatus === 'passed') {
       let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴'
-      line = `| \`${metricName}\` | \`${valueAndUnit}\` | ${comparisonResult} | \`${prevBenchValAndUnit}\` | ${betterOrWorse} |`
+      line = `| \`${metricName}\` | \`${valueAndUnit}\` | \`${prevBenchValAndUnit}\` | ${comparisonResult} | ${betterOrWorse} |`
     } else {
-      line = `| \`${metricName}\` | \'${valueAndUnit}\' | - | N/A | 🔘 |`
+      line = `| \`${metricName}\` | \'${valueAndUnit}\' | N/A | N/A | 🔘 |`
     }
 
     lines.push(line)
