@@ -30728,20 +30728,12 @@ module.exports.createWorkflowSummary = function (evaluationResult) {
         },
     ])
 
-    core.summary
-        .addHeading(`Benchmark summary`)
-        .addTable([headers, ...rows])
-        .write();
+
 
   }
 
-
-
-
-
-
-      core.summary
-      .addHeading(`Benchmarks: ${name}`)
+  core.summary
+      .addHeading(`Benchmark summary`)
       .addTable([headers, ...rows])
       .write();
 }
