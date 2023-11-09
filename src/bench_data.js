@@ -25,7 +25,7 @@ module.exports.addCompleteBenchmarkToFile = async (
     core.debug(`Reading file at ${pathToPreviousDataFile}`)
     try {
       const data = await fs.readFile(pathToPreviousDataFile, 'utf8')
-      core.debug('Read file: ' + data)
+      //core.debug('Read file: ' + data) // -> can be very long...
       jsonData = JSON.parse(data)
     } catch (err) {
       core.debug(

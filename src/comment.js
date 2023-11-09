@@ -82,10 +82,10 @@ module.exports.createBodyForComparisonWithPrev = function (
   for (let i = 0; i < evaluationResults.length; i++) {
     core.debug("Entering the for loop")
     const resultStatus = evaluationResults[i];
-    const metricName = evaluationParameters.metric_names[i];
-    const metricUnit = evaluationParameters.metric_units[i];
+    const metricName = evaluationParameters.metricNames[i];
+    const metricUnit = evaluationParameters.metricUnits[i];
     const actualValue = evaluationParameters.is[i];
-    const comparisonMode = evaluationParameters.should_be[i];
+    const comparisonMode = evaluationParameters.shouldBe[i];
     const previousBenchRes = evaluationParameters.than[i];
     let line
     let valueAndUnit = actualValue + ' ' + metricUnit
