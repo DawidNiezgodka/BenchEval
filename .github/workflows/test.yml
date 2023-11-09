@@ -37,6 +37,7 @@ jobs:
           evaluation_method: previous
           comparison_operators: smaller, bigger, tolerance
           comparison_margins: 10,10,15
+          add_action_page_job_summary: true
           failing_condition: any
           add_comment_to_commit: true
           save_curr_bench_res: true

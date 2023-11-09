@@ -14,7 +14,7 @@ const {
 
 const { createCurrBench} = require('./bench')
 
-const { createComment } = require('./comment')
+const { createComment, createWorkflowSummary } = require('./comment')
 
 const {
   addCompleteBenchmarkToFile,
@@ -64,13 +64,17 @@ async function run() {
       )
     }
 
-    // adding comment
     if (completeConfig.addComment) {
       createComment(completeConfig, evaluationResult)
     }
 
+    const addJobSummary = core.getInput('add_action_page_job_summary');
+    if (addJobSummary) {
+      createWorkflowSummary(evaluationResult);
+    }
 
-    // adding summary
+
+
 
     // failing
     core.setOutput('should_fail', 'false')

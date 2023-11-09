@@ -30429,11 +30429,11 @@ module.exports.createBodyForComparisonWithPrev = function (
     let comparisonResult;
 
     if (comparisonMargin >= 0 && comparisonMargin <= 100 && (comparisonMode === 'smaller' || comparisonMode === 'bigger')) {
-      comparisonResult = `Must be up to ${comparisonMargin} % ${comparisonMode}`;
+      comparisonResult = `Up to ${comparisonMargin} % ${comparisonMode} than prev`;
     } else if (comparisonMargin === -1 && (comparisonMode === 'smaller' || comparisonMode === 'bigger')) {
-      comparisonResult = `Must be strictly ${comparisonMode}`;
+      comparisonResult = `Strictly ${comparisonMode} than prev`;
     } else if (comparisonMode === 'tolerance') {
-      comparisonResult = 'Should be in a range of ' + comparisonMargin + ' %';
+      comparisonResult = 'In range of ' + comparisonMargin + ' %';
     }
 
     if (resultStatus === 'failed' || resultStatus === 'passed') {
@@ -30640,10 +30640,6 @@ module.exports.createCommentBodyForComparisonWithThreshold = function (
   return lines.join('\n')
 }
 
-module.exports.fetchValueAndUnit = function (simpleMetricResult) {
-  return `\`${simpleMetricResult.value}\` ${simpleMetricResult.unit}`
-}
-
 module.exports.leaveComment = async (commitId, body, token) => {
   const github = __nccwpck_require__(3134)
   const octokit = github.getOctokit(token)
@@ -30665,6 +30661,89 @@ module.exports.leaveComment = async (commitId, body, token) => {
     if (error.response && error.response.data)
       console.error('Response Data:', error.response.data)
   }
+}
+
+///////////////////////
+/////////////////////// Summary
+///////////////////////
+module.exports.createWorkflowSummary = function (evaluationResult) {
+
+
+  const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+  const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
+  const currentBenchName = currentBenchmark.benchmarkName
+  const previousBenchName = previousBenchmark.benchmarkName
+
+
+  const headers = [
+    {
+      data: 'Metric',
+      header: true,
+    },
+    {
+      data: `Current: "${currentBenchmark.commitInfo.id}"`,
+      header: true,
+    },
+    {
+      data: `Previous: "${previousBenchmark.commitInfo.id}"`,
+      header: true,
+    },
+    {
+      data: 'Result',
+      header: true,
+    },
+  ];
+  const rows = [];
+  const evaluationResults = evaluationResult.results.result
+  const evaluationParameters = evaluationResult.evalParameters
+  for (let i = 0; i < evaluationResults.length; i++) {
+
+    const resultStatus = evaluationResults[i];
+    const metricName = evaluationParameters.metricNames[i];
+    const metricUnit = evaluationParameters.metricUnits[i];
+    const actualValue = evaluationParameters.is[i];
+    const previousBenchRes = evaluationParameters.than[i];
+    const prevBenchValAndUnit = previousBenchRes + ' ' + metricUnit;
+    let valueAndUnit = actualValue + ' ' + metricUnit
+
+    let graphicalRepresentationOfRes;
+    if (resultStatus === 'failed' || resultStatus === 'passed') {
+      graphicalRepresentationOfRes = resultStatus === 'passed' ? '🟢' : '🔴'
+    } else {
+      graphicalRepresentationOfRes= '🔘';
+    }
+
+    rows.push([
+      {
+        data: metricName,
+      },
+        {
+            data: valueAndUnit,
+        },
+        {
+            data: prevBenchValAndUnit,
+        },
+        {
+            data: graphicalRepresentationOfRes,
+        },
+    ])
+
+    core.summary
+        .addHeading(`Benchmark summary`)
+        .addTable([headers, ...rows])
+        .write();
+
+  }
+
+
+
+
+
+
+      core.summary
+      .addHeading(`Benchmarks: ${name}`)
+      .addTable([headers, ...rows])
+      .write();
 }
 
 
@@ -31708,7 +31787,7 @@ const {
 
 const { createCurrBench} = __nccwpck_require__(501)
 
-const { createComment } = __nccwpck_require__(3732)
+const { createComment, createWorkflowSummary } = __nccwpck_require__(3732)
 
 const {
   addCompleteBenchmarkToFile,
@@ -31758,13 +31837,17 @@ async function run() {
       )
     }
 
-    // adding comment
     if (completeConfig.addComment) {
       createComment(completeConfig, evaluationResult)
     }
 
+    const addJobSummary = core.getInput('add_action_page_job_summary');
+    if (addJobSummary) {
+      createWorkflowSummary(evaluationResult);
+    }
 
-    // adding summary
+
+
 
     // failing
     core.setOutput('should_fail', 'false')
