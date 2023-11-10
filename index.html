@@ -53,14 +53,20 @@
     function populateMetrics() {
         metricSelector.innerHTML = '';
         const selectedBenchmark = benchmarkSelector.value;
-        const benchmarkMetrics = data.entries[selectedBenchmark][0].metrics;
 
-        for (const metric of benchmarkMetrics) {
+        const allMetrics = new Set();
+        data.entries[selectedBenchmark].forEach(entry => {
+            entry.metrics.forEach(metric => {
+                allMetrics.add(metric.name);
+            });
+        });
+
+        allMetrics.forEach(metricName => {
             const option = document.createElement('option');
-            option.value = metric.name;
-            option.textContent = metric.name;
+            option.value = metricName;
+            option.textContent = metricName;
             metricSelector.appendChild(option);
-        }
+        });
 
         updateChart();
     }
@@ -84,17 +90,21 @@
         const selectedBenchmark = benchmarkSelector.value;
         const selectedMetric = metricSelector.value;
 
-
         const dates = [];
         const values = [];
-        const dataForGivenBench = data.entries[selectedBenchmark];
-        const unit = dataForGivenBench[0].metrics.find(m => m.name === selectedMetric).unit;
+        let unit = "";
+
         for (let entry of data.entries[selectedBenchmark]) {
-            dates.push(moment(entry.date).format('YYYY-MM-DD HH:mm'));
-            const metricObj = entry.metrics.find(m => m.name === selectedMetric);
-            if (metricObj) {
-                values.push(metricObj.value);
+            if (!unit) {
+                const metricObj = entry.metrics.find(m => m.name === selectedMetric);
+                if (metricObj) {
+                    unit = metricObj.unit;
+                }
             }
+
+            dates.push(moment(entry.date).format('YYYY-MM-DD HH:mm'));
+            const metricValue = entry.metrics.find(m => m.name === selectedMetric)?.value;
+            values.push(metricValue ?? null);
         }
 
         if (myChart) {
@@ -110,7 +120,8 @@
                         label: selectedMetric,
                         data: values,
                         borderColor: 'green',
-                        fill: false
+                        fill: false,
+                        spanGaps: false
                     }
                 ]
             },
@@ -175,7 +186,7 @@
                                 return '\n Commit message: ' + data.commit.message + '\n Commit time: ' + data.commit.timestamp + ' \n Committed by: ' + data.commit.committer.username + '\n';
                             },
                             label: item => {
-                                console.log(item)
+
                                 const info = dataForGivenBench[item.dataIndex].otherInfo;
                                 return 'Benchmark information: ' + info;
                             },
