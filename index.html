@@ -71,6 +71,19 @@
         updateChart();
     }
 
+    function getEvaluationResults(benchmark, metric) {
+        return data.entries[benchmark].map(entry => {
+            if (entry.evaluation && entry.evaluation.evaluationResult
+            && entry.evaluation.evaluationParams) {
+                console.log("Entr.evaluation", entry.evaluation)
+                console.log("Entr.evaluation.evaluationParams", entry.evaluation.evaluationParams)
+                const metricIndex = entry.evaluation.evaluationParams.metricNames.indexOf(metric);
+                return entry.evaluation.evaluationResult.result[metricIndex];
+            }
+            return null;
+        });
+    }
+
     function extractData(benchmark, metric) {
         const dates = [];
         const values = [];
@@ -94,6 +107,7 @@
         const values = [];
         let unit = "";
 
+        const evaluationResults = getEvaluationResults(selectedBenchmark, selectedMetric);
         for (let entry of data.entries[selectedBenchmark]) {
             if (!unit) {
                 const metricObj = entry.metrics.find(m => m.name === selectedMetric);
@@ -119,9 +133,10 @@
                     {
                         label: selectedMetric,
                         data: values,
+                        pointBackgroundColor: evaluationResults.map(result => result === "passed" ? "green" : "red"),
+                        pointRadius: evaluationResults.map(result => result ? 6 : 3),
                         borderColor: 'green',
                         fill: false,
-                        spanGaps: false
                     }
                 ]
             },
@@ -182,21 +197,37 @@
                         callbacks: {
                             afterTitle: items => {
                                 const index = items[0].dataIndex;
-                                const data = dataForGivenBench[index];
-                                return '\n Commit message: ' + data.commit.message + '\n Commit time: ' + data.commit.timestamp + ' \n Committed by: ' + data.commit.committer.username + '\n';
+                                const dataEntry = data.entries[selectedBenchmark][index];
+                                return '\n Commit message: ' + dataEntry.commit.message +
+                                    '\n Commit time: ' + dataEntry.commit.timestamp +
+                                    ' \n Committed by: ' + dataEntry.commit.committer.username + '\n';
                             },
                             label: item => {
-
-                                const info = dataForGivenBench[item.dataIndex].otherInfo;
+                                const dataEntry = data.entries[selectedBenchmark][item.dataIndex];
+                                const info = dataEntry.otherInfo;
                                 return 'Benchmark information: ' + info;
                             },
                             afterLabel: item => {
-                                const extra = dataForGivenBench[item.dataIndex].parametrization;
-                                var extraString = "Parameters: \n"
-                                return extraString + Object.keys(extra).map(key => `${key}: ${extra[key]}`).join('\n');
+                                const dataEntry = data.entries[selectedBenchmark][item.dataIndex];
+                                const evalParams = dataEntry.evaluation ? dataEntry.evaluation.evaluationParams : null;
 
-                            }
-                        }
+                                var tooltipString = "Parameters: \n" +
+                                    Object.keys(dataEntry.parametrization).map(key => `${key}: ${dataEntry.parametrization[key]}`).join('\n');
+
+                                if (evalParams) {
+                                    const metricIndex = evalParams.metricNames.indexOf(selectedMetric);
+                                    const currentVal = evalParams.is[metricIndex];
+                                    const shouldBe = evalParams.shouldBe[metricIndex];
+                                    const referenceVal = evalParams.than[metricIndex];
+
+                                    tooltipString += "\n\nEvaluation:\n" +
+                                        "Method: " + evalParams.evaluationMethod + "\n" +
+                                        "Current Value: " + currentVal + "\n" +
+                                        "Should Be: " + shouldBe + "\n" +
+                                        "Reference Value: " + referenceVal;
+                                }
+                                return tooltipString;
+                            }                        }
                     },
                     legend: {
                         display: false,
