@@ -43,9 +43,10 @@ async function run() {
     let latestBenchSha = null;
     if (core.getInput('trend_det_successful_release_branch') !== 'null') {
       const branchName = core.getInput('trend_det_successful_release_branch');
-      latestBenchSha = await getLastCommitSha(branchName);
+      latestBenchSha = await getLastCommitSha(branchName, completeBenchData,
+          completeConfig.benchName);
       // get sha of the last successful commit to branchName
-      core.debug('Latest bench sha: ' + latestBenchSha);
+      console.log('Latest bench sha: ' + latestBenchSha);
       completeConfig.latestBenchSha = latestBenchSha;
     }
 
@@ -56,14 +57,6 @@ async function run() {
     );
 
     core.debug('Evaluation result: ' + JSON.stringify(evaluationResult))
-
-    if (completeConfig.saveCurrBenchRes) {
-      core.debug('Saving current benchmark results to file')
-      await addCompleteBenchmarkToFile(completeBenchmarkObject, completeConfig.fileWithBenchData,
-          evaluationResult.results, evaluationResult.evalParameters,
-          completeConfig.evaluationConfig
-      )
-    }
 
     let shouldFail = false;
     const resultArray = evaluationResult.results.result
@@ -78,6 +71,15 @@ async function run() {
     }
     if (completeConfig.failingCondition === 'none') {
         shouldFail = false
+    }
+
+    completeBenchmarkObject.benchSuccessful = !shouldFail;
+    if (completeConfig.saveCurrBenchRes) {
+      core.debug('Saving current benchmark results to file')
+      await addCompleteBenchmarkToFile(completeBenchmarkObject, completeConfig.fileWithBenchData,
+          evaluationResult.results, evaluationResult.evalParameters,
+          completeConfig.evaluationConfig
+      )
     }
 
     const addCommentOption = completeConfig.addComment;

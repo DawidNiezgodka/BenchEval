@@ -30863,11 +30863,10 @@ module.exports.getCommit = function () {
   }
 }
 
-// get commit hash of the last successful commit to main branch
 const { Octokit } = __nccwpck_require__(9597)
 const { context } = __nccwpck_require__(3134)
 
-module.exports.getLastCommitSha = async function (branchName) {
+module.exports.getLastCommitSha = async (branchName, benchmarkData, benchmarkName)=> {
   const octokit = new Octokit()
   const response = await octokit.rest.repos.listCommits({
     owner: context.repo.owner,
@@ -30875,10 +30874,22 @@ module.exports.getLastCommitSha = async function (branchName) {
     sha: branchName,
     per_page: 10
   })
+  // list sha of the last 10 commits to branchName
+  core.debug('Commits: ' + JSON.stringify(response.data.map(commit => commit.sha)));
 
-  const lastCommitSha = response.data[0].sha
-  console.log(`The SHA of the last commit to master is ${lastCommitSha}`)
-  return lastCommitSha
+  return module.exports.findLatestSuccessfulBenchmark(benchmarkData, benchmarkName,
+      response.data.map(commit => commit.sha));
+}
+
+module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkName, commitIds) {
+  if (!benchmarkData || !benchmarkData.entries || !benchmarkData.entries.benchmarkName || !Array.isArray(commitIds)) {
+    return null;
+  }
+  const filteredBenchmarks = benchmarkData.entries.benchmarkName.filter(benchmark =>
+      benchmark.benchSuccessful && commitIds.includes(benchmark.commit.id)
+  );
+  filteredBenchmarks.sort((a, b) => b.date - a.date);
+  return filteredBenchmarks.length > 0 ? filteredBenchmarks[0].commit.id : null;
 }
 
 
@@ -31917,9 +31928,10 @@ async function run() {
     let latestBenchSha = null;
     if (core.getInput('trend_det_successful_release_branch') !== 'null') {
       const branchName = core.getInput('trend_det_successful_release_branch');
-      latestBenchSha = await getLastCommitSha(branchName);
+      latestBenchSha = await getLastCommitSha(branchName, completeBenchData,
+          completeConfig.benchName);
       // get sha of the last successful commit to branchName
-      core.debug('Latest bench sha: ' + latestBenchSha);
+      console.log('Latest bench sha: ' + latestBenchSha);
       completeConfig.latestBenchSha = latestBenchSha;
     }
 
@@ -31930,14 +31942,6 @@ async function run() {
     );
 
     core.debug('Evaluation result: ' + JSON.stringify(evaluationResult))
-
-    if (completeConfig.saveCurrBenchRes) {
-      core.debug('Saving current benchmark results to file')
-      await addCompleteBenchmarkToFile(completeBenchmarkObject, completeConfig.fileWithBenchData,
-          evaluationResult.results, evaluationResult.evalParameters,
-          completeConfig.evaluationConfig
-      )
-    }
 
     let shouldFail = false;
     const resultArray = evaluationResult.results.result
@@ -31952,6 +31956,15 @@ async function run() {
     }
     if (completeConfig.failingCondition === 'none') {
         shouldFail = false
+    }
+
+    completeBenchmarkObject.benchSuccessful = !shouldFail;
+    if (completeConfig.saveCurrBenchRes) {
+      core.debug('Saving current benchmark results to file')
+      await addCompleteBenchmarkToFile(completeBenchmarkObject, completeConfig.fileWithBenchData,
+          evaluationResult.results, evaluationResult.evalParameters,
+          completeConfig.evaluationConfig
+      )
     }
 
     const addCommentOption = completeConfig.addComment;
