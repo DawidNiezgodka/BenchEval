@@ -28,7 +28,7 @@ inputs:
   github_token:
     description: 'GitHub token to pull/push to repo, add benchmark info to the repo, etc.'
     required: false
-  add_comment_to_commit:
+  comment_to_commit:
     description: |
       Add commit comment with the detailed benchmark info.
       Possible values are on, off, if_failed.
@@ -38,7 +38,7 @@ inputs:
     description: |
       Commas-separated list of users to alert if the benchmark failed.
     required: false
-  add_action_page_job_summary:
+  action_page_job_summary:
     description: 'Leave a short summary on the workflow page. Possible values are on, off, if_failed'
     required: false
     default: "on"

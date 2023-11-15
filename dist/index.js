@@ -30471,6 +30471,89 @@ module.exports.createBodyForComparisonWithPrev = function (
   return lines.join('\n')
 }
 
+module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationResult, completeConfig) {
+  const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+  const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
+  const weekAgoBench = evaluationResult.referenceBenchmarks.weekAgo;
+  const lastStableReleaseBench = evaluationResult.referenceBenchmarks.lastStableRelease;
+  const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
+
+  lines.push('', '', '', '', '', '')
+  lines.push('## Results')
+  lines.push('', '', '', '', '', '')
+
+  lines.push(`The chosen evaluation method is trend detection with deltas.`)
+  lines.push(`Each metric shall be "threshold" % better than the previous benchmark, the benchmark from a week ago,
+  and the benchmark from the last stable commit to main branch.`)
+
+  const benchDataText = module.exports.createBenchDataText(
+      currentBenchmark
+  )
+  lines.push(benchDataText)
+
+  lines.push(
+      `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} 
+      | Week ago: ${weekAgoBench.commitInfo.id} | Last stable: ${lastStableReleaseBench.commitInfo.id} 
+      | Threshold | Result |`
+  )
+  lines.push('|-|-|-|-|-|')
+
+  const evaluationResults = evaluationResult.results.result
+  const evaluationParameters = evaluationResult.evalParameters
+  const evaluationConfiguration = completeConfig.evaluationConfig
+
+  for (let i = 0; i < evaluationResults.length; i++) {
+    const failedExplanations = evaluationParameters.failedExplanations[i];
+    const resultStatus = evaluationResults[i];
+    const metricName = evaluationParameters.metricNames[i];
+    const metricUnit = evaluationParameters.metricUnits[i];
+    const currBenchValue = evaluationParameters.metricToDifferentBenchValues.get(metricName).get('current');
+    const prevBenchValue = evaluationParameters.metricToDifferentBenchValues.get(metricName).get('previous');
+    const weekAgoBenchValue = evaluationParameters.metricToDifferentBenchValues.get(metricName).get('week_ago');
+    const lastStableReleaseBenchValue = evaluationParameters.metricToDifferentBenchValues.get(metricName).get('last_stable_release');
+    const x = evaluationConfiguration.trendThresholds[i];
+    let line
+    let comparisonResult;
+
+    const metricNameAndUnit = metricName + " [" + metricUnit + "]";
+
+    if (resultStatus === 'failed' || resultStatus === 'passed') {
+      let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴'
+      line = `| \`${metricNameAndUnit}\` | \`${currBenchValue}\` | \`${prevBenchValue}\` | \`${weekAgoBenchValue}\` 
+      | \`${lastStableReleaseBenchValue}\` | ${x} % | ${betterOrWorse} |`
+    } else {
+      line = `| \`${metricNameAndUnit}\` | \`${currBenchValue}\` | \`${prevBenchValue}\` | \`${weekAgoBenchValue}\` 
+      | \`${lastStableReleaseBenchValue}\` | N/A | 🔘 |`
+    }
+
+    lines.push(line)
+  }
+  lines.push('', '', '', '', '', '')
+  const { failingCondition } = completeConfig;
+  const benchmarkPassed =
+      failingCondition === 'any' ? !evaluationResults.includes('failed') :
+          failingCondition === 'all' ? !evaluationResults.includes('passed') :
+              failingCondition === 'none' ? true : null;
+
+  const conditionMessage =
+      failingCondition === 'any' ? (benchmarkPassed ? "all metrics satisfied" : "at least one metric didn't satisfy") :
+          failingCondition === 'all' ? (benchmarkPassed ? "all metrics passed" : "all metrics failed") :
+              "the benchmark passes regardless of results.";
+
+  lines.push(`## Benchmark ${benchmarkPassed ? 'passed' : 'failed'}`);
+  lines.push(`The chosen failing condition is '${failingCondition}', and ${conditionMessage} the condition.`);
+
+  if (!benchmarkPassed) {
+    let usersToBeAlerted = ['@DawidNiezgodka']
+    if (usersToBeAlerted.length > 0) {
+      lines.push('', `CC: ${usersToBeAlerted.join(' ')}`);
+    }
+  }
+
+
+  return lines.join('\n')
+}
+
 module.exports.createBenchDataText = function (currentBenchmark) {
   const benchInfo = currentBenchmark.benchmarkInfo
   core.debug(
@@ -30555,6 +30638,7 @@ module.exports.createBenchDataTextForCompWithPrev = function (
   core.debug("Bench data lines: " + JSON.stringify(benchDataLines))
   return benchDataLines.join('\n')
 }
+
 
 module.exports.createCommentBodyForComparisonWithThreshold = function (
   currentBenchmark,
@@ -30890,8 +30974,8 @@ module.exports.validateInputAndFetchConfig = function () {
   const githubToken = core.getInput('github_token')
 
   // Variables concerning git repo manipulations
-  const addComment = module.exports.validateAndGet('add_comment_to_commit')
-  const addJobSummary = module.exports.validateAndGet('add_action_page_job_summary')
+  const addComment = module.exports.validateAndGet('comment_to_commit')
+  const addJobSummary = module.exports.validateAndGet('action_page_job_summary')
   const saveCurrBenchRes = module.exports.getBoolInput('save_curr_bench_res')
 
   const alertUsersIfBenchFailed = module.exports.validateUsersToBeAlerted()

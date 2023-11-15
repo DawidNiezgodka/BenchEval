@@ -85,8 +85,8 @@ module.exports.validateInputAndFetchConfig = function () {
   const githubToken = core.getInput('github_token')
 
   // Variables concerning git repo manipulations
-  const addComment = module.exports.validateAndGet('add_comment_to_commit')
-  const addJobSummary = module.exports.validateAndGet('add_action_page_job_summary')
+  const addComment = module.exports.validateAndGet('comment_to_commit')
+  const addJobSummary = module.exports.validateAndGet('action_page_job_summary')
   const saveCurrBenchRes = module.exports.getBoolInput('save_curr_bench_res')
 
   const alertUsersIfBenchFailed = module.exports.validateUsersToBeAlerted()
