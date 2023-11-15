@@ -18,6 +18,14 @@
     <label>Select Metric:</label>
     <label for="metricSelector"></label><select id="metricSelector"></select>
 </div>
+<div>
+    <label for="lowerBound">Lower Bound:</label>
+    <input type="number" id="lowerBound" placeholder="Enter lower bound">
+    <label for="upperBound">Upper Bound:</label>
+    <input type="number" id="upperBound" placeholder="Enter upper bound">
+    <button id="updateBounds">Update Bounds</button>
+</div>
+
 <canvas id="myChart"></canvas>
 
 <script>
@@ -120,6 +128,33 @@
             const metricValue = entry.metrics.find(m => m.name === selectedMetric)?.value;
             values.push(metricValue ?? null);
         }
+
+        // Assuming lowerBound and upperBound are retrieved from somewhere, set them to some defaults for now
+        let lowerBound = 300; // These values should come from user input
+        let upperBound = 400; // These values should come from user input
+
+        // Add two new datasets to your chart data for the bounds
+        const boundDatasets = [
+            {
+                label: 'Lower Bound',
+                data: Array(dates.length).fill(lowerBound), // Creates an array with the same length as `dates`, all values are `lowerBound`
+                borderColor: 'blue',
+                borderWidth: 2,
+                pointRadius: 0, // No points for this line
+                fill: false,
+            },
+            {
+                label: 'Upper Bound',
+                data: Array(dates.length).fill(upperBound), // Creates an array with the same length as `dates`, all values are `upperBound`
+                borderColor: 'red',
+                borderWidth: 2,
+                pointRadius: 0, // No points for this line
+                fill: '-1', // Fills the area between this line and the previous dataset (lower bound)
+            }
+        ];
+
+        // Add the bound datasets to your existing datasets
+
 
         if (myChart) {
             myChart.destroy();
@@ -240,9 +275,21 @@
             }
 
         });
+        myChart.data.datasets.push(...boundDatasets);
     }
 
+
     fetchData();
+
+    document.getElementById('updateBounds').addEventListener('click', () => {
+        // Retrieve the bound values from the input fields
+        lowerBound = parseFloat(document.getElementById('lowerBound').value);
+        upperBound = parseFloat(document.getElementById('upperBound').value);
+
+        // Call updateChart to redraw the chart with the new bounds
+        updateChart();
+    });
+
 </script>
 </body>
 </html>
