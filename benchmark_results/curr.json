@@ -11,16 +11,16 @@
     {
       "unit": "ms",
       "value": 222,
-      "name": "metric2"
+      "name": "latency"
     },
     {
       "unit": "op/s",
       "value": 222,
-      "name": "metric4"
+      "name": "metric2"
     },
     {
       "unit": "%",
-      "value": 25,
+      "value": 222,
       "name": "metric3"
     }
   ]
