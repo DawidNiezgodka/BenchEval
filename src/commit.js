@@ -46,7 +46,7 @@ module.exports.getLastCommitSha = async function (branchName) {
     owner: context.repo.owner,
     repo: context.repo.repo,
     sha: branchName,
-    per_page: 1
+    per_page: 10
   })
 
   const lastCommitSha = response.data[0].sha

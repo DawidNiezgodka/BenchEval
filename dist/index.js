@@ -30873,7 +30873,7 @@ module.exports.getLastCommitSha = async function (branchName) {
     owner: context.repo.owner,
     repo: context.repo.repo,
     sha: branchName,
-    per_page: 1
+    per_page: 10
   })
 
   const lastCommitSha = response.data[0].sha
@@ -31918,6 +31918,7 @@ async function run() {
     if (core.getInput('trend_det_successful_release_branch') !== 'null') {
       const branchName = core.getInput('trend_det_successful_release_branch');
       latestBenchSha = await getLastCommitSha(branchName);
+      // get sha of the last successful commit to branchName
       core.debug('Latest bench sha: ' + latestBenchSha);
       completeConfig.latestBenchSha = latestBenchSha;
     }
