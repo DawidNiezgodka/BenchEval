@@ -481,11 +481,11 @@ module.exports.validateTrendDetectionDeltasConfig = function () {
 
 module.exports.checkForWeekOldBenchmark = function(data, benchmarkKey) {
 
-    console.log(`Checking if a benchmark under '${benchmarkKey}' is approximately one week old.`)
+
   const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
   const DAY_IN_MS = 24 * 60 * 60 * 1000;
   const now = Date.now();
-  console.log(`Now: ${now}`)
+
 
   if (!data.entries.hasOwnProperty(benchmarkKey)) {
     throw new Error(`No such benchmark key: '${benchmarkKey}' exists.`);
@@ -493,11 +493,11 @@ module.exports.checkForWeekOldBenchmark = function(data, benchmarkKey) {
 
   let benchmarks = data.entries[benchmarkKey];
   // print number of benchmarks
-    console.log(`Number of benchmarks under '${benchmarkKey}': ${benchmarks.length}`);
+
 
   let weekOldBenchmarkExists = benchmarks.some(benchmark => {
-    console.log(`Benchmark date: ${benchmark.date}`)
-    console.log(`Benchmark age: ${now - benchmark.date}`)
+
+
     let benchmarkAge = now - benchmark.date;
     return benchmarkAge >= (ONE_WEEK_IN_MS - DAY_IN_MS) && benchmarkAge <= (ONE_WEEK_IN_MS + DAY_IN_MS);
   });

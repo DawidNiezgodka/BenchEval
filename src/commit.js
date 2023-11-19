@@ -55,12 +55,17 @@ module.exports.getLastCommitSha = async (branchName, benchmarkData, benchmarkNam
 }
 
 module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkName, commitIds) {
+  // print input parameters
+    core.debug('Benchmark data length: ' + JSON.stringify(benchmarkData.length));
+    core.debug('Benchmark name: ' + benchmarkName);
+    core.debug('Commit ids: ' + JSON.stringify(commitIds));
   if (!benchmarkData || !benchmarkData.entries || !benchmarkData.entries.benchmarkName || !Array.isArray(commitIds)) {
     return null;
   }
   const filteredBenchmarks = benchmarkData.entries.benchmarkName.filter(benchmark =>
       benchmark.benchSuccessful && commitIds.includes(benchmark.commit.id)
   );
+    core.debug('Filtered benchmarks: ' + JSON.stringify(filteredBenchmarks));
   filteredBenchmarks.sort((a, b) => b.date - a.date);
   return filteredBenchmarks.length > 0 ? filteredBenchmarks[0].commit.id : null;
 }

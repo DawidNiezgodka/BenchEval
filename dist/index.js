@@ -30279,10 +30279,6 @@ module.exports.getSortedBenchmarkData = function (folderWithBenchData, fileNameW
 
 module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchData, fileNameWithBenchData) {
 
-  // print input parameters
-    console.log(`benchToCompare: ${benchToCompare}`);
-    console.log(`folderWithBenchData: ${folderWithBenchData}`);
-    console.log(`fileNameWithBenchData: ${fileNameWithBenchData}`);
   const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
   const now = Date.now();
 
@@ -30292,16 +30288,14 @@ module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchDa
 
   let benchmarks = data.entries[benchToCompare];
   // Print the amount of benchmarks
-    console.log(`Number of benchmarks under '${benchToCompare}': ${benchmarks.length}`);
+
   let closestBenchmark = null;
   let smallestDifference = Infinity;
 
 
 
   benchmarks.forEach(benchmark => {
-    console.log(`Benchmark date: ${benchmark.date}`);
     let difference = Math.abs(now - benchmark.date - ONE_WEEK_IN_MS);
-    console.log(`Difference: ${difference}`);
     if (difference < smallestDifference) {
       smallestDifference = difference;
       closestBenchmark = benchmark;
@@ -30892,12 +30886,17 @@ module.exports.getLastCommitSha = async (branchName, benchmarkData, benchmarkNam
 }
 
 module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkName, commitIds) {
+  // print input parameters
+    core.debug('Benchmark data length: ' + JSON.stringify(benchmarkData.length));
+    core.debug('Benchmark name: ' + benchmarkName);
+    core.debug('Commit ids: ' + JSON.stringify(commitIds));
   if (!benchmarkData || !benchmarkData.entries || !benchmarkData.entries.benchmarkName || !Array.isArray(commitIds)) {
     return null;
   }
   const filteredBenchmarks = benchmarkData.entries.benchmarkName.filter(benchmark =>
       benchmark.benchSuccessful && commitIds.includes(benchmark.commit.id)
   );
+    core.debug('Filtered benchmarks: ' + JSON.stringify(filteredBenchmarks));
   filteredBenchmarks.sort((a, b) => b.date - a.date);
   return filteredBenchmarks.length > 0 ? filteredBenchmarks[0].commit.id : null;
 }
@@ -31391,11 +31390,11 @@ module.exports.validateTrendDetectionDeltasConfig = function () {
 
 module.exports.checkForWeekOldBenchmark = function(data, benchmarkKey) {
 
-    console.log(`Checking if a benchmark under '${benchmarkKey}' is approximately one week old.`)
+
   const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
   const DAY_IN_MS = 24 * 60 * 60 * 1000;
   const now = Date.now();
-  console.log(`Now: ${now}`)
+
 
   if (!data.entries.hasOwnProperty(benchmarkKey)) {
     throw new Error(`No such benchmark key: '${benchmarkKey}' exists.`);
@@ -31403,11 +31402,11 @@ module.exports.checkForWeekOldBenchmark = function(data, benchmarkKey) {
 
   let benchmarks = data.entries[benchmarkKey];
   // print number of benchmarks
-    console.log(`Number of benchmarks under '${benchmarkKey}': ${benchmarks.length}`);
+
 
   let weekOldBenchmarkExists = benchmarks.some(benchmark => {
-    console.log(`Benchmark date: ${benchmark.date}`)
-    console.log(`Benchmark age: ${now - benchmark.date}`)
+
+
     let benchmarkAge = now - benchmark.date;
     return benchmarkAge >= (ONE_WEEK_IN_MS - DAY_IN_MS) && benchmarkAge <= (ONE_WEEK_IN_MS + DAY_IN_MS);
   });

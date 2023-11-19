@@ -203,10 +203,6 @@ module.exports.getSortedBenchmarkData = function (folderWithBenchData, fileNameW
 
 module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchData, fileNameWithBenchData) {
 
-  // print input parameters
-    console.log(`benchToCompare: ${benchToCompare}`);
-    console.log(`folderWithBenchData: ${folderWithBenchData}`);
-    console.log(`fileNameWithBenchData: ${fileNameWithBenchData}`);
   const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
   const now = Date.now();
 
@@ -216,16 +212,14 @@ module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchDa
 
   let benchmarks = data.entries[benchToCompare];
   // Print the amount of benchmarks
-    console.log(`Number of benchmarks under '${benchToCompare}': ${benchmarks.length}`);
+
   let closestBenchmark = null;
   let smallestDifference = Infinity;
 
 
 
   benchmarks.forEach(benchmark => {
-    console.log(`Benchmark date: ${benchmark.date}`);
     let difference = Math.abs(now - benchmark.date - ONE_WEEK_IN_MS);
-    console.log(`Difference: ${difference}`);
     if (difference < smallestDifference) {
       smallestDifference = difference;
       closestBenchmark = benchmark;
