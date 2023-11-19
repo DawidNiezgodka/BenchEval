@@ -40,7 +40,7 @@ async function run() {
         completeConfig.fileWithBenchData
     );
 
-    core.debug('Complete bench data: ' + JSON.stringify(completeBenchData))
+    //core.debug('Complete bench data: ' + JSON.stringify(completeBenchData))
 
     let latestBenchSha = null;
     if (core.getInput('trend_det_successful_release_branch') !== 'null') {

@@ -30871,7 +30871,7 @@ const { Octokit } = __nccwpck_require__(9597)
 const { context } = __nccwpck_require__(3134)
 
 module.exports.getLastCommitSha = async (branchName, benchmarkData, benchmarkName)=> {
-  console.log(benchmarkData.entries.benchmarkName)
+  console.log("Bench data from getlastcomitsha", benchmarkData);
   // get length of benchmark data
 
   const octokit = new Octokit()
@@ -31944,7 +31944,7 @@ async function run() {
         completeConfig.fileWithBenchData
     );
 
-    core.debug('Complete bench data: ' + JSON.stringify(completeBenchData))
+    //core.debug('Complete bench data: ' + JSON.stringify(completeBenchData))
 
     let latestBenchSha = null;
     if (core.getInput('trend_det_successful_release_branch') !== 'null') {

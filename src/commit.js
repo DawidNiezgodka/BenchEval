@@ -40,7 +40,7 @@ const { Octokit } = require('@octokit/action')
 const { context } = require('@actions/github')
 
 module.exports.getLastCommitSha = async (branchName, benchmarkData, benchmarkName)=> {
-  console.log(benchmarkData.entries.benchmarkName)
+  console.log("Bench data from getlastcomitsha", benchmarkData);
   // get length of benchmark data
 
   const octokit = new Octokit()
