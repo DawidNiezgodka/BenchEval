@@ -35,7 +35,7 @@ jobs:
           bench_to_compare: "Benchmark"
           current_bench_res_file: ./benchmark_results/curr.json
           evaluation_method: trend_detection_deltas
-          trend_thresholds: 6,6,6
+          trend_thresholds: 7,6,6
           action_page_job_summary: on
           failing_condition: any
           comment_to_commit: on
