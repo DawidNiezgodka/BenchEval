@@ -30291,7 +30291,9 @@ module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchDa
   let smallestDifference = Infinity;
 
   benchmarks.forEach(benchmark => {
+    console.log(`Benchmark date: ${benchmark.date}`);
     let difference = Math.abs(now - benchmark.date - ONE_WEEK_IN_MS);
+    console.log(`Difference: ${difference}`);
     if (difference < smallestDifference) {
       smallestDifference = difference;
       closestBenchmark = benchmark;
