@@ -30871,6 +30871,7 @@ const { Octokit } = __nccwpck_require__(9597)
 const { context } = __nccwpck_require__(3134)
 
 module.exports.getLastCommitSha = async (branchName, benchmarkData, benchmarkName)=> {
+  console.log(benchmarkData.entries.benchmarkName.length)
   const octokit = new Octokit()
   const response = await octokit.rest.repos.listCommits({
     owner: context.repo.owner,
@@ -30887,7 +30888,7 @@ module.exports.getLastCommitSha = async (branchName, benchmarkData, benchmarkNam
 
 module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkName, commitIds) {
   // print input parameters
-    core.debug('Benchmark data length: ' + JSON.stringify(benchmarkData.length));
+    core.debug('Benchmark data length: ' + JSON.stringify(benchmarkData.entries.benchmarkName));
     core.debug('Benchmark name: ' + benchmarkName);
     core.debug('Commit ids: ' + JSON.stringify(commitIds));
   if (!benchmarkData || !benchmarkData.entries || !benchmarkData.entries.benchmarkName || !Array.isArray(commitIds)) {
