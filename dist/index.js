@@ -30871,7 +30871,9 @@ const { Octokit } = __nccwpck_require__(9597)
 const { context } = __nccwpck_require__(3134)
 
 module.exports.getLastCommitSha = async (branchName, benchmarkData, benchmarkName)=> {
-  console.log(benchmarkData.entries.benchmarkName.length)
+  console.log(benchmarkData.entries.benchmarkName)
+  // get length of benchmark data
+
   const octokit = new Octokit()
   const response = await octokit.rest.repos.listCommits({
     owner: context.repo.owner,
