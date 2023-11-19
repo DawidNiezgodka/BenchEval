@@ -15,14 +15,14 @@ jobs:
       - name: checkout the main branch
         uses: actions/checkout@v3
 
-#      - name: checkout the bench_data branch to a given folder
-#        uses: actions/checkout@v3
-#        with:
-#          ref: 'bench_data'
-#          sparse-checkout: |
-#            data.json
-#          sparse-checkout-cone-mode: false
-#          path: 'benchmark_data'
+      - name: checkout the bench_data branch to a given folder
+        uses: actions/checkout@v3
+        with:
+          ref: 'bench_data'
+          sparse-checkout: |
+            data.json
+          sparse-checkout-cone-mode: false
+          path: 'benchmark_data'
 
 #      - name: print the content of the file from the bench_data branch
 #        run: cat benchmark_data/data.json
@@ -37,7 +37,7 @@ jobs:
           bench_to_compare: "Benchmark2"
           current_bench_res_file: ./benchmark_results/curr.json
           evaluation_method: previous
-          comparison_operators: bigger,bigger,bigger
+          comparison_operators: bigger,bigger,smaller
           comparison_margins: -1,-1,-1
           failing_condition: none
           add_comment_to_commit: false
