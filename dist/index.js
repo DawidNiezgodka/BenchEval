@@ -30511,11 +30511,12 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
     const resultStatus = evaluationResults[i];
     const metricName = evaluationParameters.metricNames[i];
     const metricUnit = evaluationParameters.metricUnits[i];
+    const _ = evaluationParameters.metricToDifferentBenchValues.get(metricName);
+    console.log(_);
     const currBenchValue = evaluationParameters.metricToDifferentBenchValues.get(metricName).get('current');
     const prevBenchValue = evaluationParameters.metricToDifferentBenchValues.get(metricName).get('previous');
     const weekAgoBenchValue = evaluationParameters.metricToDifferentBenchValues.get(metricName).get('week_ago');
-    const _ = evaluationParameters.metricToDifferentBenchValues.get(metricName);
-    console.log(_);
+
     const lastStableReleaseBenchValue = evaluationParameters.metricToDifferentBenchValues.get(metricName).get('last_stable_release');
 
     const x = evaluationConfiguration.trendThresholds[i];
