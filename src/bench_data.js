@@ -60,7 +60,7 @@ module.exports.addCompleteBenchmarkToFile = async (
 
     }
 
-    console.log('Benchmark name: ' + benchmarkInstance.benchmarkName)
+    console.log('-- addCompleteBenchmarkToFile -- Benchmark name: ' + benchmarkInstance.benchmarkName)
     if (!jsonData.entries[benchmarkInstance.benchmarkName]) {
       jsonData.entries[benchmarkInstance.benchmarkName] = []
     }

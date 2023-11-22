@@ -314,7 +314,7 @@ module.exports.createBodyForComparisonWithThreshold = function (
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   console.log("Current benchmark from creaBodyWithThr: " + JSON.stringify(currentBenchmark))
   //console.log(currentBenchmark.benchmarkName);
-  const bName = currentBenchmark.benchmarkName;
+  const bName = "Benchmark";
   //console.log(currentBenchmark.benchName);
   const lines = [`# ${bName}`, '', '']
   const benchDataText = module.exports.createBenchDataText(currentBenchmark);
