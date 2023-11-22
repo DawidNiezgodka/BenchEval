@@ -30346,7 +30346,7 @@ module.exports.createComment = function (
 ) {
   if (completeConfig.githubToken === null || completeConfig.githubToken === undefined) {
     throw new Error(
-      'Github token is not provided, so no comment will be created'
+        'Github token is not provided, so no comment will be created'
     )
   }
 
@@ -30378,9 +30378,9 @@ module.exports.createComment = function (
   }
 
   module.exports.leaveComment(
-    evaluationResult.referenceBenchmarks.current.commitInfo.id,
-    commentBody,
-    completeConfig.githubToken
+      evaluationResult.referenceBenchmarks.current.commitInfo.id,
+      commentBody,
+      completeConfig.githubToken
   )
 }
 
@@ -30396,12 +30396,12 @@ module.exports.createBodyForComparisonWithPrev = function (
 
   if (currentBenchName !== previousBenchName) {
     lines.push(
-      "Please note that you're comparing benchmarks with different names!"
+        "Please note that you're comparing benchmarks with different names!"
     )
   }
   const benchDataText = module.exports.createBenchDataTextForCompWithPrev(
-    currentBenchmark,
-    previousBenchmark
+      currentBenchmark,
+      previousBenchmark
   )
 
   lines.push(benchDataText)
@@ -30410,7 +30410,7 @@ module.exports.createBodyForComparisonWithPrev = function (
   lines.push('', '', '', '', '')
 
   lines.push(
-    `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Condition for current | Result |`
+      `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Condition for current | Result |`
   )
   lines.push('|-|-|-|-|-|')
 
@@ -30449,8 +30449,22 @@ module.exports.createBodyForComparisonWithPrev = function (
 
     lines.push(line)
   }
-  lines.push('', '', '', '', '')
-  const { failingCondition } = completeConfig;
+  const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
+
+  if (!benchmarkPassed) {
+    let usersToBeAlerted = ['@DawidNiezgodka']
+    if (usersToBeAlerted.length > 0) {
+      lines.push('', `CC: ${usersToBeAlerted.join(' ')}`);
+    }
+  }
+
+
+  return lines.join('\n')
+}
+
+module.exports.addInfoAboutBenchRes = function(lines, completeConfig, evaluationResults) {
+  lines.push('', '', '', '', '', '')
+  const {failingCondition} = completeConfig;
   const benchmarkPassed =
       failingCondition === 'any' ? !evaluationResults.includes('failed') :
           failingCondition === 'all' ? !evaluationResults.includes('passed') :
@@ -30463,16 +30477,7 @@ module.exports.createBodyForComparisonWithPrev = function (
 
   lines.push(`## Benchmark ${benchmarkPassed ? 'passed' : 'failed'}`);
   lines.push(`The chosen failing condition is '${failingCondition}', and ${conditionMessage} the condition.`);
-
-  if (!benchmarkPassed) {
-    let usersToBeAlerted = ['@DawidNiezgodka']
-    if (usersToBeAlerted.length > 0) {
-      lines.push('', `CC: ${usersToBeAlerted.join(' ')}`);
-    }
-  }
-
-
-  return lines.join('\n')
+  return benchmarkPassed;
 }
 
 module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationResult, completeConfig) {
@@ -30511,45 +30516,34 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
     const resultStatus = evaluationResults[i];
     const metricName = evaluationParameters.metricNames[i];
     const metricUnit = evaluationParameters.metricUnits[i];
-    const _ = evaluationParameters.metricToDifferentBenchValues.get(metricName);
-    console.log(_);
-    const currBenchValue = evaluationParameters.metricToDifferentBenchValues.get(metricName).get('current');
-    const prevBenchValue = evaluationParameters.metricToDifferentBenchValues.get(metricName).get('previous');
-    const weekAgoBenchValue = evaluationParameters.metricToDifferentBenchValues.get(metricName).get('week_ago');
+    const metricValues = evaluationParameters.metricToDifferentBenchValues.get(metricName);
 
-    const lastStableReleaseBenchValue = evaluationParameters.metricToDifferentBenchValues.get(metricName).get('last_stable_release');
+    if (!metricValues) {
+      console.log(`No benchmark values found for metric: ${metricName}`);
+      continue;
+    }
+
+    const currBenchValue = metricValues.get('current') ?? 'N/A';
+    const prevBenchValue = metricValues.get('previous') ?? 'N/A';
+    const weekAgoBenchValue = metricValues.get('week_ago') ?? 'N/A';
+    const lastStableReleaseBenchValue = metricValues.get('last_stable_release') ?? 'N/A';
 
     const x = evaluationConfiguration.trendThresholds[i];
-    let line
+    let line;
     let comparisonResult;
 
     const metricNameAndUnit = metricName + " [" + metricUnit + "]";
 
+    let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴';
     if (resultStatus === 'failed' || resultStatus === 'passed') {
-      let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴'
-      line = `| \`${metricNameAndUnit}\` | \`${currBenchValue}\` | \`${prevBenchValue}\` | \`${weekAgoBenchValue}\` 
-      | \`${lastStableReleaseBenchValue}\` | ${x} % | ${betterOrWorse} |`
+      line = `| \`${metricNameAndUnit}\` | \`${currBenchValue}\` | \`${prevBenchValue}\` | \`${weekAgoBenchValue}\` | \`${lastStableReleaseBenchValue}\` | ${x} % | ${betterOrWorse} |`;
     } else {
-      line = `| \`${metricNameAndUnit}\` | \`${currBenchValue}\` | \`${prevBenchValue}\` | \`${weekAgoBenchValue}\` 
-      | \`${lastStableReleaseBenchValue}\` | N/A | 🔘 |`
+      line = `| \`${metricNameAndUnit}\` | \`${currBenchValue}\` | \`${prevBenchValue}\` | \`${weekAgoBenchValue}\` | \`${lastStableReleaseBenchValue}\` | N/A | 🔘 |`;
     }
 
-    lines.push(line)
+    lines.push(line);
   }
-  lines.push('', '', '', '', '', '')
-  const { failingCondition } = completeConfig;
-  const benchmarkPassed =
-      failingCondition === 'any' ? !evaluationResults.includes('failed') :
-          failingCondition === 'all' ? !evaluationResults.includes('passed') :
-              failingCondition === 'none' ? true : null;
-
-  const conditionMessage =
-      failingCondition === 'any' ? (benchmarkPassed ? "all metrics satisfied" : "at least one metric didn't satisfy") :
-          failingCondition === 'all' ? (benchmarkPassed ? "all metrics passed" : "all metrics failed") :
-              "the benchmark passes regardless of results.";
-
-  lines.push(`## Benchmark ${benchmarkPassed ? 'passed' : 'failed'}`);
-  lines.push(`The chosen failing condition is '${failingCondition}', and ${conditionMessage} the condition.`);
+  const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
 
   if (!benchmarkPassed) {
     let usersToBeAlerted = ['@DawidNiezgodka']
@@ -30565,7 +30559,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
 module.exports.createBenchDataText = function (currentBenchmark) {
   const benchInfo = currentBenchmark.benchmarkInfo
   core.debug(
-    'From createBenchDataText: Current benchmark info: ' +
+      'From createBenchDataText: Current benchmark info: ' +
       JSON.stringify(benchInfo)
   )
   const benchDataLines = [
@@ -30588,15 +30582,15 @@ module.exports.createBenchDataText = function (currentBenchmark) {
 }
 
 module.exports.createBenchDataTextForCompWithPrev = function (
-  currentBenchmark,
-  previousBenchmark
+    currentBenchmark,
+    previousBenchmark
 ) {
   core.debug("Current benchmark: " + JSON.stringify(currentBenchmark))
   core.debug("Previous benchmark: " + JSON.stringify(previousBenchmark))
   const currentBenchInfo = currentBenchmark.benchmarkInfo
   const previousBenchInfo = previousBenchmark
-    ? previousBenchmark.benchmarkInfo
-    : null
+      ? previousBenchmark.benchmarkInfo
+      : null
 
   let benchDataLines = []
   if (currentBenchmark.benchmarkName === previousBenchmark.benchmarkName) {
@@ -30612,25 +30606,25 @@ module.exports.createBenchDataTextForCompWithPrev = function (
   }
 
   benchDataLines.push(
-    `| **Execution time**: ${
-      currentBenchInfo.executionTime
-    } | **Execution time**: ${
-      previousBenchInfo ? previousBenchInfo.executionTime : 'N/A'
-    } |`
+      `| **Execution time**: ${
+          currentBenchInfo.executionTime
+      } | **Execution time**: ${
+          previousBenchInfo ? previousBenchInfo.executionTime : 'N/A'
+      } |`
   )
   benchDataLines.push('| **Parametrization**:  | **Parametrization**:   |')
 
   const currentFields = Object.keys(currentBenchInfo.parametrization)
   const previousFields = previousBenchInfo
-    ? Object.keys(previousBenchInfo.parametrization)
-    : []
+      ? Object.keys(previousBenchInfo.parametrization)
+      : []
   const allFields = new Set([...currentFields, ...previousFields])
 
   for (const field of allFields) {
     const currentParamValue = currentBenchInfo.parametrization[field] || 'N/A'
     const previousParamValue = previousBenchInfo
-      ? previousBenchInfo.parametrization[field]
-      : 'N/A'
+        ? previousBenchInfo.parametrization[field]
+        : 'N/A'
 
     const line = `|   - **${field}**: ${currentParamValue}  |   - **${field}**: ${previousParamValue}   |`
     benchDataLines.push(line)
@@ -30638,9 +30632,9 @@ module.exports.createBenchDataTextForCompWithPrev = function (
 
   benchDataLines.push('|                       |                        |')
   benchDataLines.push(
-    `| **Other Info**: ${currentBenchInfo.otherInfo}  | **Other Info**: ${
-      previousBenchInfo ? previousBenchInfo.otherInfo : 'N/A'
-    } |`
+      `| **Other Info**: ${currentBenchInfo.otherInfo}  | **Other Info**: ${
+          previousBenchInfo ? previousBenchInfo.otherInfo : 'N/A'
+      } |`
   )
 
   core.debug("Bench data lines: " + JSON.stringify(benchDataLines))
@@ -30649,10 +30643,10 @@ module.exports.createBenchDataTextForCompWithPrev = function (
 
 
 module.exports.createCommentBodyForComparisonWithThreshold = function (
-  currentBenchmark,
-  thresholdArray,
-  comparisonModes,
-  comparisonMargins
+    currentBenchmark,
+    thresholdArray,
+    comparisonModes,
+    comparisonMargins
 ) {
   const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
 
@@ -30668,7 +30662,7 @@ module.exports.createCommentBodyForComparisonWithThreshold = function (
   lines.push('## Results')
   lines.push('', '', '', '', '')
   lines.push(
-    `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Threshold | Condition | Result |`
+      `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Threshold | Condition | Result |`
   )
   lines.push('|-|-|-|-|-|')
 
@@ -30710,19 +30704,19 @@ module.exports.createCommentBodyForComparisonWithThreshold = function (
       const lowerLimit = currentThreshold * (1 - comparisonMargin / 100)
       const upperLimit = currentThreshold * (1 + comparisonMargin / 100)
       meetsThreshold =
-        currentMetric.value >= lowerLimit && currentMetric.value <= upperLimit
+          currentMetric.value >= lowerLimit && currentMetric.value <= upperLimit
     } else {
       throw new Error(`Unknown threshold comparison mode: ${comparisonMode}`)
     }
     core.debug(
-      'Creating a line for metric ' +
+        'Creating a line for metric ' +
         currentMetric.name +
         ' with value ' +
         currentMetric.value
     )
     let betterOrWorse = meetsThreshold ? '🟢' : '🔴'
     line = `| \`${currentMetric.name}\` | ${module.exports.fetchValueAndUnit(
-      currentMetric
+        currentMetric
     )} | ${currentThreshold} | ${comparisonMode} | ${betterOrWorse} |`
 
     lines.push(line)
@@ -30737,13 +30731,13 @@ module.exports.leaveComment = async (commitId, body, token) => {
   const octokit = github.getOctokit(token)
   try {
     await octokit.request(
-      'POST /repos/{owner}/{repo}/commits/{commit_sha}/comments',
-      {
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        commit_sha: commitId,
-        body: body
-      }
+        'POST /repos/{owner}/{repo}/commits/{commit_sha}/comments',
+        {
+          owner: github.context.repo.owner,
+          repo: github.context.repo.repo,
+          commit_sha: commitId,
+          body: body
+        }
     )
   } catch (error) {
     console.error('An error occurred:', error)
@@ -30809,15 +30803,15 @@ module.exports.createWorkflowSummary = function (evaluationResult) {
       {
         data: metricName,
       },
-        {
-            data: valueAndUnit,
-        },
-        {
-            data: prevBenchValAndUnit,
-        },
-        {
-            data: graphicalRepresentationOfRes,
-        },
+      {
+        data: valueAndUnit,
+      },
+      {
+        data: prevBenchValAndUnit,
+      },
+      {
+        data: graphicalRepresentationOfRes,
+      },
     ])
   }
 
@@ -31810,7 +31804,7 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
   const metricNames = [];
   const evaluationResults = [];
   const metricUnits = [];
-  const failedExplanations = [];
+  const resultExplanations = [];
   const metricToDifferentBenchValues = new Map();
 
   const calculatePercentageChange = (oldValue, newValue) => {
@@ -31818,6 +31812,8 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
   };
 
   const evaluateChange = (oldValue, newValue, threshold) => {
+    // calculate percentage change for the following values
+
     const percentageChange = calculatePercentageChange(oldValue, newValue);
     return Math.abs(percentageChange) <= threshold;
   };
@@ -31835,28 +31831,36 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
     metricNames.push(currentName);
 
-    const isPassedPrevious = previousMetric === undefined || evaluateChange(previousMetric, currentValue, currentThreshold);
-    const isPassedWeekAgo = weekAgoMetric === undefined || evaluateChange(weekAgoMetric, currentValue, currentThreshold);
-    const isPassedLastStable = lastStableMetric === undefined || evaluateChange(lastStableMetric, currentValue, currentThreshold);
+    const isPassedPrevious = previousMetric !== undefined && evaluateChange(previousMetric, currentValue, currentThreshold);
+    const isPassedWeekAgo = weekAgoMetric !== undefined && evaluateChange(weekAgoMetric, currentValue, currentThreshold);
+    const isPassedLastStable = lastStableMetric !== undefined && evaluateChange(lastStableMetric, currentValue, currentThreshold);
 
     metricToDifferentBenchValues.set(currentName, {
-        "current": currentValue,
-        "previous": previousMetric,
-        "week_ago": weekAgoMetric,
-        "last_stable_release": lastStableMetric
+      "current": currentValue,
+      "previous": previousMetric,
+      "week_ago": weekAgoMetric,
+      "last_stable_release": lastStableMetric
     });
-
 
     const isPassed = isPassedPrevious && isPassedWeekAgo && isPassedLastStable;
     evaluationResults.push(isPassed ? 'passed' : 'failed');
-    if (!isPassed) {
-      const failedExplanation = `benchmark failed for the metric ${currentName}
-      because one of the reference benchmarks failed to be within the threshold: ${X[index]}
-      or there is no data for the reference benchmark`;
-      failedExplanations.push(failedExplanation);
+
+    const undefinedMetrics = [];
+    if (previousMetric === undefined) undefinedMetrics.push('previous');
+    if (weekAgoMetric === undefined) undefinedMetrics.push('week_ago');
+    if (lastStableMetric === undefined) undefinedMetrics.push('last_stable_release');
+
+    if (!isPassed || undefinedMetrics.length > 0) {
+      let resultExplanation = `benchmark ${isPassed ? 'passed' : 'failed'} for the metric ${currentName}`;
+      if (undefinedMetrics.length > 0) {
+        resultExplanation += `, but there was undefined data for the following metric(s): ${undefinedMetrics.join(', ')}`;
+      } else {
+        resultExplanation += ` because one of the reference benchmarks failed to be within the threshold: ${X[index]}`;
+      }
+      resultExplanations.push(resultExplanation);
     } else {
-      console.log(`isPassedPrevious: ${isPassedPrevious}, isPassedWeekAgo: ${isPassedWeekAgo}, isPassedLastStable: ${isPassedLastStable}`)
-      failedExplanations.push('N/A');
+      console.log(`isPassedPrevious: ${isPassedPrevious}, isPassedWeekAgo: ${isPassedWeekAgo}, isPassedLastStable: ${isPassedLastStable}`);
+      resultExplanations.push('N/A');
     }
 
   });
@@ -31866,7 +31870,7 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
     "metric_names": metricNames,
     "metric_units": metricUnits,
     "result": evaluationResults,
-    "failed_explanations": failedExplanations,
+    "failed_explanations": resultExplanations,
     "reference_benchmarks": {
       "current": currentBenchmarkData,
       "previous": previousBenchmarkData,

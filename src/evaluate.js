@@ -369,7 +369,7 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
   const metricNames = [];
   const evaluationResults = [];
   const metricUnits = [];
-  const failedExplanations = [];
+  const resultExplanations = [];
   const metricToDifferentBenchValues = new Map();
 
   const calculatePercentageChange = (oldValue, newValue) => {
@@ -377,6 +377,8 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
   };
 
   const evaluateChange = (oldValue, newValue, threshold) => {
+    // calculate percentage change for the following values
+
     const percentageChange = calculatePercentageChange(oldValue, newValue);
     return Math.abs(percentageChange) <= threshold;
   };
@@ -394,28 +396,36 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
     metricNames.push(currentName);
 
-    const isPassedPrevious = previousMetric === undefined || evaluateChange(previousMetric, currentValue, currentThreshold);
-    const isPassedWeekAgo = weekAgoMetric === undefined || evaluateChange(weekAgoMetric, currentValue, currentThreshold);
-    const isPassedLastStable = lastStableMetric === undefined || evaluateChange(lastStableMetric, currentValue, currentThreshold);
+    const isPassedPrevious = previousMetric !== undefined && evaluateChange(previousMetric, currentValue, currentThreshold);
+    const isPassedWeekAgo = weekAgoMetric !== undefined && evaluateChange(weekAgoMetric, currentValue, currentThreshold);
+    const isPassedLastStable = lastStableMetric !== undefined && evaluateChange(lastStableMetric, currentValue, currentThreshold);
 
     metricToDifferentBenchValues.set(currentName, {
-        "current": currentValue,
-        "previous": previousMetric,
-        "week_ago": weekAgoMetric,
-        "last_stable_release": lastStableMetric
+      "current": currentValue,
+      "previous": previousMetric,
+      "week_ago": weekAgoMetric,
+      "last_stable_release": lastStableMetric
     });
-
 
     const isPassed = isPassedPrevious && isPassedWeekAgo && isPassedLastStable;
     evaluationResults.push(isPassed ? 'passed' : 'failed');
-    if (!isPassed) {
-      const failedExplanation = `benchmark failed for the metric ${currentName}
-      because one of the reference benchmarks failed to be within the threshold: ${X[index]}
-      or there is no data for the reference benchmark`;
-      failedExplanations.push(failedExplanation);
+
+    const undefinedMetrics = [];
+    if (previousMetric === undefined) undefinedMetrics.push('previous');
+    if (weekAgoMetric === undefined) undefinedMetrics.push('week_ago');
+    if (lastStableMetric === undefined) undefinedMetrics.push('last_stable_release');
+
+    if (!isPassed || undefinedMetrics.length > 0) {
+      let resultExplanation = `benchmark ${isPassed ? 'passed' : 'failed'} for the metric ${currentName}`;
+      if (undefinedMetrics.length > 0) {
+        resultExplanation += `, but there was undefined data for the following metric(s): ${undefinedMetrics.join(', ')}`;
+      } else {
+        resultExplanation += ` because one of the reference benchmarks failed to be within the threshold: ${X[index]}`;
+      }
+      resultExplanations.push(resultExplanation);
     } else {
-      console.log(`isPassedPrevious: ${isPassedPrevious}, isPassedWeekAgo: ${isPassedWeekAgo}, isPassedLastStable: ${isPassedLastStable}`)
-      failedExplanations.push('N/A');
+      console.log(`isPassedPrevious: ${isPassedPrevious}, isPassedWeekAgo: ${isPassedWeekAgo}, isPassedLastStable: ${isPassedLastStable}`);
+      resultExplanations.push('N/A');
     }
 
   });
@@ -425,7 +435,7 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
     "metric_names": metricNames,
     "metric_units": metricUnits,
     "result": evaluationResults,
-    "failed_explanations": failedExplanations,
+    "failed_explanations": resultExplanations,
     "reference_benchmarks": {
       "current": currentBenchmarkData,
       "previous": previousBenchmarkData,
