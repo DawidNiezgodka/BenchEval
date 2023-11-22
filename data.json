@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1700644506872,
+    "lastUpdate": 1700644704571,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -563,6 +563,97 @@
                     "url": "https://github.com/DawidNiezgodka/BenchEval/commit/59e0d9265073269be347942817322cc8bfe22c35"
                 },
                 "date": 1700644506872,
+                "executionTime": "1 m",
+                "parametrization": {
+                    "ack": "2",
+                    "read-in-ram": true
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "new_metric",
+                        "value": 111,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "metric4",
+                        "value": 390,
+                        "unit": "op/s"
+                    },
+                    {
+                        "name": "abc",
+                        "value": 610,
+                        "unit": "%"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "trend_detection_deltas",
+                        "benchToCompare": "Benchmark",
+                        "thresholdValues": null,
+                        "comparisonOperators": null,
+                        "comparisonMargins": null,
+                        "thresholdUpper": null,
+                        "thresholdLower": null,
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": [
+                            7,
+                            4,
+                            7
+                        ],
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "trend_detection_deltas",
+                        "metricNames": [
+                            "new_metric",
+                            "metric4",
+                            "abc"
+                        ],
+                        "metricUnits": [
+                            "ms",
+                            "op/s",
+                            "%"
+                        ],
+                        "resultExplanations": [
+                            "benchmark failed for the metric new_metric, but there was undefined data for the following metric(s): last_stable_release",
+                            "benchmark failed for the metric metric4, but there was undefined data for the following metric(s): last_stable_release",
+                            "benchmark failed for the metric abc, but there was undefined data for the following metric(s): last_stable_release"
+                        ],
+                        "metricToDifferentBenchValues": {},
+                        "is": [],
+                        "shouldBe": [],
+                        "than": []
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "failed",
+                            "failed",
+                            "failed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "3e81de6181f83097d6fb1199b54dc155ca628b4b",
+                    "message": "reformat comment",
+                    "timestamp": "2023-11-22T10:18:09+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/3e81de6181f83097d6fb1199b54dc155ca628b4b"
+                },
+                "date": 1700644704571,
                 "executionTime": "1 m",
                 "parametrization": {
                     "ack": "2",
