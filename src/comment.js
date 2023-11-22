@@ -186,10 +186,15 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
       console.log(`No benchmark values found for metric: ${metricName}`);
       continue;
     }
-    const currBenchValue = metricValues.get('current') ? metricValues.get('current') : 'N/A';
-    const prevBenchValue = metricValues.get('previous') ? metricValues.get('previous') : 'N/A';
-    const weekAgoBenchValue = metricValues.get('week_ago') ? metricValues.get('week_ago') : 'N/A';
-    const lastStableReleaseBenchValue = metricValues.get('last_stable_release') ? metricValues.get('last_stable_release') : 'N/A';
+    const currBenchValue = metricValues && metricValues.has('current') ?
+        metricValues.get('current') ?? 'N/A' : 'N/A';
+    const prevBenchValue = metricValues && metricValues.has('previous') ?
+        metricValues.get('previous') ?? 'N/A' : 'N/A';
+    const weekAgoBenchValue = metricValues && metricValues.has('week_ago') ?
+        metricValues.get('week_ago') ?? 'N/A' : 'N/A';
+    const lastStableReleaseBenchValue = metricValues && metricValues.has('last_stable_release') ?
+        metricValues.get('last_stable_release') ?? 'N/A' : 'N/A';
+
 
 
     const x = evaluationConfiguration.trendThresholds[i];
