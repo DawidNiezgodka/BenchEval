@@ -30487,9 +30487,9 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   const lastStableReleaseBench = evaluationResult.referenceBenchmarks.lastStableRelease;
   const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
 
-  lines.push('', '', '', '', '', '')
+  lines.push('', '', '', '', '', '','')
   lines.push('## Results')
-  lines.push('', '', '', '', '', '')
+  lines.push('', '', '', '', '', '','')
 
   lines.push(`The chosen evaluation method is trend detection with deltas.`)
   lines.push(`Each metric shall be "threshold" % better than the previous benchmark, the benchmark from a week ago,
@@ -30505,7 +30505,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
       | Week ago: ${weekAgoBench.commitInfo.id} | Last stable: ${lastStableReleaseBench.commitInfo.id} 
       | Threshold | Result |`
   )
-  lines.push('|-|-|-|-|-|')
+  lines.push('|-|-|-|-|-|-|-|')
 
   const evaluationResults = evaluationResult.results.result
   const evaluationParameters = evaluationResult.evalParameters
