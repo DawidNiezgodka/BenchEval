@@ -30518,7 +30518,8 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
     console.log("Metric name: " + metricName)
     const metricUnit = evaluationParameters.metricUnits[i];
     const metricValues = evaluationParameters.metricToDifferentBenchValues.get(metricName);
-    console.log("Metric values: " + metricValues)
+    // print vales for metricValues map
+    console.log("Metric values: " + JSON.stringify(metricValues))
 
     if (!metricValues) {
       console.log(`No benchmark values found for metric: ${metricName}`);
