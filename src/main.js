@@ -94,7 +94,12 @@ async function run() {
 
     const addJobSummary = completeConfig.addJobSummary;
     if (addJobSummary === 'on' || (addJobSummary === 'if_failed' && shouldFail)) {
-      createWorkflowSummary(evaluationResult);
+
+      // For now only previous is supported
+      if (evaluationConfig.evaluationMethod !== 'previous') {
+        createWorkflowSummary(evaluationResult);
+      }
+
     }
 
     core.setOutput('should_fail', shouldFail)
