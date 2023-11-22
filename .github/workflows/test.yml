@@ -4,19 +4,17 @@ on:
   push:
     branches:
       - main
-      - test
-      - compare_to_trend
-      - testIfItStillAintWork
+      - refactor_bench_summary
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - name: checkout the main branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: checkout the bench_data branch to a given folder
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: 'bench_data'
           sparse-checkout: |
@@ -24,8 +22,8 @@ jobs:
           sparse-checkout-cone-mode: false
           path: 'benchmark_data'
 
-#      - name: print the content of the file from the bench_data branch
-#        run: cat benchmark_data/data.json
+      - name: print the content of the file from the bench_data branch
+        run: cat benchmark_data/data.json
 
       - name: evaluate benchmark
         uses: ./
@@ -34,19 +32,21 @@ jobs:
           name: "Benchmark"
           folder_with_bench_data: ./benchmark_data
           file_with_bench_data: data.json
-          bench_to_compare: "Benchmark2"
+          bench_to_compare: "Benchmark"
           current_bench_res_file: ./benchmark_results/curr.json
-          evaluation_method: previous
-          comparison_operators: bigger,bigger,smaller
-          comparison_margins: -1,-1,-1
-          failing_condition: none
-          add_comment_to_commit: false
+          evaluation_method: threshold
+          threshold_values: 100, 400, 600
+          comparison_operators: smaller, bigger, tolerance
+          comparison_margins: 10, 10, 10
+          action_page_job_summary: on
+          failing_condition: any
+          comment_to_commit: on
           save_curr_bench_res: true
           github_token: ${{ secrets.GH_TOKEN }}
 
-#      - name: print the content of the data file after the update
-#        run: cat benchmark_data/data.json
-#
+      - name: print the content of the data file after the update
+        run: cat benchmark_data/data.json
+
       - name: Commit files
         working-directory: ./benchmark_data
         run: |
@@ -54,12 +54,12 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git commit -a -m "Add changes"
           git push origin bench_data
-#
-#      - name: Check output and fail if needed
-#        if: steps.eval.outputs.should_fail == 'true'
-#        run: |
-#          echo "Failing as indicated by evaluation action"
-#          exit 1
+
+      - name: Check output and fail if needed
+        if: steps.eval.outputs.should_fail == 'true'
+        run: |
+          echo "Failing as indicated by evaluation action"
+          exit 1
           
           
 

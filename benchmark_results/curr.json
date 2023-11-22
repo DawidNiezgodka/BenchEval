@@ -10,18 +10,18 @@
   "results": [
     {
       "unit": "ms",
-      "value": 222,
-      "name": "latency"
+      "value": 111,
+      "name": "new_metric"
     },
     {
       "unit": "op/s",
-      "value": 222,
-      "name": "metric2"
+      "value": 390,
+      "name": "metric4"
     },
     {
       "unit": "%",
-      "value": 222,
-      "name": "metric3"
+      "value": 610,
+      "name": "abc"
     }
   ]
 }

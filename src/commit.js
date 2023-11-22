@@ -36,20 +36,44 @@ module.exports.getCommit = function () {
   }
 }
 
-// get commit hash of the last successful commit to main branch
 const { Octokit } = require('@octokit/action')
 const { context } = require('@actions/github')
 
-module.exports.getLastCommitSha = async function (branchName) {
+module.exports.getLastCommitSha = async (branchName, benchmarkData, benchmarkName)=> {
+  console.log("Bench data from getlastcomitsha", benchmarkData);
+  // get length of benchmark data
+
   const octokit = new Octokit()
   const response = await octokit.rest.repos.listCommits({
     owner: context.repo.owner,
     repo: context.repo.repo,
     sha: branchName,
-    per_page: 1
+    per_page: 10
   })
+  // list sha of the last 10 commits to branchName
+  core.debug('Commits: ' + JSON.stringify(response.data.map(commit => commit.sha)));
 
-  const lastCommitSha = response.data[0].sha
-  console.log(`The SHA of the last commit to master is ${lastCommitSha}`)
-  return lastCommitSha
+  return module.exports.findLatestSuccessfulBenchmark(benchmarkData, benchmarkName,
+      response.data.map(commit => commit.sha));
+}
+
+module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkName, commitIds) {
+  const benchmarks = benchmarkData.entries[benchmarkName];
+
+  core.debug('Benchmark data length: ' + (benchmarks ? benchmarks.length : 'undefined'));
+  core.debug('Benchmark name: ' + benchmarkName);
+  core.debug('Commit ids: ' + JSON.stringify(commitIds));
+
+  if (!benchmarks || !Array.isArray(commitIds)) {
+    return null;
+  }
+
+  const filteredBenchmarks = benchmarks.filter(benchmark =>
+      benchmark.benchSuccessful && commitIds.includes(benchmark.commit.id)
+  );
+
+  core.debug('Filtered benchmarks: ' + JSON.stringify(filteredBenchmarks));
+  filteredBenchmarks.sort((a, b) => b.date - a.date);
+
+  return filteredBenchmarks.length > 0 ? filteredBenchmarks[0].commit.id : null;
 }

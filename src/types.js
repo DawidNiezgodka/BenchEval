@@ -45,7 +45,6 @@ class Config {
   constructor(
     benchName,
     currBenchResJson,
-    benchType,
 
     failingCondition,
 
@@ -59,10 +58,10 @@ class Config {
     addComment,
     addJobSummary,
     saveCurrBenchRes,
+    alertUsersIfBenchFailed
   ) {
     this.benchName = benchName
     this.currBenchResJson = currBenchResJson
-    this.benchType = benchType
     this.failingCondition = failingCondition
     this.benchToCompare = benchToCompare
     this.evaluationConfig = evaluationConfig
@@ -72,7 +71,7 @@ class Config {
     this.addComment = addComment
     this.addJobSummary = addJobSummary
     this.saveCurrBenchRes = saveCurrBenchRes
-
+    this.alertUsersIfBenchFailed = alertUsersIfBenchFailed
   }
 }
 
@@ -105,11 +104,53 @@ class EvaluationConfig {
     }
 }
 
+class ReferenceBenchmarks {
+    constructor(current, previous, weekAgo, lastStableRelease) {
+        this.current = current;
+        this.previous = previous;
+        this.weekAgo = weekAgo;
+        this.lastStableRelease = lastStableRelease;
+    }
+}
+
+class EvalParameters {
+    constructor(evaluationMethod, metricNames, metricUnits, options = {}) {
+        this.evaluationMethod = evaluationMethod;
+        this.metricNames = metricNames;
+        this.metricUnits = metricUnits;
+
+
+        this.resultExplanations = options.result_explanations || [];
+        this.metricToDifferentBenchValues = options.metric_to_different_bench_values || {};
+        this.is = options.is || [];
+        this.shouldBe = options.should_be || [];
+        this.than = options.than || [];
+    }
+}
+
+class Results {
+    constructor(result) {
+        this.result = result;
+    }
+}
+
+class Evaluation {
+    constructor(results, evalParameters, referenceBenchmarks) {
+        this.results = results;
+        this.evalParameters = evalParameters;
+        this.referenceBenchmarks = referenceBenchmarks;
+    }
+}
+
 module.exports = {
   CompleteBenchmark,
   SimpleMetricResult,
   Config,
   Commit,
   BenchmarkInfo,
-  EvaluationConfig
+  EvaluationConfig,
+    ReferenceBenchmarks,
+    EvalParameters,
+    Results,
+    Evaluation
 }

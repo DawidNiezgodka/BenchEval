@@ -14,7 +14,7 @@ const {
 
 const { createCurrBench} = require('./bench')
 
-const { createComment } = require('./comment')
+const { createComment, createWorkflowSummary } = require('./comment')
 
 const {
   addCompleteBenchmarkToFile,
@@ -40,11 +40,15 @@ async function run() {
         completeConfig.fileWithBenchData
     );
 
+    //core.debug('Complete bench data: ' + JSON.stringify(completeBenchData))
+
     let latestBenchSha = null;
     if (core.getInput('trend_det_successful_release_branch') !== 'null') {
       const branchName = core.getInput('trend_det_successful_release_branch');
-      latestBenchSha = await getLastCommitSha(branchName);
-      core.debug('Latest bench sha: ' + latestBenchSha);
+      latestBenchSha = await getLastCommitSha(branchName, completeBenchData,
+          completeConfig.benchName);
+      // get sha of the last successful commit to branchName
+      console.log('Latest bench sha: ' + latestBenchSha);
       completeConfig.latestBenchSha = latestBenchSha;
     }
 
@@ -54,34 +58,51 @@ async function run() {
         completeConfig
     );
 
-    console.log('Evaluation result: ' + evaluationResult);
+    core.debug('Evaluation result: ' + JSON.stringify(evaluationResult))
 
-
-
-
-    if (completeConfig.saveCurrBenchRes) {
-      core.debug('Saving current benchmark results to file')
-      await addCompleteBenchmarkToFile(
-        completeBenchmarkObject,
-        completeConfig.fileWithBenchData
-      )
-    }
-    core.setOutput('should_fail', 'false')
+    let shouldFail = false;
+    const resultArray = evaluationResult.results.result
     if (completeConfig.failingCondition === 'any') {
-      console.log("Fail condition is 'any")
-      resultArray.forEach(element => console.log(element))
-      let anyF = anyFailed(resultArray)
-      console.log('anyF: ' + anyF)
+      shouldFail = anyFailed(resultArray)
       if (anyFailed(resultArray)) {
-        core.setOutput('should_fail', 'true')
+
       }
     }
     if (completeConfig.failingCondition === 'all') {
-      if (allFailed(resultArray)) {
-        console.log("Fail condition is 'any")
-        core.setOutput('should_fail', 'true')
-      }
+      shouldFail = allFailed(resultArray)
     }
+    if (completeConfig.failingCondition === 'none') {
+        shouldFail = false
+    }
+
+    completeBenchmarkObject.benchSuccessful = !shouldFail;
+    if (completeConfig.saveCurrBenchRes) {
+      core.debug('Saving current benchmark results to file')
+      await addCompleteBenchmarkToFile(completeBenchmarkObject, completeConfig.fileWithBenchData,
+          evaluationResult.results, evaluationResult.evalParameters,
+          completeConfig.evaluationConfig
+      )
+    }
+
+    const addCommentOption = completeConfig.addComment;
+
+    if (addCommentOption === 'on' || (addCommentOption === 'if_failed' && shouldFail)) {
+      createComment(completeConfig, evaluationResult)
+    }
+
+    console.log("After comment")
+
+    const addJobSummary = completeConfig.addJobSummary;
+    if (addJobSummary === 'on' || (addJobSummary === 'if_failed' && shouldFail)) {
+
+      // For now only previous is supported
+      if (evaluationConfig.evaluationMethod === 'previous') {
+        createWorkflowSummary(evaluationResult);
+      }
+
+    }
+
+    core.setOutput('should_fail', shouldFail)
   } catch (error) {
     core.setFailed(error.message)
   }

@@ -28,32 +28,26 @@ inputs:
   github_token:
     description: 'GitHub token to pull/push to repo, add benchmark info to the repo, etc.'
     required: false
-  add_comment_to_commit:
+  comment_to_commit:
     description: |
-      Leave a comment with benchmark result comparison.
-      To enable this feature, github-token input must be given as well
+      Add commit comment with the detailed benchmark info.
+      Possible values are on, off, if_failed.
     required: false
-    default: "false"
-  add_action_page_job_summary:
-    description: 'Leave a job summary with benchmark result comparison in the actions tab of a repo'
+    default: "if_failed"
+  alert_users_if_bench_failed:
+    description: |
+      Commas-separated list of users to alert if the benchmark failed.
     required: false
-    default: "false"
+  action_page_job_summary:
+    description: 'Leave a short summary on the workflow page. Possible values are on, off, if_failed'
+    required: false
+    default: "on"
   save_curr_bench_res:
     description: |
       Save the benchmark data pointed to by current_bench_res_file
       to a file located in benchmark_data_file'
     required: false
     default: "true"
-  # TODO: Probably can be deleted
-  bench_type:
-    description: |
-      The type of benchmark. The benchmark type is determined by the structure of the file that describes the benchmark result.
-      The following benchmark types are available: simple (name, unit, value), simple multiple (array of simples), complex, and complex multiple.
-      Complex benchmarks require you to define a function that takes values as input, whatever they may be,
-      and returns 1 or 0 to indicate whether the benchmark is successful or not.
-    required: false
-    default: "simple"
-  #### Evaluation input parameters
   evaluation_method:
     description: |
       It refers to a reference point by which we determine whether the benchmark is successful or not.

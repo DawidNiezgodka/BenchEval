@@ -11,7 +11,10 @@ const {
 
 module.exports.addCompleteBenchmarkToFile = async (
   benchmarkInstance,
-  currentDataFileName
+  currentDataFileName,
+  evaluationResult,
+  evaluationParams,
+  evaluationConfig
 ) => {
   try {
     let jsonData
@@ -22,7 +25,7 @@ module.exports.addCompleteBenchmarkToFile = async (
     core.debug(`Reading file at ${pathToPreviousDataFile}`)
     try {
       const data = await fs.readFile(pathToPreviousDataFile, 'utf8')
-      core.debug('Read file: ' + data)
+      //core.debug('Read file: ' + data) // -> can be very long...
       jsonData = JSON.parse(data)
     } catch (err) {
       core.debug(
@@ -48,11 +51,16 @@ module.exports.addCompleteBenchmarkToFile = async (
         value: metric.value,
         unit: metric.unit
       })),
-      // todo: remove this later
-      benchSuccessful: true
+      benchSuccessful: benchmarkInstance.benchSuccessful,
+      evaluation: {
+        evaluationConfig: evaluationConfig,
+        evaluationParams: evaluationParams,
+        evaluationResult: evaluationResult
+      }
+
     }
 
-    console.log('Benchmark name: ' + benchmarkInstance.benchmarkName)
+    console.log('-- addCompleteBenchmarkToFile -- Benchmark name: ' + benchmarkInstance.benchmarkName)
     if (!jsonData.entries[benchmarkInstance.benchmarkName]) {
       jsonData.entries[benchmarkInstance.benchmarkName] = []
     }
@@ -203,8 +211,12 @@ module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchDa
   );
 
   let benchmarks = data.entries[benchToCompare];
+  // Print the amount of benchmarks
+
   let closestBenchmark = null;
   let smallestDifference = Infinity;
+
+
 
   benchmarks.forEach(benchmark => {
     let difference = Math.abs(now - benchmark.date - ONE_WEEK_IN_MS);

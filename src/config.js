@@ -3,13 +3,6 @@ const fs = require('fs')
 const { Config, EvaluationConfig} = require('./types')
 const {getCompleteBenchData} = require('./bench_data')
 
-module.exports.validateBenchType = function (benchmarkType) {
-  const validTypes = ['simple', 'simple-multi', 'complex', 'complex-multi']
-  if (!validTypes.includes(benchmarkType)) {
-    throw new Error(`Invalid benchmark type: ${benchmarkType}`)
-  }
-}
-
 module.exports.determineJsonItemCount = function (json) {
   if (Array.isArray(json)) {
     return json.length
@@ -20,16 +13,6 @@ module.exports.determineJsonItemCount = function (json) {
   }
 
   throw new Error(`Invalid JSON: ${json}`)
-}
-
-module.exports.validateItemCountForBenchType = function (itemCount, benchType) {
-  if (benchType === 'simple' || benchType === 'complex') {
-    return itemCount === 1
-  } else if (benchType === 'simple-multi' || benchType === 'complex-multi') {
-    return itemCount > 1
-  } else {
-    throw new Error(`Invalid benchType: ${benchType}`)
-  }
 }
 
 module.exports.getBoolInput = function (inputName) {
@@ -52,10 +35,6 @@ module.exports.validateInputAndFetchConfig = function () {
   const rawData = fs.readFileSync(pathToCurBenchFile)
   const parsedData = JSON.parse(rawData)
   const itemCount = module.exports.determineJsonItemCount(parsedData.results)
-
-  const benchType = core.getInput('bench_type')
-  module.exports.validateBenchType(benchType)
-  module.exports.validateItemCountForBenchType(itemCount, benchType)
 
   // Part 2: Get and validate failing condition
   const failingCondition = core.getInput('failing_condition')
@@ -85,15 +64,16 @@ module.exports.validateInputAndFetchConfig = function () {
   const githubToken = core.getInput('github_token')
 
   // Variables concerning git repo manipulations
-  const addComment = module.exports.getBoolInput('add_comment_to_commit')
-  const addJobSummary = module.exports.getBoolInput('add_action_job_summary')
+  const addComment = module.exports.validateAndGet('comment_to_commit')
+  const addJobSummary = module.exports.validateAndGet('action_page_job_summary')
   const saveCurrBenchRes = module.exports.getBoolInput('save_curr_bench_res')
+
+  const alertUsersIfBenchFailed = module.exports.validateUsersToBeAlerted()
 
 
   return new Config(
       benchName,
       parsedData,
-      benchType,
       failingCondition,
       benchToCompare,
       evalConfig,
@@ -103,7 +83,33 @@ module.exports.validateInputAndFetchConfig = function () {
       addComment,
       addJobSummary,
       saveCurrBenchRes,
+      alertUsersIfBenchFailed
   )
+}
+
+module.exports.validateUsersToBeAlerted = function () {
+  const alertUsersIfBenchFailed = core.getInput('alert_users_if_bench_failed');
+  console.log("Usaers", alertUsersIfBenchFailed);
+  if (alertUsersIfBenchFailed !== '') {
+    const users = alertUsersIfBenchFailed.split(',').map(u => u.trim());
+    for (const u of users) {
+      if (!u.startsWith('@')) {
+        throw new Error(`User name in 'alert_users_if_bench_failed' input must start with '@' but got '${u}'`);
+      }
+    }
+  }
+    return alertUsersIfBenchFailed;
+}
+
+module.exports.validateAndGet = function (inputName) {
+    const input = core.getInput(inputName);
+  // check if input is either "on", "off", or "if_failed"
+    if (input !== 'on' && input !== 'off' && input !== 'if_failed') {
+        throw new Error(
+            `'${inputName}' input must be either 'on', 'off', or 'if_failed' but got '${input}'`
+        )
+    }
+    return input
 }
 
 module.exports.camelToSnake = function (string) {
@@ -453,16 +459,23 @@ module.exports.validateTrendDetectionDeltasConfig = function () {
 
 module.exports.checkForWeekOldBenchmark = function(data, benchmarkKey) {
 
+
   const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
   const DAY_IN_MS = 24 * 60 * 60 * 1000;
   const now = Date.now();
+
 
   if (!data.entries.hasOwnProperty(benchmarkKey)) {
     throw new Error(`No such benchmark key: '${benchmarkKey}' exists.`);
   }
 
   let benchmarks = data.entries[benchmarkKey];
+  // print number of benchmarks
+
+
   let weekOldBenchmarkExists = benchmarks.some(benchmark => {
+
+
     let benchmarkAge = now - benchmark.date;
     return benchmarkAge >= (ONE_WEEK_IN_MS - DAY_IN_MS) && benchmarkAge <= (ONE_WEEK_IN_MS + DAY_IN_MS);
   });
