@@ -30651,6 +30651,8 @@ module.exports.createBodyForComparisonWithThreshold = function (
     evaluationResult, completeConfig
 ) {
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+  console.log("Current benchmark from creaBodyWithThr: " + JSON.stringify(currentBenchmark))
+  //console.log(currentBenchmark)
   const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
   const currentBenchName = currentBenchmark.benchmarkName
 
