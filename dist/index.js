@@ -30525,8 +30525,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
       console.log(`No benchmark values found for metric: ${metricName}`);
       continue;
     }
-    const currBenchValue = metricValues && metricValues.has('current') ?
-        metricValues.get('current') ?? 'N/A' : 'N/A';
+    const currBenchValue = metricValues?.current ?? 'N/A';
     console.log("Current bench value: " + currBenchValue)
     const prevBenchValue = metricValues && metricValues.has('previous') ?
         metricValues.get('previous') ?? 'N/A' : 'N/A';
