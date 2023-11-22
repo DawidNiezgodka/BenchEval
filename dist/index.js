@@ -30463,7 +30463,7 @@ module.exports.createBodyForComparisonWithPrev = function (
 }
 
 module.exports.addInfoAboutBenchRes = function(lines, completeConfig, evaluationResults) {
-  lines.push('', '', '', '', '', '')
+  lines.push('', '', '', '', '', '','')
   const {failingCondition} = completeConfig;
   const benchmarkPassed =
       failingCondition === 'any' ? !evaluationResults.includes('failed') :
@@ -30501,9 +30501,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   lines.push(benchDataText)
 
   lines.push(
-      `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} 
-      | Week ago: ${weekAgoBench.commitInfo.id} | Last stable: ${lastStableReleaseBench.commitInfo.id} 
-      | Threshold | Result |`
+      `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Week ago: ${weekAgoBench.commitInfo.id} | Last stable: ${lastStableReleaseBench.commitInfo.id} | Threshold | Result |`
   )
   lines.push('|-|-|-|-|-|-|-|')
 
