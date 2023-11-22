@@ -30512,11 +30512,13 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   const evaluationConfiguration = completeConfig.evaluationConfig
 
   for (let i = 0; i < evaluationResults.length; i++) {
-    const failedExplanations = evaluationParameters.failedExplanations[i];
+    const resultExplanation = evaluationParameters.resultExplanations[i];
     const resultStatus = evaluationResults[i];
     const metricName = evaluationParameters.metricNames[i];
+    console.log("Metric name: " + metricName)
     const metricUnit = evaluationParameters.metricUnits[i];
     const metricValues = evaluationParameters.metricToDifferentBenchValues.get(metricName);
+    console.log("Metric values: " + metricValues)
 
     if (!metricValues) {
       console.log(`No benchmark values found for metric: ${metricName}`);
@@ -31870,7 +31872,7 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
     "metric_names": metricNames,
     "metric_units": metricUnits,
     "result": evaluationResults,
-    "failed_explanations": resultExplanations,
+    "result_explanations": resultExplanations,
     "reference_benchmarks": {
       "current": currentBenchmarkData,
       "previous": previousBenchmarkData,
@@ -31888,7 +31890,7 @@ module.exports.createEvaluationObject = function(data) {
       data.metric_names,
       data.metric_units,
       {
-        failed_explanations: data.failed_explanations,
+        result_explanations: data.result_explanations,
         metric_to_different_bench_values: data.metric_to_different_bench_values,
         is: data.is,
         should_be: data.should_be,
@@ -32153,7 +32155,7 @@ class EvalParameters {
         this.metricUnits = metricUnits;
 
 
-        this.failedExplanations = options.failed_explanations || [];
+        this.resultExplanations = options.result_explanations || [];
         this.metricToDifferentBenchValues = options.metric_to_different_bench_values || {};
         this.is = options.is || [];
         this.shouldBe = options.should_be || [];

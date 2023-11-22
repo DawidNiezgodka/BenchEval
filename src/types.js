@@ -122,7 +122,7 @@ class EvalParameters {
         this.metricUnits = metricUnits;
 
 
-        this.failedExplanations = options.failed_explanations || [];
+        this.resultExplanations = options.result_explanations || [];
         this.metricToDifferentBenchValues = options.metric_to_different_bench_values || {};
         this.is = options.is || [];
         this.shouldBe = options.should_be || [];

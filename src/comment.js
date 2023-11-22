@@ -173,11 +173,13 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   const evaluationConfiguration = completeConfig.evaluationConfig
 
   for (let i = 0; i < evaluationResults.length; i++) {
-    const failedExplanations = evaluationParameters.resultExplanations[i];
+    const resultExplanation = evaluationParameters.resultExplanations[i];
     const resultStatus = evaluationResults[i];
     const metricName = evaluationParameters.metricNames[i];
+    console.log("Metric name: " + metricName)
     const metricUnit = evaluationParameters.metricUnits[i];
     const metricValues = evaluationParameters.metricToDifferentBenchValues.get(metricName);
+    console.log("Metric values: " + metricValues)
 
     if (!metricValues) {
       console.log(`No benchmark values found for metric: ${metricName}`);

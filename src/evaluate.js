@@ -435,7 +435,7 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
     "metric_names": metricNames,
     "metric_units": metricUnits,
     "result": evaluationResults,
-    "failed_explanations": resultExplanations,
+    "result_explanations": resultExplanations,
     "reference_benchmarks": {
       "current": currentBenchmarkData,
       "previous": previousBenchmarkData,
@@ -453,7 +453,7 @@ module.exports.createEvaluationObject = function(data) {
       data.metric_names,
       data.metric_units,
       {
-        failed_explanations: data.failed_explanations,
+        result_explanations: data.result_explanations,
         metric_to_different_bench_values: data.metric_to_different_bench_values,
         is: data.is,
         should_be: data.should_be,
