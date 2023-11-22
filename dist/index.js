@@ -30527,8 +30527,10 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
     }
     const currBenchValue = metricValues && metricValues.has('current') ?
         metricValues.get('current') ?? 'N/A' : 'N/A';
+    console.log("Current bench value: " + currBenchValue)
     const prevBenchValue = metricValues && metricValues.has('previous') ?
         metricValues.get('previous') ?? 'N/A' : 'N/A';
+    console.log("Previous bench value: " + prevBenchValue)
     const weekAgoBenchValue = metricValues && metricValues.has('week_ago') ?
         metricValues.get('week_ago') ?? 'N/A' : 'N/A';
     const lastStableReleaseBenchValue = metricValues && metricValues.has('last_stable_release') ?
