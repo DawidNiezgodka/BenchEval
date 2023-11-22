@@ -34,8 +34,10 @@ jobs:
           file_with_bench_data: data.json
           bench_to_compare: "Benchmark"
           current_bench_res_file: ./benchmark_results/curr.json
-          evaluation_method: trend_detection_deltas
-          trend_thresholds: 7,4,7
+          evaluation_method: threshold
+          threshold_values: 100, 400, 600
+          comparison_operators: smaller, higher, tolerance
+          comparison_margins: 10, 10, 10
           action_page_job_summary: on
           failing_condition: any
           comment_to_commit: on

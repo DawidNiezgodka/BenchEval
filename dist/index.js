@@ -30647,89 +30647,72 @@ module.exports.createBenchDataTextForCompWithPrev = function (
 }
 
 
-module.exports.createCommentBodyForComparisonWithThreshold = function (
-    currentBenchmark,
-    thresholdArray,
-    comparisonModes,
-    comparisonMargins
+module.exports.createBodyForComparisonWithThreshold = function (
+    evaluationResult, completeConfig
 ) {
+  const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
+  const currentBenchName = currentBenchmark.benchmarkName
 
-  lines.push('## Benchmark information')
-
-  core.debug('Current benchmark: ' + JSON.stringify(currentBenchmark))
-  const benchDataText = module.exports.createBenchDataText(currentBenchmark)
-  core.debug('Bench data text: ' + benchDataText)
-  core.debug('Commit ID:' + currentBenchmark.commitInfo.id)
+  const benchDataText = module.exports.createBenchDataText(currentBenchmark);
 
   lines.push(benchDataText)
   lines.push('', '', '', '', '')
   lines.push('## Results')
   lines.push('', '', '', '', '')
+
   lines.push(
-      `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Threshold | Condition | Result |`
+      `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Condition for current | Threshold | Result |`
   )
   lines.push('|-|-|-|-|-|')
 
-  for (const [
-    i,
-    currentMetric
-  ] of currentBenchmark.simpleMetricResults.entries()) {
-    const currentThreshold = thresholdArray[i]
-    core.debug('Current threshold: ' + currentThreshold)
-    let comparisonMode = comparisonModes[i]
-    core.debug('Current comparison mode: ' + comparisonMode)
-    let comparisonMargin = comparisonMargins[i]
-    core.debug('Current comparison margin: ' + comparisonMargin)
+  const evaluationResults = evaluationResult.results.result
+  const evaluationParameters = evaluationResult.evalParameters
+  const evaluationConfiguration = completeConfig.evaluationConfig
 
+  for (let i = 0; i < evaluationResults.length; i++) {
+    const comparisonMargin = evaluationConfiguration.comparisonMargins[i];
+    const resultStatus = evaluationResults[i];
+    const metricName = evaluationParameters.metricNames[i];
+    const metricUnit = evaluationParameters.metricUnits[i];
+    const actualValue = evaluationParameters.is[i];
+    const comparisonMode = evaluationParameters.shouldBe[i];
+    const thanValue = evaluationParameters.than[i];
     let line
-    let meetsThreshold
+    let valueAndUnit = actualValue + ' ' + metricUnit
 
-    if (comparisonMode === 'bigger') {
-      // If comparisonMargin is -1, we look for a strictly bigger value
-      if (comparisonMargin === '-1') {
-        meetsThreshold = currentMetric.value > currentThreshold
-      }
-      // otherwise, we look for a value that is at least comparisonMargin% bigger
-      else {
-        const lowerLimit = currentThreshold * (1 + comparisonMargin / 100)
-        meetsThreshold = currentMetric.value >= lowerLimit
-      }
-    } else if (comparisonMode === 'smaller') {
-      // If comparisonMargin is "-1", we look for a strictly smaller value
-      if (comparisonMargin === '-1') {
-        meetsThreshold = currentMetric.value < currentThreshold
-      }
-      // otherwise, we look for a value that is at least comparisonMargin% smaller
-      else {
-        const upperLimit = currentThreshold * (1 - comparisonMargin / 100)
-        meetsThreshold = currentMetric.value <= upperLimit
-      }
-    } else if (comparisonMode === 'range') {
-      const lowerLimit = currentThreshold * (1 - comparisonMargin / 100)
-      const upperLimit = currentThreshold * (1 + comparisonMargin / 100)
-      meetsThreshold =
-          currentMetric.value >= lowerLimit && currentMetric.value <= upperLimit
-    } else {
-      throw new Error(`Unknown threshold comparison mode: ${comparisonMode}`)
+    let comparisonResult;
+
+    if (comparisonMargin >= 0 && comparisonMargin <= 100 && (comparisonMode === 'smaller' || comparisonMode === 'bigger')) {
+      comparisonResult = `Up to ${comparisonMargin} % ${comparisonMode} than prev`;
+    } else if (comparisonMargin === -1 && (comparisonMode === 'smaller' || comparisonMode === 'bigger')) {
+      comparisonResult = `Strictly ${comparisonMode} than prev`;
+    } else if (comparisonMode === 'tolerance') {
+      comparisonResult = 'In range of ' + comparisonMargin + ' %';
     }
-    core.debug(
-        'Creating a line for metric ' +
-        currentMetric.name +
-        ' with value ' +
-        currentMetric.value
-    )
-    let betterOrWorse = meetsThreshold ? '🟢' : '🔴'
-    line = `| \`${currentMetric.name}\` | ${module.exports.fetchValueAndUnit(
-        currentMetric
-    )} | ${currentThreshold} | ${comparisonMode} | ${betterOrWorse} |`
+
+    if (resultStatus === 'failed' || resultStatus === 'passed') {
+      let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴'
+      line = `| \`${metricName}\` | \`${valueAndUnit}\` | \`${comparisonMode}\` | ${thanValue} | ${betterOrWorse} |`
+    } else {
+      line = `| \`${metricName}\` | \'${valueAndUnit}\' | N/A | N/A | 🔘 |`
+    }
 
     lines.push(line)
   }
-  lines.push('', '', '', '', '')
+  const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
+
+  if (!benchmarkPassed) {
+    let usersToBeAlerted = ['@DawidNiezgodka']
+    if (usersToBeAlerted.length > 0) {
+      lines.push('', `CC: ${usersToBeAlerted.join(' ')}`);
+    }
+  }
+
 
   return lines.join('\n')
 }
+
 
 module.exports.leaveComment = async (commitId, body, token) => {
   const github = __nccwpck_require__(3134)
