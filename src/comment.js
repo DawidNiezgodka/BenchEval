@@ -162,7 +162,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   lines.push(benchDataText)
 
   lines.push(
-      `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Week ago: ${weekAgoBench.commitInfo.id} | Last stable: ${lastStableReleaseBench.commitInfo.id} | Threshold | Result |`
+      `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Week ago: ${weekAgoBench.commitInfo.id} | Last stable: ${lastStableReleaseBench.commitInfo.id} | Thr | Res |`
   )
   lines.push('|-|-|-|-|-|-|-|')
 

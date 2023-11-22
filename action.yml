@@ -48,16 +48,6 @@ inputs:
       to a file located in benchmark_data_file'
     required: false
     default: "true"
-  # TODO: Probably can be deleted
-  bench_type:
-    description: |
-      The type of benchmark. The benchmark type is determined by the structure of the file that describes the benchmark result.
-      The following benchmark types are available: simple (name, unit, value), simple multiple (array of simples), complex, and complex multiple.
-      Complex benchmarks require you to define a function that takes values as input, whatever they may be,
-      and returns 1 or 0 to indicate whether the benchmark is successful or not.
-    required: false
-    default: "simple"
-  #### Evaluation input parameters
   evaluation_method:
     description: |
       It refers to a reference point by which we determine whether the benchmark is successful or not.

@@ -3,13 +3,6 @@ const fs = require('fs')
 const { Config, EvaluationConfig} = require('./types')
 const {getCompleteBenchData} = require('./bench_data')
 
-module.exports.validateBenchType = function (benchmarkType) {
-  const validTypes = ['simple', 'simple-multi', 'complex', 'complex-multi']
-  if (!validTypes.includes(benchmarkType)) {
-    throw new Error(`Invalid benchmark type: ${benchmarkType}`)
-  }
-}
-
 module.exports.determineJsonItemCount = function (json) {
   if (Array.isArray(json)) {
     return json.length
@@ -20,16 +13,6 @@ module.exports.determineJsonItemCount = function (json) {
   }
 
   throw new Error(`Invalid JSON: ${json}`)
-}
-
-module.exports.validateItemCountForBenchType = function (itemCount, benchType) {
-  if (benchType === 'simple' || benchType === 'complex') {
-    return itemCount === 1
-  } else if (benchType === 'simple-multi' || benchType === 'complex-multi') {
-    return itemCount > 1
-  } else {
-    throw new Error(`Invalid benchType: ${benchType}`)
-  }
 }
 
 module.exports.getBoolInput = function (inputName) {
@@ -52,10 +35,6 @@ module.exports.validateInputAndFetchConfig = function () {
   const rawData = fs.readFileSync(pathToCurBenchFile)
   const parsedData = JSON.parse(rawData)
   const itemCount = module.exports.determineJsonItemCount(parsedData.results)
-
-  const benchType = core.getInput('bench_type')
-  module.exports.validateBenchType(benchType)
-  module.exports.validateItemCountForBenchType(itemCount, benchType)
 
   // Part 2: Get and validate failing condition
   const failingCondition = core.getInput('failing_condition')
@@ -95,7 +74,6 @@ module.exports.validateInputAndFetchConfig = function () {
   return new Config(
       benchName,
       parsedData,
-      benchType,
       failingCondition,
       benchToCompare,
       evalConfig,
