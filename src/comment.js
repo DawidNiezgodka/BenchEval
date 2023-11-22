@@ -188,14 +188,12 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
     }
     const currBenchValue = metricValues?.current ?? 'N/A';
     console.log("Current bench value: " + currBenchValue)
-    const prevBenchValue = metricValues && metricValues.has('previous') ?
-        metricValues.get('previous') ?? 'N/A' : 'N/A';
+    const prevBenchValue = metricValues?.previous ?? 'N/A';
     console.log("Previous bench value: " + prevBenchValue)
-    const weekAgoBenchValue = metricValues && metricValues.has('week_ago') ?
-        metricValues.get('week_ago') ?? 'N/A' : 'N/A';
-    const lastStableReleaseBenchValue = metricValues && metricValues.has('last_stable_release') ?
-        metricValues.get('last_stable_release') ?? 'N/A' : 'N/A';
-
+    const weekAgoBenchValue = metricValues?.week_ago ?? 'N/A';
+    console.log("Week ago bench value: " + weekAgoBenchValue)
+    const lastStableReleaseBenchValue = metricValues?.last_stable_release ?? 'N/A';
+    console.log("Last stable release bench value: " + lastStableReleaseBenchValue)
 
 
     const x = evaluationConfiguration.trendThresholds[i];
