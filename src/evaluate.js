@@ -414,6 +414,7 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
       or there is no data for the reference benchmark`;
       failedExplanations.push(failedExplanation);
     } else {
+      console.log(`isPassedPrevious: ${isPassedPrevious}, isPassedWeekAgo: ${isPassedWeekAgo}, isPassedLastStable: ${isPassedLastStable}`)
       failedExplanations.push('N/A');
     }
 
