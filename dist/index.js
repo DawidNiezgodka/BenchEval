@@ -31981,7 +31981,7 @@ async function run() {
     if (addJobSummary === 'on' || (addJobSummary === 'if_failed' && shouldFail)) {
 
       // For now only previous is supported
-      if (evaluationConfig.evaluationMethod !== 'previous') {
+      if (evaluationConfig.evaluationMethod === 'previous') {
         createWorkflowSummary(evaluationResult);
       }
 
