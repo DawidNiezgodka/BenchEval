@@ -90,6 +90,8 @@ async function run() {
       createComment(completeConfig, evaluationResult)
     }
 
+    console.log("After comment")
+
     const addJobSummary = completeConfig.addJobSummary;
     if (addJobSummary === 'on' || (addJobSummary === 'if_failed' && shouldFail)) {
       createWorkflowSummary(evaluationResult);
