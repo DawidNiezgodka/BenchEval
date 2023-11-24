@@ -30961,8 +30961,10 @@ module.exports.validateInputAndFetchConfig = function () {
     }
     subsetParsedData = module.exports.filterMetrics(parsedData, metricsToEvaluate);
     itemCount = module.exports.determineJsonItemCount(subsetParsedData.results)
+  } else {
+    itemCount = module.exports.determineJsonItemCount(parsedData.results)
   }
-  itemCount = module.exports.determineJsonItemCount(parsedData.results)
+
 
   // Part 2: Get and validate failing condition
   const failingCondition = core.getInput('failing_condition')
