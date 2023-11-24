@@ -30949,7 +30949,7 @@ module.exports.validateInputAndFetchConfig = function () {
   const metricsToEvaluate = core.getInput('metrics_to_evaluate')
   let subsetParsedData;
   if (metricsToEvaluate) {
-    const inputMetrics = metricsToEvaluate.split(',');
+    const inputMetrics = metricsToEvaluate.split(',').map(metric => metric.trim());
     const fileMetrics = parsedData.results.map(result => result.name);
     const isValidSubset = module.exports.areMetricsValid(inputMetrics, fileMetrics);
     if (!isValidSubset) {
