@@ -12,6 +12,12 @@ inputs:
       The name of a file that contains the current benchmark result.
       Currently, only JSON files are supported.
     required: true
+  metrics_to_evaluate:
+    description: |
+      A comma-separated list of metrics to evaluate for the current benchmark.
+      This must be a subset of metrics from the file pointed to by current_bench_res_file.
+      If not specified, all metrics will be evaluated.
+    required: false
   folder_with_bench_data:
     description: |
       The file serves as the repository for both historical benchmark data

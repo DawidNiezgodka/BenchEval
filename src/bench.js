@@ -6,7 +6,12 @@ const { CompleteBenchmark } = require('./types')
 const { BenchmarkInfo } = require('./types')
 
 module.exports.createCurrBench = function (config) {
-  const currBenchResJson = config.currBenchResJson
+  let currBenchResJson;
+  if (config.subsetOfBenchRes) {
+    currBenchResJson = config.subsetOfBenchRes;
+  } else {
+    currBenchResJson = config.currBenchResJson
+  }
   const benchInfoJson = currBenchResJson.benchInfo
   const benchInfo = new BenchmarkInfo(
     benchInfoJson.executionTime,

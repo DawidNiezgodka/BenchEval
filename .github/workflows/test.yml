@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-      - refactor_bench_summary
-
+      - exclude-metrics-from-curr-res-file
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -22,9 +21,6 @@ jobs:
           sparse-checkout-cone-mode: false
           path: 'benchmark_data'
 
-      - name: print the content of the file from the bench_data branch
-        run: cat benchmark_data/data.json
-
       - name: evaluate benchmark
         uses: ./
         id: eval
@@ -34,10 +30,11 @@ jobs:
           file_with_bench_data: data.json
           bench_to_compare: "Benchmark"
           current_bench_res_file: ./benchmark_results/curr.json
+          metrics_to_evaluate: "new_metric, metric4"
           evaluation_method: threshold
-          threshold_values: 100, 400, 600
-          comparison_operators: smaller, bigger, tolerance
-          comparison_margins: 10, 10, 10
+          threshold_values: 100, 400
+          comparison_operators: smaller, bigger
+          comparison_margins: 10, 10
           action_page_job_summary: on
           failing_condition: any
           comment_to_commit: on
