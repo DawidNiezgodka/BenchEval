@@ -34,7 +34,26 @@ module.exports.validateInputAndFetchConfig = function () {
   const pathToCurBenchFile = core.getInput('current_bench_res_file')
   const rawData = fs.readFileSync(pathToCurBenchFile)
   const parsedData = JSON.parse(rawData)
-  const itemCount = module.exports.determineJsonItemCount(parsedData.results)
+  let itemCount;
+
+  // Validate input if `metrics_to_evaluate` is specified
+  const metricsToEvaluate = core.getInput('metrics_to_evaluate')
+  let subsetParsedData;
+  if (metricsToEvaluate) {
+    const inputMetrics = metricsToEvaluate.split(',');
+    const fileMetrics = parsedData.results.map(result => result.name);
+    const isValidSubset = module.exports.areMetricsValid(inputMetrics, fileMetrics);
+    if (!isValidSubset) {
+      throw new Error(
+          `Invalid metrics_to_evaluate: ${metricsToEvaluate}. Valid metrics are: ${fileMetrics.join(
+              ', '
+          )}`
+      )
+    }
+    subsetParsedData = module.exports.filterMetrics(parsedData, metricsToEvaluate);
+    itemCount = module.exports.determineJsonItemCount(subsetParsedData.results)
+  }
+  itemCount = module.exports.determineJsonItemCount(parsedData.results)
 
   // Part 2: Get and validate failing condition
   const failingCondition = core.getInput('failing_condition')
@@ -74,6 +93,7 @@ module.exports.validateInputAndFetchConfig = function () {
   return new Config(
       benchName,
       parsedData,
+      subsetParsedData,
       failingCondition,
       benchToCompare,
       evalConfig,
@@ -85,6 +105,16 @@ module.exports.validateInputAndFetchConfig = function () {
       saveCurrBenchRes,
       alertUsersIfBenchFailed
   )
+}
+
+module.exports.areMetricsValid = function(metricsToCheck, availableMetrics) {
+  return metricsToCheck.every(metric => availableMetrics.includes(metric));
+}
+
+module.exports.filterMetrics = function(parsedData, metricsToEvaluate) {
+  let subsetData = {...parsedData};
+  subsetData.results = parsedData.results.filter(metric => metricsToEvaluate.includes(metric.name));
+  return subsetData;
 }
 
 module.exports.validateUsersToBeAlerted = function () {

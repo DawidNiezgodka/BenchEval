@@ -45,6 +45,7 @@ class Config {
   constructor(
     benchName,
     currBenchResJson,
+    subsetOfBenchRes,
 
     failingCondition,
 
@@ -62,6 +63,7 @@ class Config {
   ) {
     this.benchName = benchName
     this.currBenchResJson = currBenchResJson
+      this.subsetOfBenchRes = subsetOfBenchRes
     this.failingCondition = failingCondition
     this.benchToCompare = benchToCompare
     this.evaluationConfig = evaluationConfig
