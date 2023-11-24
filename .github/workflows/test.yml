@@ -21,9 +21,6 @@ jobs:
           sparse-checkout-cone-mode: false
           path: 'benchmark_data'
 
-      - name: print the content of the file from the bench_data branch
-        run: cat benchmark_data/data.json
-
       - name: evaluate benchmark
         uses: ./
         id: eval
