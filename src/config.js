@@ -120,10 +120,10 @@ module.exports.filterMetrics = function(parsedData, metricsToEvaluate) {
 }
 
 module.exports.validateUsersToBeAlerted = function () {
-  const alertUsersIfBenchFailed = core.getInput('alert_users_if_bench_failed');
+  let alertUsersIfBenchFailed = core.getInput('alert_users_if_bench_failed');
   console.log("Usaers", alertUsersIfBenchFailed);
   if (alertUsersIfBenchFailed !== '') {
-    const users = alertUsersIfBenchFailed.split(',').map(u => u.trim());
+    alertUsersIfBenchFailed = alertUsersIfBenchFailed.split(',').map(u => u.trim());
     for (const u of users) {
       if (!u.startsWith('@')) {
         throw new Error(`User name in 'alert_users_if_bench_failed' input must start with '@' but got '${u}'`);
