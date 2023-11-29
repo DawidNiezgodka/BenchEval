@@ -30442,7 +30442,7 @@ module.exports.createBodyForComparisonWithPrev = function (
     } else if (comparisonMargin === -1 && (comparisonMode === 'smaller' || comparisonMode === 'bigger')) {
       comparisonResult = `Strictly ${comparisonMode} than prev`;
     } else if (comparisonMode === 'tolerance') {
-      comparisonResult = 'In range of ' + comparisonMargin + ' %';
+      comparisonResult = 'fall within ±' + comparisonMargin + '% of prev';
     }
 
     if (resultStatus === 'failed' || resultStatus === 'passed') {
@@ -30692,7 +30692,7 @@ module.exports.createBodyForComparisonWithThreshold = function (
     } else if (comparisonMargin === -1 && (comparisonMode === 'smaller' || comparisonMode === 'bigger')) {
       comparisonResult = `Strictly ${comparisonMode} than prev`;
     } else if (comparisonMode === 'tolerance') {
-      comparisonResult = 'In range of ' + comparisonMargin + ' %';
+      comparisonResult = 'fall within ±' + comparisonMargin + '% of prev';
     }
 
     if (resultStatus === 'failed' || resultStatus === 'passed') {
