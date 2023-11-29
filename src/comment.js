@@ -578,7 +578,7 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult, link
   }
   const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
 
-  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage);
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, linkToGraph);
 }
 
 module.exports.summaryForMethodNotSupported = function (evaluationResult, linkToGraph) {

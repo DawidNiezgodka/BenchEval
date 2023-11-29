@@ -123,6 +123,7 @@ module.exports.validateLinkToTemplatedGhPageWithResults = function () {
             throw new Error(`Link to templated gh page must contain 'github.io' but got '${linkToTemplatedGhPageWithResults}'`);
         }
     }
+    console.log(linkToTemplatedGhPageWithResults);
     return linkToTemplatedGhPageWithResults;
 }
 

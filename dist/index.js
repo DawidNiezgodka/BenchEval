@@ -30922,7 +30922,7 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult, link
   }
   const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
 
-  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage);
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, linkToGraph);
 }
 
 module.exports.summaryForMethodNotSupported = function (evaluationResult, linkToGraph) {
@@ -31182,6 +31182,7 @@ module.exports.validateLinkToTemplatedGhPageWithResults = function () {
             throw new Error(`Link to templated gh page must contain 'github.io' but got '${linkToTemplatedGhPageWithResults}'`);
         }
     }
+    console.log(linkToTemplatedGhPageWithResults);
     return linkToTemplatedGhPageWithResults;
 }
 
