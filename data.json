@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1701265066592,
+    "lastUpdate": 1701265473227,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -1804,6 +1804,99 @@
                     "url": "https://github.com/DawidNiezgodka/BenchEval/commit/7cf778ae1a734ca48fde04770a7e71de28d90835"
                 },
                 "date": 1701265066592,
+                "executionTime": "1 m",
+                "parametrization": {
+                    "ack": "2",
+                    "read-in-ram": true
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "new_metric",
+                        "value": 111,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "metric4",
+                        "value": 390,
+                        "unit": "op/s"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "threshold",
+                        "benchToCompare": "Benchmark",
+                        "thresholdValues": [
+                            100,
+                            400
+                        ],
+                        "comparisonOperators": [
+                            "smaller",
+                            "bigger"
+                        ],
+                        "comparisonMargins": [
+                            10,
+                            10
+                        ],
+                        "thresholdUpper": null,
+                        "thresholdLower": null,
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": null,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "threshold",
+                        "metricNames": [
+                            "new_metric",
+                            "metric4"
+                        ],
+                        "metricUnits": [
+                            "ms",
+                            "op/s"
+                        ],
+                        "resultExplanations": [],
+                        "metricToDifferentBenchValues": {},
+                        "is": [
+                            111,
+                            390
+                        ],
+                        "shouldBe": [
+                            "smaller",
+                            "bigger"
+                        ],
+                        "than": [
+                            100,
+                            400
+                        ]
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "failed",
+                            "failed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "5c8eaef96c38c4fc3b4a24971a119f94fb5bf29d",
+                    "message": "add link, refine",
+                    "timestamp": "2023-11-29T14:44:17+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/5c8eaef96c38c4fc3b4a24971a119f94fb5bf29d"
+                },
+                "date": 1701265473227,
                 "executionTime": "1 m",
                 "parametrization": {
                     "ack": "2",
