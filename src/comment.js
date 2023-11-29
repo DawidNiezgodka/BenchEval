@@ -486,7 +486,7 @@ module.exports.createWorkflowSummary = function (evaluationResult) {
   if (results.every(result => result === 'passed')) {
     summaryMessage = "All metrics have passed. Benchmark is successful.";
   } else if (results.every(result => result === 'failed')) {
-    summaryMessage = "All metrics failed. Unless you deliberately choose not to fail the build, it will fail.";
+    summaryMessage = "Every metric has failed. The build will fail unless you specifically decide against it.";
   } else if (results.includes('failed')) {
     summaryMessage = "At least one metric failed. The rejection of the build depends on the chosen strategy (all, any, none).";
   } else {
@@ -516,7 +516,6 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult) {
 
   ];
   const hasShouldBe = evaluationResult.evalParameters.shouldBe.length > 0;
-  const hasThan = evaluationResult.evalParameters.than.length > 0;
 
   if (hasShouldBe) {
     headers.push({ data: 'Current should be', header: true });

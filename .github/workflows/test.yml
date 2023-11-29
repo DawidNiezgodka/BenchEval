@@ -41,6 +41,7 @@ jobs:
           comment_to_commit: on
           save_curr_bench_res: true
           github_token: ${{ secrets.GH_TOKEN }}
+          alert_users_if_bench_failed: "@DawidNiezgodka"
 
       - name: print the content of the data file after the update
         run: cat benchmark_data/data.json
