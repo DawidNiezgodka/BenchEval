@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - exclude-metrics-from-curr-res-file
+      - refine
 jobs:
   test:
     runs-on: ubuntu-latest
