@@ -30847,6 +30847,112 @@ module.exports.createWorkflowSummary = function (evaluationResult) {
       .write();
 }
 
+module.exports.createWorkflowSummaryThreshold = function (evaluationResult) {
+
+  const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+
+  const headers = [
+    {
+      data: 'Metric',
+      header: true,
+    },
+    {
+      data: `Current: "${currentBenchmark.commitInfo.id.substring(0, 7)}"`,
+      header: true,
+    },
+    {
+      data: "Threshold",
+      header: true,
+    },
+
+  ];
+  const hasShouldBe = evaluationResult.evalParameters.shouldBe.length > 0;
+  const hasThan = evaluationResult.evalParameters.than.length > 0;
+
+  if (hasShouldBe) {
+    headers.push({ data: 'Should be', header: true });
+  }
+  if (hasThan) {
+    headers.push({ data: 'Than', header: true });
+  }
+  headers.push(  {
+    data: 'Result',
+    header: true,
+  })
+  const rows = [];
+  const evaluationResults = evaluationResult.results.result
+  const evaluationParameters = evaluationResult.evalParameters
+  for (let i = 0; i < evaluationResults.length; i++) {
+
+    const resultStatus = evaluationResults[i];
+    const metricName = evaluationParameters.metricNames[i];
+    const metricUnit = evaluationParameters.metricUnits[i];
+    const actualValue = evaluationParameters.is[i];
+    const than = evaluationParameters.than[i] + ' ' + metricUnit;
+    let valueAndUnit = actualValue + ' ' + metricUnit
+
+    let graphicalRepresentationOfRes;
+    if (resultStatus === 'failed' || resultStatus === 'passed') {
+      graphicalRepresentationOfRes = resultStatus === 'passed' ? '🟢' : '🔴'
+    } else {
+      graphicalRepresentationOfRes= '🔘';
+    }
+
+    rows.push([
+      {
+        data: metricName,
+      },
+      {
+        data: valueAndUnit,
+      },
+      {
+        data: than,
+      },
+
+    ])
+
+    if (hasShouldBe) {
+      rows[i].push({ data: evaluationResult.evalParameters.shouldBe[i] });
+    }
+    rows[i].push({data: graphicalRepresentationOfRes})
+  }
+
+  const results = evaluationResult.results.result;
+  let summaryMessage;
+
+  if (results.every(result => result === 'passed')) {
+    summaryMessage = "All metrics have passed. Benchmark is successful.";
+  } else if (results.every(result => result === 'failed')) {
+    summaryMessage = "All metrics failed. Unless you deliberately choose not to fail the build, it will fail.";
+  } else if (results.includes('failed')) {
+    summaryMessage = "At least one metric failed. The rejection of the build depends on the chosen strategy (all, any, none).";
+  } else {
+    summaryMessage = "Benchmark result is inconclusive.";
+  }
+  const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
+
+  core.summary
+      .addHeading(`## Benchmark summary`)
+      .addHeading(` ### Evaluation Method: ${evaluationMethod}`)
+      .addTable([headers, ...rows])
+      .addRaw(summaryMessage)
+      .addBreak()
+      .addRaw("Depending on workflow settings, you might expect code comments or notifications about" +
+          "the benchmark result.")
+      .write();
+}
+
+module.exports.summaryForMethodNotSupported = function (evaluationMethod) {
+    core.summary
+        .addHeading(`## Benchmark summary`)
+        .addHeading(` ### Evaluation Method: ${evaluationMethod}`)
+        .addRaw("This evaluation method is not supported yet.")
+        .addBreak()
+        .addRaw("Depending on workflow settings, you might expect code comments or notifications about" +
+            "the benchmark result.")
+        .write();
+}
+
 
 /***/ }),
 
@@ -31968,7 +32074,8 @@ const {
 
 const { createCurrBench} = __nccwpck_require__(501)
 
-const { createComment, createWorkflowSummary } = __nccwpck_require__(3732)
+const { createComment, createWorkflowSummary, createWorkflowSummaryThreshold,
+  summaryForMethodNotSupported} = __nccwpck_require__(3732)
 
 const {
   addCompleteBenchmarkToFile,
@@ -32052,6 +32159,10 @@ async function run() {
       // For now only previous is supported
       if (evaluationConfig.evaluationMethod === 'previous') {
         createWorkflowSummary(evaluationResult);
+      } else if (evaluationConfig.evaluationMethod === 'threshold') {
+        createWorkflowSummaryThreshold(evaluationResult);
+      } else {
+        summaryForMethodNotSupported(evaluationConfig.evaluationMethod);
       }
 
     }

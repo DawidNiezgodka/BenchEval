@@ -14,7 +14,8 @@ const {
 
 const { createCurrBench} = require('./bench')
 
-const { createComment, createWorkflowSummary } = require('./comment')
+const { createComment, createWorkflowSummary, createWorkflowSummaryThreshold,
+  summaryForMethodNotSupported} = require('./comment')
 
 const {
   addCompleteBenchmarkToFile,
@@ -98,6 +99,10 @@ async function run() {
       // For now only previous is supported
       if (evaluationConfig.evaluationMethod === 'previous') {
         createWorkflowSummary(evaluationResult);
+      } else if (evaluationConfig.evaluationMethod === 'threshold') {
+        createWorkflowSummaryThreshold(evaluationResult);
+      } else {
+        summaryForMethodNotSupported(evaluationConfig.evaluationMethod);
       }
 
     }
