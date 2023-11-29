@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1701275742797,
+    "lastUpdate": 1701278030063,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -2269,6 +2269,99 @@
                     "url": "https://github.com/DawidNiezgodka/BenchEval/commit/694a601dfd08c91fdbf48695f89dbca7c3d09fda"
                 },
                 "date": 1701275742797,
+                "executionTime": "1 m",
+                "parametrization": {
+                    "ack": "2",
+                    "read-in-ram": true
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "new_metric",
+                        "value": 111,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "metric4",
+                        "value": 390,
+                        "unit": "op/s"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "threshold",
+                        "benchToCompare": "Benchmark",
+                        "thresholdValues": [
+                            100,
+                            400
+                        ],
+                        "comparisonOperators": [
+                            "smaller",
+                            "bigger"
+                        ],
+                        "comparisonMargins": [
+                            10,
+                            10
+                        ],
+                        "thresholdUpper": null,
+                        "thresholdLower": null,
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": null,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "threshold",
+                        "metricNames": [
+                            "new_metric",
+                            "metric4"
+                        ],
+                        "metricUnits": [
+                            "ms",
+                            "op/s"
+                        ],
+                        "resultExplanations": [],
+                        "metricToDifferentBenchValues": {},
+                        "is": [
+                            111,
+                            390
+                        ],
+                        "shouldBe": [
+                            "smaller",
+                            "bigger"
+                        ],
+                        "than": [
+                            100,
+                            400
+                        ]
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "failed",
+                            "failed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "523bf1b5f771c446a9a74b5a3293ac8a15fe9ac7",
+                    "message": "add input for link to graph and adjusted logic accordingly",
+                    "timestamp": "2023-11-29T18:13:35+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/523bf1b5f771c446a9a74b5a3293ac8a15fe9ac7"
+                },
+                "date": 1701278030063,
                 "executionTime": "1 m",
                 "parametrization": {
                     "ack": "2",
