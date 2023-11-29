@@ -30748,12 +30748,8 @@ module.exports.leaveComment = async (commitId, body, token) => {
 ///////////////////////
 module.exports.createWorkflowSummary = function (evaluationResult) {
 
-
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
-  const currentBenchName = currentBenchmark.benchmarkName
-  const previousBenchName = previousBenchmark.benchmarkName
-
 
   const headers = [
     {
@@ -30761,18 +30757,28 @@ module.exports.createWorkflowSummary = function (evaluationResult) {
       header: true,
     },
     {
-      data: `Current: "${currentBenchmark.commitInfo.id}"`,
+      data: `Current: "${currentBenchmark.commitInfo.id.substring(0, 7)}"`,
       header: true,
     },
     {
-      data: `Previous: "${previousBenchmark.commitInfo.id}"`,
+      data: `Previous: "${previousBenchmark.commitInfo.id.substring(0, 7)}"`,
       header: true,
     },
-    {
-      data: 'Result',
-      header: true,
-    },
+
   ];
+  const hasShouldBe = evaluationResult.evalParameters.shouldBe.length > 0;
+  const hasThan = evaluationResult.evalParameters.than.length > 0;
+
+  if (hasShouldBe) {
+    headers.push({ data: 'Should be', header: true });
+  }
+  if (hasThan) {
+    headers.push({ data: 'Than', header: true });
+  }
+  headers.push(  {
+    data: 'Result',
+    header: true,
+  })
   const rows = [];
   const evaluationResults = evaluationResult.results.result
   const evaluationParameters = evaluationResult.evalParameters
@@ -30807,11 +30813,37 @@ module.exports.createWorkflowSummary = function (evaluationResult) {
         data: graphicalRepresentationOfRes,
       },
     ])
+
+    if (hasShouldBe) {
+      rows[i].push({ data: evaluationResult.evalParameters.shouldBe[i] });
+    }
+    if (hasThan) {
+      rows[i].push({ data: evaluationResult.evalParameters.than[i] });
+    }
   }
 
+  const results = evaluationResult.results.result;
+  let summaryMessage;
+
+  if (results.every(result => result === 'passed')) {
+    summaryMessage = "All metrics have passed. Benchmark is successful.";
+  } else if (results.every(result => result === 'failed')) {
+    summaryMessage = "All metrics failed. Unless you deliberately choose not to fail the build, it will fail.";
+  } else if (results.includes('failed')) {
+    summaryMessage = "At least one metric failed. The rejection of the build depends on the chosen strategy (all, any, none).";
+  } else {
+    summaryMessage = "Benchmark result is inconclusive.";
+  }
+  const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
+
   core.summary
-      .addHeading(`Benchmark summary`)
+      .addHeading(`## Benchmark summary`)
+      .addHeading(` ### Evaluation Method: ${evaluationMethod}`)
       .addTable([headers, ...rows])
+      .addRaw(summaryMessage)
+      .addBreak()
+      .addRaw("Depending on workflow settings, you might expect code comments or notifications about" +
+          "the benchmark result.")
       .write();
 }
 
