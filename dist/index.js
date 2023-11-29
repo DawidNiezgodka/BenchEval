@@ -30837,13 +30837,21 @@ module.exports.createWorkflowSummary = function (evaluationResult) {
   const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
 
   core.summary
-      .addHeading(`## Benchmark summary`)
-      .addHeading(` ### Evaluation Method: ${evaluationMethod}`)
+      .addHeading(`Benchmark summary`, 2)
+
+      .addRaw("This is a short workflow summary. Depending on workflow settings, you might expect an additional" +
+          " code comment with detailed information or notifications about " +
+          "the benchmark result. You might also want to check the graph (if you added html template to the branch where " +
+          "results are stored)")
+      .addLink("Graph with benchmark results", "https://dawidniezgodka.github.io/BenchEval/")
+      .addSeparator()
+      .addHeading(`Evaluation Method: ${evaluationMethod}`, 3)
       .addTable([headers, ...rows])
+      .addSeparator()
+      .addBreak()
       .addRaw(summaryMessage)
       .addBreak()
-      .addRaw("Depending on workflow settings, you might expect code comments or notifications about" +
-          "the benchmark result.")
+
       .write();
 }
 
@@ -30930,14 +30938,15 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult) {
   const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
 
   core.summary
-      .addHeading(`Benchmark summary`)
-      .addSeparator()
+      .addHeading(`Benchmark summary`, 2)
+
       .addRaw("This is a short workflow summary. Depending on workflow settings, you might expect an additional" +
-          " code comment with detailed information or notifications about" +
+          " code comment with detailed information or notifications about " +
           "the benchmark result. You might also want to check the graph (if you added html template to the branch where " +
           "results are stored)")
+      .addLink("Graph with benchmark results", "https://dawidniezgodka.github.io/BenchEval/")
       .addSeparator()
-      .addHeading(`Evaluation Method: ${evaluationMethod}`)
+      .addHeading(`Evaluation Method: ${evaluationMethod}`, 3)
       .addTable([headers, ...rows])
       .addSeparator()
       .addBreak()
@@ -30949,12 +30958,14 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult) {
 
 module.exports.summaryForMethodNotSupported = function (evaluationMethod) {
     core.summary
-        .addHeading(`## Benchmark summary`)
-        .addHeading(` ### Evaluation Method: ${evaluationMethod}`)
-        .addRaw("This evaluation method is not supported yet.")
-        .addBreak()
+        .addHeading("Benchark summary",2)
         .addRaw("Depending on workflow settings, you might expect code comments or notifications about" +
             "the benchmark result.")
+        .addLink("Graph with benchmark results", "https://dawidniezgodka.github.io/BenchEval/")
+        .addHeading(` ### Evaluation Method: ${evaluationMethod}`, 3)
+        .addRaw("This evaluation method is not supported yet.")
+        .addBreak()
+
         .write();
 }
 
