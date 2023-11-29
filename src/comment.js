@@ -112,12 +112,7 @@ module.exports.createBodyForComparisonWithPrev = function (
   }
   const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
 
-  if (!benchmarkPassed) {
-    let usersToBeAlerted = ['@DawidNiezgodka']
-    if (usersToBeAlerted.length > 0) {
-      lines.push('', `CC: ${usersToBeAlerted.join(' ')}`);
-    }
-  }
+  module.exports.alertUsersIfBenchFailed(benchmarkPassed, completeConfig, lines);
 
 
   return lines.join('\n')
@@ -139,6 +134,15 @@ module.exports.addInfoAboutBenchRes = function(lines, completeConfig, evaluation
   lines.push(`## Benchmark ${benchmarkPassed ? 'passed' : 'failed'}`);
   lines.push(`The chosen failing condition is '${failingCondition}', and ${conditionMessage} the condition.`);
   return benchmarkPassed;
+}
+
+module.exports.alertUsersIfBenchFailed = function (benchmarkPassed, completeConfig, lines) {
+  if (!benchmarkPassed) {
+    let usersToBeAlerted = completeConfig.alertUsersIfBenchFailed;
+    if (usersToBeAlerted.length > 0) {
+      lines.push('', `CC: ${usersToBeAlerted.join(' ')}`);
+    }
+  }
 }
 
 module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationResult, completeConfig) {
@@ -210,13 +214,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
     lines.push(line);
   }
   const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
-
-  if (!benchmarkPassed) {
-    let usersToBeAlerted = ['@DawidNiezgodka']
-    if (usersToBeAlerted.length > 0) {
-      lines.push('', `CC: ${usersToBeAlerted.join(' ')}`);
-    }
-  }
+  module.exports.alertUsersIfBenchFailed(benchmarkPassed, completeConfig, lines);
 
 
   return lines.join('\n')
@@ -364,12 +362,7 @@ module.exports.createBodyForComparisonWithThreshold = function (
   }
   const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
 
-  if (!benchmarkPassed) {
-    let usersToBeAlerted = ['@DawidNiezgodka']
-    if (usersToBeAlerted.length > 0) {
-      lines.push('', `CC: ${usersToBeAlerted.join(' ')}`);
-    }
-  }
+  module.exports.alertUsersIfBenchFailed(benchmarkPassed, completeConfig, lines);
 
 
   return lines.join('\n')
@@ -396,6 +389,15 @@ module.exports.leaveComment = async (commitId, body, token) => {
     if (error.request) console.error('Request:', error.request)
     if (error.response && error.response.data)
       console.error('Response Data:', error.response.data)
+  }
+}
+
+module.exports.alertUsersIfBenchFailed = function (benchmarkPassed, completeConfig, lines) {
+  if (!benchmarkPassed) {
+    let usersToBeAlerted = completeConfig.alertUsersIfBenchFailed;
+    if (usersToBeAlerted.length > 0) {
+      lines.push('', `CC: ${usersToBeAlerted.join(' ')}`);
+    }
   }
 }
 
@@ -491,24 +493,7 @@ module.exports.createWorkflowSummary = function (evaluationResult) {
     summaryMessage = "Benchmark result is inconclusive.";
   }
   const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
-
-  core.summary
-      .addHeading(`Benchmark summary`, 2)
-
-      .addRaw("This is a short workflow summary. Depending on workflow settings, you might expect an additional" +
-          " code comment with detailed information or notifications about " +
-          "the benchmark result. You might also want to check the graph (if you added html template to the branch where " +
-          "results are stored)")
-      .addLink("Graph with benchmark results", "https://dawidniezgodka.github.io/BenchEval/")
-      .addSeparator()
-      .addHeading(`Evaluation Method: ${evaluationMethod}`, 3)
-      .addTable([headers, ...rows])
-      .addSeparator()
-      .addBreak()
-      .addRaw(summaryMessage)
-      .addBreak()
-
-      .write();
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage);
 }
 
 module.exports.createWorkflowSummaryThreshold = function (evaluationResult) {
@@ -593,27 +578,7 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult) {
   }
   const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
 
-  core.summary
-      .addHeading(`Benchmark summary`, 2)
-
-      .addRaw("This is a short workflow summary.")
-      .addBreak()
-      .addRaw(" Depending on workflow settings, you might expect an additional code comment with detailed information or notifications about" +
-          "benchmark results", true)
-      .addBreak()
-      .addRaw("You might also want to check the graph (if you added html template to the branch where " +
-          "results are stored)")
-      .addBreak()
-      .addLink("Graph with benchmark results", "https://dawidniezgodka.github.io/BenchEval/")
-      .addSeparator()
-      .addHeading(`Evaluation Method: ${evaluationMethod}`, 3)
-      .addTable([headers, ...rows])
-      .addSeparator()
-      .addBreak()
-      .addRaw(summaryMessage)
-      .addBreak()
-
-      .write();
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage);
 }
 
 module.exports.summaryForMethodNotSupported = function (evaluationMethod) {
@@ -627,4 +592,28 @@ module.exports.summaryForMethodNotSupported = function (evaluationMethod) {
         .addBreak()
 
         .write();
+}
+
+module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMessage) {
+  core.summary
+      .addHeading(`Benchmark summary`, 2)
+
+      .addRaw("This is a short benchmark summary.")
+      .addBreak()
+      .addRaw("Depending on workflow settings, you might expect an additional code comment with detailed information" +
+          " or a notification about the benchmark results", true)
+      .addBreak()
+      .addRaw("You might also want to check the graph below" +
+          " (if you added the .html template to the branch where results are stored)")
+      .addBreak()
+      .addLink("Graph with benchmark results", "https://dawidniezgodka.github.io/BenchEval/")
+      .addSeparator()
+      .addHeading(`Evaluation Method: ${evaluationMethod}`, 3)
+      .addTable([headers, ...rows])
+      .addSeparator()
+      .addBreak()
+      .addRaw(summaryMessage)
+      .addBreak()
+
+      .write();
 }
