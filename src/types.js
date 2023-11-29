@@ -59,21 +59,23 @@ class Config {
     addComment,
     addJobSummary,
     saveCurrBenchRes,
-    alertUsersIfBenchFailed
+    alertUsersIfBenchFailed,
+    linkToTemplatedGhPageWithResults
   ) {
-    this.benchName = benchName
-    this.currBenchResJson = currBenchResJson
+      this.benchName = benchName
+      this.currBenchResJson = currBenchResJson
       this.subsetOfBenchRes = subsetOfBenchRes
-    this.failingCondition = failingCondition
-    this.benchToCompare = benchToCompare
-    this.evaluationConfig = evaluationConfig
-    this.folderWithBenchData = folderWithBenchData
-    this.fileWithBenchData = fileWithBenchData
-    this.githubToken = githubToken
-    this.addComment = addComment
-    this.addJobSummary = addJobSummary
-    this.saveCurrBenchRes = saveCurrBenchRes
-    this.alertUsersIfBenchFailed = alertUsersIfBenchFailed
+      this.failingCondition = failingCondition
+      this.benchToCompare = benchToCompare
+      this.evaluationConfig = evaluationConfig
+      this.folderWithBenchData = folderWithBenchData
+      this.fileWithBenchData = fileWithBenchData
+      this.githubToken = githubToken
+      this.addComment = addComment
+      this.addJobSummary = addJobSummary
+      this.saveCurrBenchRes = saveCurrBenchRes
+      this.alertUsersIfBenchFailed = alertUsersIfBenchFailed
+      this.linkToTemplatedGhPageWithResults = linkToTemplatedGhPageWithResults
   }
 }
 

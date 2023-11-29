@@ -108,14 +108,19 @@ inputs:
       If not specified, main branch will be used.
     required: false
     default: "main"
-
-
   failing_condition:
     description: |
       Specifies when the benchmark should fail.
       The possible values are any, all, and none.
     required: false
     default: "any"
+  link_to_templated_gh_page_with_results:
+    description: |
+      The link to the GitHub page with the benchmark results.
+      The link should be templated with the benchmark name.
+      For example, if the benchmark name is 'Benchmark', the link should look as follows:
+      https://dawidniezgodka.github.io/Bench1-Final/
+    required: false
 
 outputs:
   should_fail:

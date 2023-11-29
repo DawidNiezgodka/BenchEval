@@ -91,6 +91,8 @@ module.exports.validateInputAndFetchConfig = function () {
 
   const alertUsersIfBenchFailed = module.exports.validateUsersToBeAlerted()
 
+  const linkToTemplatedGhPageWithResults = module.exports.validateLinkToTemplatedGhPageWithResults();
+
 
   return new Config(
       benchName,
@@ -105,8 +107,24 @@ module.exports.validateInputAndFetchConfig = function () {
       addComment,
       addJobSummary,
       saveCurrBenchRes,
-      alertUsersIfBenchFailed
+      alertUsersIfBenchFailed,
+      linkToTemplatedGhPageWithResults
   )
+}
+
+module.exports.validateLinkToTemplatedGhPageWithResults = function () {
+    const linkToTemplatedGhPageWithResults = core.getInput('link_to_templated_gh_page_with_results');
+    // link must be https and have github.io in it
+    if (linkToTemplatedGhPageWithResults !== '') {
+        if (!linkToTemplatedGhPageWithResults.startsWith('https://')) {
+            throw new Error(`Link to templated gh page must start with 'https://' but got '${linkToTemplatedGhPageWithResults}'`);
+        }
+        if (!linkToTemplatedGhPageWithResults.includes('github.io')) {
+            throw new Error(`Link to templated gh page must contain 'github.io' but got '${linkToTemplatedGhPageWithResults}'`);
+        }
+    }
+    console.log(linkToTemplatedGhPageWithResults);
+    return linkToTemplatedGhPageWithResults;
 }
 
 module.exports.areMetricsValid = function(metricsToCheck, availableMetrics) {
@@ -120,11 +138,11 @@ module.exports.filterMetrics = function(parsedData, metricsToEvaluate) {
 }
 
 module.exports.validateUsersToBeAlerted = function () {
-  const alertUsersIfBenchFailed = core.getInput('alert_users_if_bench_failed');
+  let alertUsersIfBenchFailed = core.getInput('alert_users_if_bench_failed');
   console.log("Usaers", alertUsersIfBenchFailed);
   if (alertUsersIfBenchFailed !== '') {
-    const users = alertUsersIfBenchFailed.split(',').map(u => u.trim());
-    for (const u of users) {
+    alertUsersIfBenchFailed = alertUsersIfBenchFailed.split(',').map(u => u.trim());
+    for (const u of alertUsersIfBenchFailed) {
       if (!u.startsWith('@')) {
         throw new Error(`User name in 'alert_users_if_bench_failed' input must start with '@' but got '${u}'`);
       }

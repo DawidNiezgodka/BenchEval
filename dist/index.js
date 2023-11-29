@@ -30456,12 +30456,7 @@ module.exports.createBodyForComparisonWithPrev = function (
   }
   const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
 
-  if (!benchmarkPassed) {
-    let usersToBeAlerted = ['@DawidNiezgodka']
-    if (usersToBeAlerted.length > 0) {
-      lines.push('', `CC: ${usersToBeAlerted.join(' ')}`);
-    }
-  }
+  module.exports.alertUsersIfBenchFailed(benchmarkPassed, completeConfig, lines);
 
 
   return lines.join('\n')
@@ -30483,6 +30478,15 @@ module.exports.addInfoAboutBenchRes = function(lines, completeConfig, evaluation
   lines.push(`## Benchmark ${benchmarkPassed ? 'passed' : 'failed'}`);
   lines.push(`The chosen failing condition is '${failingCondition}', and ${conditionMessage} the condition.`);
   return benchmarkPassed;
+}
+
+module.exports.alertUsersIfBenchFailed = function (benchmarkPassed, completeConfig, lines) {
+  if (!benchmarkPassed) {
+    let usersToBeAlerted = completeConfig.alertUsersIfBenchFailed;
+    if (usersToBeAlerted.length > 0) {
+      lines.push('', `CC: ${usersToBeAlerted.join(' ')}`);
+    }
+  }
 }
 
 module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationResult, completeConfig) {
@@ -30554,13 +30558,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
     lines.push(line);
   }
   const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
-
-  if (!benchmarkPassed) {
-    let usersToBeAlerted = ['@DawidNiezgodka']
-    if (usersToBeAlerted.length > 0) {
-      lines.push('', `CC: ${usersToBeAlerted.join(' ')}`);
-    }
-  }
+  module.exports.alertUsersIfBenchFailed(benchmarkPassed, completeConfig, lines);
 
 
   return lines.join('\n')
@@ -30708,12 +30706,7 @@ module.exports.createBodyForComparisonWithThreshold = function (
   }
   const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
 
-  if (!benchmarkPassed) {
-    let usersToBeAlerted = ['@DawidNiezgodka']
-    if (usersToBeAlerted.length > 0) {
-      lines.push('', `CC: ${usersToBeAlerted.join(' ')}`);
-    }
-  }
+  module.exports.alertUsersIfBenchFailed(benchmarkPassed, completeConfig, lines);
 
 
   return lines.join('\n')
@@ -30743,17 +30736,22 @@ module.exports.leaveComment = async (commitId, body, token) => {
   }
 }
 
+module.exports.alertUsersIfBenchFailed = function (benchmarkPassed, completeConfig, lines) {
+  if (!benchmarkPassed) {
+    let usersToBeAlerted = completeConfig.alertUsersIfBenchFailed;
+    if (usersToBeAlerted.length > 0) {
+      lines.push('', `CC: ${usersToBeAlerted.join(' ')}`);
+    }
+  }
+}
+
 ///////////////////////
 /////////////////////// Summary
 ///////////////////////
-module.exports.createWorkflowSummary = function (evaluationResult) {
-
+module.exports.createWorkflowSummary = function (evaluationResult, linkToGraph) {
 
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
-  const currentBenchName = currentBenchmark.benchmarkName
-  const previousBenchName = previousBenchmark.benchmarkName
-
 
   const headers = [
     {
@@ -30761,18 +30759,28 @@ module.exports.createWorkflowSummary = function (evaluationResult) {
       header: true,
     },
     {
-      data: `Current: "${currentBenchmark.commitInfo.id}"`,
+      data: `Current: "${currentBenchmark.commitInfo.id.substring(0, 7)}"`,
       header: true,
     },
     {
-      data: `Previous: "${previousBenchmark.commitInfo.id}"`,
+      data: `Previous: "${previousBenchmark.commitInfo.id.substring(0, 7)}"`,
       header: true,
     },
-    {
-      data: 'Result',
-      header: true,
-    },
+
   ];
+  const hasShouldBe = evaluationResult.evalParameters.shouldBe.length > 0;
+  const hasThan = evaluationResult.evalParameters.than.length > 0;
+
+  if (hasShouldBe) {
+    headers.push({ data: 'Should be', header: true });
+  }
+  if (hasThan) {
+    headers.push({ data: 'Than', header: true });
+  }
+  headers.push(  {
+    data: 'Result',
+    header: true,
+  })
   const rows = [];
   const evaluationResults = evaluationResult.results.result
   const evaluationParameters = evaluationResult.evalParameters
@@ -30807,11 +30815,153 @@ module.exports.createWorkflowSummary = function (evaluationResult) {
         data: graphicalRepresentationOfRes,
       },
     ])
+
+    if (hasShouldBe) {
+      rows[i].push({ data: evaluationResult.evalParameters.shouldBe[i] });
+    }
+    if (hasThan) {
+      rows[i].push({ data: evaluationResult.evalParameters.than[i] });
+    }
   }
 
+  const results = evaluationResult.results.result;
+  let summaryMessage;
+
+  if (results.every(result => result === 'passed')) {
+    summaryMessage = "All metrics have passed. Benchmark is successful.";
+  } else if (results.every(result => result === 'failed')) {
+    summaryMessage = "Every metric has failed. The build will fail unless you specifically decide against it.";
+  } else if (results.includes('failed')) {
+    summaryMessage = "At least one metric failed. The rejection of the build depends on the chosen strategy (all, any, none).";
+  } else {
+    summaryMessage = "Benchmark result is inconclusive.";
+  }
+  const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
+
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, linkToGraph);
+}
+
+module.exports.createWorkflowSummaryThreshold = function (evaluationResult, linkToGraph) {
+
+  const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+
+  const headers = [
+    {
+      data: 'Metric',
+      header: true,
+    },
+    {
+      data: `Current: "${currentBenchmark.commitInfo.id.substring(0, 7)}"`,
+      header: true,
+    },
+    {
+      data: "Threshold",
+      header: true,
+    },
+
+  ];
+  const hasShouldBe = evaluationResult.evalParameters.shouldBe.length > 0;
+
+  if (hasShouldBe) {
+    headers.push({ data: 'Current should be', header: true });
+  }
+
+  headers.push(  {
+    data: 'Result',
+    header: true,
+  })
+  const rows = [];
+  const evaluationResults = evaluationResult.results.result
+  const evaluationParameters = evaluationResult.evalParameters
+  for (let i = 0; i < evaluationResults.length; i++) {
+
+    const resultStatus = evaluationResults[i];
+    const metricName = evaluationParameters.metricNames[i];
+    const metricUnit = evaluationParameters.metricUnits[i];
+    const actualValue = evaluationParameters.is[i];
+    const than = evaluationParameters.than[i] + ' ' + metricUnit;
+    let valueAndUnit = actualValue + ' ' + metricUnit
+
+    let graphicalRepresentationOfRes;
+    if (resultStatus === 'failed' || resultStatus === 'passed') {
+      graphicalRepresentationOfRes = resultStatus === 'passed' ? '🟢' : '🔴'
+    } else {
+      graphicalRepresentationOfRes= '🔘';
+    }
+
+    rows.push([
+      {
+        data: metricName,
+      },
+      {
+        data: valueAndUnit,
+      },
+      {
+        data: than,
+      },
+
+    ])
+
+    if (hasShouldBe) {
+      rows[i].push({ data: evaluationResult.evalParameters.shouldBe[i] });
+    }
+    rows[i].push({data: graphicalRepresentationOfRes})
+  }
+
+  const results = evaluationResult.results.result;
+  let summaryMessage;
+
+  if (results.every(result => result === 'passed')) {
+    summaryMessage = "All metrics have passed. Benchmark is successful.";
+  } else if (results.every(result => result === 'failed')) {
+    summaryMessage = "All metrics failed. Unless you deliberately choose not to fail the build, it will fail.";
+  } else if (results.includes('failed')) {
+    summaryMessage = "At least one metric failed. The rejection of the build depends on the chosen strategy (all, any, none).";
+  } else {
+    summaryMessage = "Benchmark result is inconclusive.";
+  }
+  const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
+
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, linkToGraph);
+}
+
+module.exports.summaryForMethodNotSupported = function (evaluationResult, linkToGraph) {
+    core.summary
+        .addHeading("Benchark summary",2)
+        .addRaw("Depending on workflow settings, you might expect code comments or notifications about" +
+            "the benchmark result.");
+        if (linkToGraph) {
+          core.summary.addLink("Graph with benchmark results", linkToGraph);
+          }
+        core.summary.addHeading(` ### Evaluation Method: ${evaluationMethod}`, 3)
+        .addRaw("This evaluation method is not supported yet.")
+        .addBreak()
+        .write();
+}
+
+module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMessage, linkToGraph) {
   core.summary
-      .addHeading(`Benchmark summary`)
+      .addHeading(`Benchmark summary`, 2)
+
+      .addRaw("This is a short benchmark summary.")
+      .addBreak()
+      .addRaw("Depending on workflow settings, you might expect an additional code comment with detailed information" +
+          " or a notification about the benchmark results", true)
+      .addBreak()
+      .addRaw("You might also want to check the graph below" +
+          " (if you added the .html template to the branch where results are stored)")
+      .addBreak();
+      if (linkToGraph) {
+        core.summary.addLink("Graph with benchmark results", linkToGraph);
+      }
+      core.summary
+      .addSeparator()
+      .addHeading(`Evaluation Method: ${evaluationMethod}`, 3)
       .addTable([headers, ...rows])
+      .addSeparator()
+      .addBreak()
+      .addRaw(summaryMessage)
+      .addBreak()
       .write();
 }
 
@@ -31000,6 +31150,8 @@ module.exports.validateInputAndFetchConfig = function () {
 
   const alertUsersIfBenchFailed = module.exports.validateUsersToBeAlerted()
 
+  const linkToTemplatedGhPageWithResults = module.exports.validateLinkToTemplatedGhPageWithResults();
+
 
   return new Config(
       benchName,
@@ -31014,8 +31166,24 @@ module.exports.validateInputAndFetchConfig = function () {
       addComment,
       addJobSummary,
       saveCurrBenchRes,
-      alertUsersIfBenchFailed
+      alertUsersIfBenchFailed,
+      linkToTemplatedGhPageWithResults
   )
+}
+
+module.exports.validateLinkToTemplatedGhPageWithResults = function () {
+    const linkToTemplatedGhPageWithResults = core.getInput('link_to_templated_gh_page_with_results');
+    // link must be https and have github.io in it
+    if (linkToTemplatedGhPageWithResults !== '') {
+        if (!linkToTemplatedGhPageWithResults.startsWith('https://')) {
+            throw new Error(`Link to templated gh page must start with 'https://' but got '${linkToTemplatedGhPageWithResults}'`);
+        }
+        if (!linkToTemplatedGhPageWithResults.includes('github.io')) {
+            throw new Error(`Link to templated gh page must contain 'github.io' but got '${linkToTemplatedGhPageWithResults}'`);
+        }
+    }
+    console.log(linkToTemplatedGhPageWithResults);
+    return linkToTemplatedGhPageWithResults;
 }
 
 module.exports.areMetricsValid = function(metricsToCheck, availableMetrics) {
@@ -31029,11 +31197,11 @@ module.exports.filterMetrics = function(parsedData, metricsToEvaluate) {
 }
 
 module.exports.validateUsersToBeAlerted = function () {
-  const alertUsersIfBenchFailed = core.getInput('alert_users_if_bench_failed');
+  let alertUsersIfBenchFailed = core.getInput('alert_users_if_bench_failed');
   console.log("Usaers", alertUsersIfBenchFailed);
   if (alertUsersIfBenchFailed !== '') {
-    const users = alertUsersIfBenchFailed.split(',').map(u => u.trim());
-    for (const u of users) {
+    alertUsersIfBenchFailed = alertUsersIfBenchFailed.split(',').map(u => u.trim());
+    for (const u of alertUsersIfBenchFailed) {
       if (!u.startsWith('@')) {
         throw new Error(`User name in 'alert_users_if_bench_failed' input must start with '@' but got '${u}'`);
       }
@@ -31936,7 +32104,8 @@ const {
 
 const { createCurrBench} = __nccwpck_require__(501)
 
-const { createComment, createWorkflowSummary } = __nccwpck_require__(3732)
+const { createComment, createWorkflowSummary, createWorkflowSummaryThreshold,
+  summaryForMethodNotSupported} = __nccwpck_require__(3732)
 
 const {
   addCompleteBenchmarkToFile,
@@ -32019,7 +32188,11 @@ async function run() {
 
       // For now only previous is supported
       if (evaluationConfig.evaluationMethod === 'previous') {
-        createWorkflowSummary(evaluationResult);
+        createWorkflowSummary(evaluationResult, completeConfig.linkToTemplatedGhPageWithResults);
+      } else if (evaluationConfig.evaluationMethod === 'threshold') {
+        createWorkflowSummaryThreshold(evaluationResult, completeConfig.linkToTemplatedGhPageWithResults);
+      } else {
+        summaryForMethodNotSupported(evaluationConfig.evaluationMethod, completeConfig.linkToTemplatedGhPageWithResults);
       }
 
     }
@@ -32101,21 +32274,23 @@ class Config {
     addComment,
     addJobSummary,
     saveCurrBenchRes,
-    alertUsersIfBenchFailed
+    alertUsersIfBenchFailed,
+    linkToTemplatedGhPageWithResults
   ) {
-    this.benchName = benchName
-    this.currBenchResJson = currBenchResJson
+      this.benchName = benchName
+      this.currBenchResJson = currBenchResJson
       this.subsetOfBenchRes = subsetOfBenchRes
-    this.failingCondition = failingCondition
-    this.benchToCompare = benchToCompare
-    this.evaluationConfig = evaluationConfig
-    this.folderWithBenchData = folderWithBenchData
-    this.fileWithBenchData = fileWithBenchData
-    this.githubToken = githubToken
-    this.addComment = addComment
-    this.addJobSummary = addJobSummary
-    this.saveCurrBenchRes = saveCurrBenchRes
-    this.alertUsersIfBenchFailed = alertUsersIfBenchFailed
+      this.failingCondition = failingCondition
+      this.benchToCompare = benchToCompare
+      this.evaluationConfig = evaluationConfig
+      this.folderWithBenchData = folderWithBenchData
+      this.fileWithBenchData = fileWithBenchData
+      this.githubToken = githubToken
+      this.addComment = addComment
+      this.addJobSummary = addJobSummary
+      this.saveCurrBenchRes = saveCurrBenchRes
+      this.alertUsersIfBenchFailed = alertUsersIfBenchFailed
+      this.linkToTemplatedGhPageWithResults = linkToTemplatedGhPageWithResults
   }
 }
 

@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - exclude-metrics-from-curr-res-file
+      - refine
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -40,6 +41,8 @@ jobs:
           comment_to_commit: on
           save_curr_bench_res: true
           github_token: ${{ secrets.GH_TOKEN }}
+          alert_users_if_bench_failed: "@DawidNiezgodka"
+          link_to_templated_gh_page_with_results: "https://dawidniezgodka.github.io/BenchEval/"
 
       - name: print the content of the data file after the update
         run: cat benchmark_data/data.json
