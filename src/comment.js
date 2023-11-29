@@ -596,10 +596,13 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult) {
   core.summary
       .addHeading(`Benchmark summary`, 2)
 
-      .addRaw("This is a short workflow summary. Depending on workflow settings, you might expect an additional" +
-          " code comment with detailed information or notifications about " +
-          "the benchmark result. You might also want to check the graph (if you added html template to the branch where " +
+      .addRaw("This is a short workflow summary.")
+      .addBreak()
+      .addRaw(" Depending on workflow settings, you might expect an additional code comment with detailed information or notifications about" +
+          "benchmark results", true)
+      .addRaw("You might also want to check the graph (if you added html template to the branch where " +
           "results are stored)")
+      .addBreak()
       .addLink("Graph with benchmark results", "https://dawidniezgodka.github.io/BenchEval/")
       .addSeparator()
       .addHeading(`Evaluation Method: ${evaluationMethod}`, 3)
