@@ -31179,7 +31179,7 @@ module.exports.validateUsersToBeAlerted = function () {
   console.log("Usaers", alertUsersIfBenchFailed);
   if (alertUsersIfBenchFailed !== '') {
     alertUsersIfBenchFailed = alertUsersIfBenchFailed.split(',').map(u => u.trim());
-    for (const u of users) {
+    for (const u of alertUsersIfBenchFailed) {
       if (!u.startsWith('@')) {
         throw new Error(`User name in 'alert_users_if_bench_failed' input must start with '@' but got '${u}'`);
       }
