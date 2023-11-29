@@ -526,11 +526,9 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult) {
   const hasThan = evaluationResult.evalParameters.than.length > 0;
 
   if (hasShouldBe) {
-    headers.push({ data: 'Should be', header: true });
+    headers.push({ data: 'Current should be', header: true });
   }
-  if (hasThan) {
-    headers.push({ data: 'Than', header: true });
-  }
+
   headers.push(  {
     data: 'Result',
     header: true,
@@ -588,13 +586,20 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult) {
   const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
 
   core.summary
-      .addHeading(`## Benchmark summary`)
-      .addHeading(` ### Evaluation Method: ${evaluationMethod}`)
+      .addHeading(`Benchmark summary`)
+      .addSeparator()
+      .addRaw("This is a short workflow summary. Depending on workflow settings, you might expect an additional" +
+          " code comment with detailed information or notifications about" +
+          "the benchmark result. You might also want to check the graph (if you added html template to the branch where " +
+          "results are stored)")
+      .addSeparator()
+      .addHeading(`Evaluation Method: ${evaluationMethod}`)
       .addTable([headers, ...rows])
+      .addSeparator()
+      .addBreak()
       .addRaw(summaryMessage)
       .addBreak()
-      .addRaw("Depending on workflow settings, you might expect code comments or notifications about" +
-          "the benchmark result.")
+
       .write();
 }
 
