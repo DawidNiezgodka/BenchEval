@@ -30944,6 +30944,7 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult) {
       .addBreak()
       .addRaw(" Depending on workflow settings, you might expect an additional code comment with detailed information or notifications about" +
           "benchmark results", true)
+      .addBreak()
       .addRaw("You might also want to check the graph (if you added html template to the branch where " +
           "results are stored)")
       .addBreak()
