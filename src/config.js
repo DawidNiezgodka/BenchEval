@@ -91,6 +91,8 @@ module.exports.validateInputAndFetchConfig = function () {
 
   const alertUsersIfBenchFailed = module.exports.validateUsersToBeAlerted()
 
+  const linkToTemplatedGhPageWithResults = module.exports.validateLinkToTemplatedGhPageWithResults();
+
 
   return new Config(
       benchName,
@@ -105,8 +107,23 @@ module.exports.validateInputAndFetchConfig = function () {
       addComment,
       addJobSummary,
       saveCurrBenchRes,
-      alertUsersIfBenchFailed
+      alertUsersIfBenchFailed,
+      linkToTemplatedGhPageWithResults
   )
+}
+
+module.exports.validateLinkToTemplatedGhPageWithResults = function () {
+    const linkToTemplatedGhPageWithResults = core.getInput('link_to_templated_gh_page_with_results');
+    // link must be https and have github.io in it
+    if (linkToTemplatedGhPageWithResults !== '') {
+        if (!linkToTemplatedGhPageWithResults.startsWith('https://')) {
+            throw new Error(`Link to templated gh page must start with 'https://' but got '${linkToTemplatedGhPageWithResults}'`);
+        }
+        if (!linkToTemplatedGhPageWithResults.includes('github.io')) {
+            throw new Error(`Link to templated gh page must contain 'github.io' but got '${linkToTemplatedGhPageWithResults}'`);
+        }
+    }
+    return linkToTemplatedGhPageWithResults;
 }
 
 module.exports.areMetricsValid = function(metricsToCheck, availableMetrics) {

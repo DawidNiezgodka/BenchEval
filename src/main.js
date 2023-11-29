@@ -98,11 +98,11 @@ async function run() {
 
       // For now only previous is supported
       if (evaluationConfig.evaluationMethod === 'previous') {
-        createWorkflowSummary(evaluationResult);
+        createWorkflowSummary(evaluationResult, completeConfig.linkToTemplatedGhPageWithResults);
       } else if (evaluationConfig.evaluationMethod === 'threshold') {
-        createWorkflowSummaryThreshold(evaluationResult);
+        createWorkflowSummaryThreshold(evaluationResult, completeConfig.linkToTemplatedGhPageWithResults);
       } else {
-        summaryForMethodNotSupported(evaluationConfig.evaluationMethod);
+        summaryForMethodNotSupported(evaluationConfig.evaluationMethod, completeConfig.linkToTemplatedGhPageWithResults);
       }
 
     }

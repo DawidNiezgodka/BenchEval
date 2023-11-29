@@ -404,7 +404,7 @@ module.exports.alertUsersIfBenchFailed = function (benchmarkPassed, completeConf
 ///////////////////////
 /////////////////////// Summary
 ///////////////////////
-module.exports.createWorkflowSummary = function (evaluationResult) {
+module.exports.createWorkflowSummary = function (evaluationResult, linkToGraph) {
 
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
@@ -493,10 +493,11 @@ module.exports.createWorkflowSummary = function (evaluationResult) {
     summaryMessage = "Benchmark result is inconclusive.";
   }
   const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
-  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage);
+
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, linkToGraph);
 }
 
-module.exports.createWorkflowSummaryThreshold = function (evaluationResult) {
+module.exports.createWorkflowSummaryThreshold = function (evaluationResult, linkToGraph) {
 
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
 
@@ -580,20 +581,21 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult) {
   module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage);
 }
 
-module.exports.summaryForMethodNotSupported = function (evaluationMethod) {
+module.exports.summaryForMethodNotSupported = function (evaluationResult, linkToGraph) {
     core.summary
         .addHeading("Benchark summary",2)
         .addRaw("Depending on workflow settings, you might expect code comments or notifications about" +
-            "the benchmark result.")
-        .addLink("Graph with benchmark results", "https://dawidniezgodka.github.io/BenchEval/")
-        .addHeading(` ### Evaluation Method: ${evaluationMethod}`, 3)
+            "the benchmark result.");
+        if (linkToGraph) {
+          core.summary.addLink("Graph with benchmark results", linkToGraph);
+          }
+        core.summary.addHeading(` ### Evaluation Method: ${evaluationMethod}`, 3)
         .addRaw("This evaluation method is not supported yet.")
         .addBreak()
-
         .write();
 }
 
-module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMessage) {
+module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMessage, linkToGraph) {
   core.summary
       .addHeading(`Benchmark summary`, 2)
 
@@ -604,8 +606,11 @@ module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMe
       .addBreak()
       .addRaw("You might also want to check the graph below" +
           " (if you added the .html template to the branch where results are stored)")
-      .addBreak()
-      .addLink("Graph with benchmark results", "https://dawidniezgodka.github.io/BenchEval/")
+      .addBreak();
+      if (linkToGraph) {
+        core.summary.addLink("Graph with benchmark results", linkToGraph);
+      }
+      core.summary
       .addSeparator()
       .addHeading(`Evaluation Method: ${evaluationMethod}`, 3)
       .addTable([headers, ...rows])
@@ -613,6 +618,5 @@ module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMe
       .addBreak()
       .addRaw(summaryMessage)
       .addBreak()
-
       .write();
 }
