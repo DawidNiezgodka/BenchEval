@@ -285,13 +285,15 @@ module.exports.createBenchDataTextForCompWithPrev = function (
   const allFields = new Set([...currentFields, ...previousFields])
 
   for (const field of allFields) {
-    const currentParamValue = currentBenchInfo.parametrization[field] || 'N/A'
-    const previousParamValue = previousBenchInfo
+    const currentParamValue = currentBenchInfo.parametrization[field] !== undefined
+        ? currentBenchInfo.parametrization[field]
+        : 'N/A';
+    const previousParamValue = previousBenchInfo && previousBenchInfo.parametrization[field] !== undefined
         ? previousBenchInfo.parametrization[field]
-        : 'N/A'
+        : 'N/A';
 
-    const line = `|   - **${field}**: ${currentParamValue}  |   - **${field}**: ${previousParamValue}   |`
-    benchDataLines.push(line)
+    const line = `|   - **${field}**: ${currentParamValue}  |   - **${field}**: ${previousParamValue}   |`;
+    benchDataLines.push(line);
   }
 
   benchDataLines.push('|                       |                        |')
@@ -430,9 +432,7 @@ module.exports.createWorkflowSummary = function (evaluationResult, linkToGraph) 
   if (hasShouldBe) {
     headers.push({ data: 'Should be', header: true });
   }
-  if (hasThan) {
-    headers.push({ data: 'Than', header: true });
-  }
+
   headers.push(  {
     data: 'Result',
     header: true,
@@ -467,17 +467,14 @@ module.exports.createWorkflowSummary = function (evaluationResult, linkToGraph) 
       {
         data: prevBenchValAndUnit,
       },
-      {
-        data: graphicalRepresentationOfRes,
-      },
+
     ])
 
     if (hasShouldBe) {
       rows[i].push({ data: evaluationResult.evalParameters.shouldBe[i] });
     }
-    if (hasThan) {
-      rows[i].push({ data: evaluationResult.evalParameters.than[i] });
-    }
+
+    rows[i].push({data: graphicalRepresentationOfRes})
   }
 
   const results = evaluationResult.results.result;
@@ -607,12 +604,14 @@ module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMe
       .addRaw("You might also want to check the graph below" +
           " (if you added the .html template to the branch where results are stored)")
       .addBreak();
-      if (linkToGraph) {
-        core.summary.addLink("Graph with benchmark results", linkToGraph);
-      }
-      core.summary
+  if (linkToGraph) {
+    core.summary.addLink("Graph with benchmark results", linkToGraph);
+  }
+  core.summary
       .addSeparator()
       .addHeading(`Evaluation Method: ${evaluationMethod}`, 3)
+      .addBreak()
+      .addRaw(module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod(evaluationMethod))
       .addTable([headers, ...rows])
       .addSeparator()
       .addBreak()
@@ -620,3 +619,23 @@ module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMe
       .addBreak()
       .write();
 }
+module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod = function (evaluationMethod) {
+  switch (evaluationMethod) {
+    case 'threshold':
+      return "You are comparing the current benchmark in relation to a single value (smaller, bigger) or a symmetric range (tolerance) of a given value."
+    case 'previous':
+      return "You are comparing the current benchmark in relation to the previous benchmark. This method does not consider whether the previous benchmark was successful or not."
+    case 'previous_successful':
+      return "You are comparing the current benchmark in relation to the previous successful benchmark. This method considers only the previous successful benchmark."
+    case 'threshold_range':
+      return "You are comparing the current benchmark in relation to a range of a given values (given by lower and upper bounds)."
+    case 'jump_detection':
+      return ""
+    case 'trend_detection_moving_ave':
+      return ""
+    case 'trend_detection_deltas':
+      return ""
+    default:
+      return "Unsupported evaluation method."
+
+  }}
