@@ -608,10 +608,9 @@ module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMe
     core.summary.addLink("Graph with benchmark results", linkToGraph);
   }
   core.summary
-      .addSeparator()
       .addHeading(`Evaluation Method: ${evaluationMethod}`, 3)
-      .addBreak()
       .addRaw(module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod(evaluationMethod))
+      .addBreak()
       .addTable([headers, ...rows])
       .addSeparator()
       .addBreak()
