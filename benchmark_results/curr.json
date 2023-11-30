@@ -2,8 +2,8 @@
   "benchInfo": {
     "executionTime": "1 m",
     "parametrization": {
-      "ack": "2",
-      "read-in-ram": true
+      "ack": 0,
+      "read-in-ram": false
     },
     "otherInfo": "kafka, v2.3"
   },
