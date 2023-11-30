@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1701365098559,
+    "lastUpdate": 1701365313741,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -2989,6 +2989,109 @@
                         "result": [
                             "failed",
                             "failed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "e566e393ce484d44ef67c071486047509fddb2ae",
+                    "message": "fix bad number of inputs",
+                    "timestamp": "2023-11-30T18:28:21+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/e566e393ce484d44ef67c071486047509fddb2ae"
+                },
+                "date": 1701365313741,
+                "executionTime": "1 m",
+                "parametrization": {
+                    "ack": "2",
+                    "read-in-ram": true
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "new_metric",
+                        "value": 111,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "metric4",
+                        "value": 390,
+                        "unit": "op/s"
+                    },
+                    {
+                        "name": "abc",
+                        "value": 610,
+                        "unit": "%"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "previous",
+                        "benchToCompare": "Benchmark",
+                        "thresholdValues": null,
+                        "comparisonOperators": [
+                            "smaller",
+                            "bigger",
+                            "smaller"
+                        ],
+                        "comparisonMargins": [
+                            10,
+                            10,
+                            10
+                        ],
+                        "thresholdUpper": null,
+                        "thresholdLower": null,
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": null,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "previous",
+                        "metricNames": [
+                            "new_metric",
+                            "metric4",
+                            "abc"
+                        ],
+                        "metricUnits": [
+                            "ms",
+                            "op/s",
+                            "%"
+                        ],
+                        "resultExplanations": [],
+                        "metricToDifferentBenchValues": {},
+                        "is": [
+                            111,
+                            390,
+                            610
+                        ],
+                        "shouldBe": [
+                            "smaller",
+                            "bigger",
+                            "N/A"
+                        ],
+                        "than": [
+                            111,
+                            390,
+                            "N/A"
+                        ]
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "failed",
+                            "failed",
+                            "no data"
                         ]
                     }
                 }
