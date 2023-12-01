@@ -10,17 +10,17 @@
   "results": [
     {
       "unit": "ms",
-      "value": 111,
+      "value": 100,
       "name": "new_metric"
     },
     {
       "unit": "op/s",
-      "value": 390,
+      "value": 392,
       "name": "metric4"
     },
     {
       "unit": "%",
-      "value": 610,
+      "value": 666,
       "name": "abc"
     }
   ]
