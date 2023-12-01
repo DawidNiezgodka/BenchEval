@@ -30438,7 +30438,7 @@ module.exports.createBodyForComparisonWithPrev = function (
     let comparisonResult;
 
     if (comparisonMargin >= 0 && comparisonMargin <= 100 && (comparisonMode === 'smaller' || comparisonMode === 'bigger')) {
-      comparisonResult = `Up to ${comparisonMargin} % ${comparisonMode} than prev`;
+      comparisonResult = `At least ${comparisonMargin} % ${comparisonMode} than prev`;
     } else if (comparisonMargin === -1 && (comparisonMode === 'smaller' || comparisonMode === 'bigger')) {
       comparisonResult = `Strictly ${comparisonMode} than prev`;
     } else if (comparisonMode === 'tolerance') {
@@ -30690,7 +30690,7 @@ module.exports.createBodyForComparisonWithThreshold = function (
     let comparisonResult;
 
     if (comparisonMargin >= 0 && comparisonMargin <= 100 && (comparisonMode === 'smaller' || comparisonMode === 'bigger')) {
-      comparisonResult = `Up to ${comparisonMargin} % ${comparisonMode} than prev`;
+      comparisonResult = `At least ${comparisonMargin} % ${comparisonMode} than prev`;
     } else if (comparisonMargin === -1 && (comparisonMode === 'smaller' || comparisonMode === 'bigger')) {
       comparisonResult = `Strictly ${comparisonMode} than prev`;
     } else if (comparisonMode === 'tolerance') {
@@ -30799,7 +30799,7 @@ module.exports.createWorkflowSummary = function (evaluationResult, completeConfi
     let comparisonResult;
 
     if (comparisonMargin >= 0 && comparisonMargin <= 100 && (comparisonMode === 'smaller' || comparisonMode === 'bigger')) {
-      comparisonResult = `Up to ${comparisonMargin} % ${comparisonMode} than prev`;
+      comparisonResult = `At least ${comparisonMargin} % ${comparisonMode} than prev`;
     } else if (comparisonMargin === -1 && (comparisonMode === 'smaller' || comparisonMode === 'bigger')) {
       comparisonResult = `Strictly ${comparisonMode} than prev`;
     } else if (comparisonMode === 'tolerance') {
