@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1701365761654,
+    "lastUpdate": 1701416869779,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -3320,6 +3320,109 @@
                     "url": "https://github.com/DawidNiezgodka/BenchEval/commit/bc565ad9b3c6743039bb93ddd9e2f2e01e541ab8"
                 },
                 "date": 1701365761654,
+                "executionTime": "1 m",
+                "parametrization": {
+                    "ack": 1,
+                    "read-in-ram": false
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "new_metric",
+                        "value": 111,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "metric4",
+                        "value": 390,
+                        "unit": "op/s"
+                    },
+                    {
+                        "name": "abc",
+                        "value": 610,
+                        "unit": "%"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "previous",
+                        "benchToCompare": "Benchmark",
+                        "thresholdValues": null,
+                        "comparisonOperators": [
+                            "smaller",
+                            "bigger",
+                            "smaller"
+                        ],
+                        "comparisonMargins": [
+                            10,
+                            10,
+                            10
+                        ],
+                        "thresholdUpper": null,
+                        "thresholdLower": null,
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": null,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "previous",
+                        "metricNames": [
+                            "new_metric",
+                            "metric4",
+                            "abc"
+                        ],
+                        "metricUnits": [
+                            "ms",
+                            "op/s",
+                            "%"
+                        ],
+                        "resultExplanations": [],
+                        "metricToDifferentBenchValues": {},
+                        "is": [
+                            111,
+                            390,
+                            610
+                        ],
+                        "shouldBe": [
+                            "smaller",
+                            "bigger",
+                            "smaller"
+                        ],
+                        "than": [
+                            111,
+                            390,
+                            610
+                        ]
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "failed",
+                            "failed",
+                            "failed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "728996332752f5b9187df7154fc0b90b216e4d48",
+                    "message": "better info structuring for comp with prev for summ",
+                    "timestamp": "2023-12-01T08:47:33+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/728996332752f5b9187df7154fc0b90b216e4d48"
+                },
+                "date": 1701416869779,
                 "executionTime": "1 m",
                 "parametrization": {
                     "ack": 1,
