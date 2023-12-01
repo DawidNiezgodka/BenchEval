@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1701421855820,
+    "lastUpdate": 1701421874342,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -3829,6 +3829,105 @@
                     "url": "https://github.com/DawidNiezgodka/BenchEval/pull/9/commits/cf8225f9b4888d3ebcb9739c00382c4be17b25ff"
                 },
                 "date": 1701421855820,
+                "executionTime": "1 m",
+                "parametrization": {
+                    "ack": 1,
+                    "read-in-ram": false
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "new_metric",
+                        "value": 100,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "metric4",
+                        "value": 392,
+                        "unit": "op/s"
+                    },
+                    {
+                        "name": "abc",
+                        "value": 666,
+                        "unit": "%"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "threshold_range",
+                        "benchToCompare": "Benchmark",
+                        "thresholdValues": null,
+                        "comparisonOperators": null,
+                        "comparisonMargins": null,
+                        "thresholdUpper": [
+                            300,
+                            500,
+                            1000
+                        ],
+                        "thresholdLower": [
+                            100,
+                            400,
+                            600
+                        ],
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": null,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "threshold_range",
+                        "metricNames": [
+                            "new_metric",
+                            "metric4",
+                            "abc"
+                        ],
+                        "metricUnits": [
+                            "ms",
+                            "op/s",
+                            "%"
+                        ],
+                        "resultExplanations": [],
+                        "metricToDifferentBenchValues": {},
+                        "is": [
+                            100,
+                            392,
+                            666
+                        ],
+                        "shouldBe": [
+                            "[100, 300]",
+                            "[400, 500]",
+                            "[600, 1000]"
+                        ],
+                        "than": []
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "passed",
+                            "failed",
+                            "passed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "22837704+DawidNiezgodka@users.noreply.github.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "noreply@github.com",
+                        "name": "GitHub",
+                        "username": "web-flow"
+                    },
+                    "id": "8036cc2d8c4952376bb8df6fa93be373f9f32bcb",
+                    "message": "Merge pull request #9 from DawidNiezgodka/threshold_range\n\nadd comment and summary for threshold range; extend thr range valudation",
+                    "timestamp": "2023-12-01T10:11:00+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/8036cc2d8c4952376bb8df6fa93be373f9f32bcb"
+                },
+                "date": 1701421874342,
                 "executionTime": "1 m",
                 "parametrization": {
                     "ack": 1,
