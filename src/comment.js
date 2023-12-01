@@ -403,10 +403,61 @@ module.exports.alertUsersIfBenchFailed = function (benchmarkPassed, completeConf
   }
 }
 
+module.exports.createBodyForComparisonWithThresholdRange = function (
+evaluationResult, completeConfig
+) {
+  const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+  const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
+
+  const benchDataText = module.exports.createBenchDataText(currentBenchmark);
+
+  lines.push(benchDataText)
+  lines.push('', '', '', '')
+  lines.push('## Results')
+  lines.push('', '', '', '')
+
+  lines.push(
+      `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Current should be within | Result |`
+  )
+  lines.push('|-|-|-|-|')
+
+  const evaluationResults = evaluationResult.results.result
+  const evaluationParameters = evaluationResult.evalParameters
+
+  for (let i = 0; i < evaluationResults.length; i++) {
+    const shouldBeBetween = evaluationParameters.shouldBe[i]; // shouldBeBetween
+    const resultStatus = evaluationResults[i];
+    const metricName = evaluationParameters.metricNames[i];
+    const metricUnit = evaluationParameters.metricUnits[i];
+    const actualValue = evaluationParameters.is[i];
+    let line
+    let valueAndUnit = actualValue + ' ' + metricUnit
+
+    if (resultStatus === 'failed' || resultStatus === 'passed') {
+      let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴'
+      line = `| \`${metricName}\` | \`${valueAndUnit}\` | \`${shouldBeBetween}\` | ${betterOrWorse} |`
+    } else {
+      line = `| \`${metricName}\` | \'${valueAndUnit}\' | N/A | 🔘 |`
+    }
+
+    lines.push(line)
+  }
+
+  const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
+  module.exports.alertUsersIfBenchFailed(benchmarkPassed, completeConfig, lines);
+  return lines.join('\n')
+}
+
+
+
+
+
+
+
 ///////////////////////
 /////////////////////// Summary
 ///////////////////////
-module.exports.createWorkflowSummary = function (evaluationResult, completeConfig) {
+module.exports.createWorkflowSummaryForCompWithPrev = function (evaluationResult, completeConfig) {
 
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
@@ -489,18 +540,7 @@ module.exports.createWorkflowSummary = function (evaluationResult, completeConfi
     rows[i].push({data: graphicalRepresentationOfRes})
   }
 
-  const results = evaluationResult.results.result;
-  let summaryMessage;
-
-  if (results.every(result => result === 'passed')) {
-    summaryMessage = "All metrics have passed. Benchmark is successful.";
-  } else if (results.every(result => result === 'failed')) {
-    summaryMessage = "Every metric has failed. The build will fail unless you specifically decide against it.";
-  } else if (results.includes('failed')) {
-    summaryMessage = "At least one metric failed. The rejection of the build depends on the chosen strategy (all, any, none).";
-  } else {
-    summaryMessage = "Benchmark result is inconclusive.";
-  }
+  let summaryMessage = module.exports.createSummaryMessage(evaluationResult);
   const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
 
   module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults);
@@ -573,21 +613,74 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult, comp
     rows[i].push({data: graphicalRepresentationOfRes})
   }
 
-  const results = evaluationResult.results.result;
-  let summaryMessage;
-
-  if (results.every(result => result === 'passed')) {
-    summaryMessage = "All metrics have passed. Benchmark is successful.";
-  } else if (results.every(result => result === 'failed')) {
-    summaryMessage = "All metrics failed. Unless you deliberately choose not to fail the build, it will fail.";
-  } else if (results.includes('failed')) {
-    summaryMessage = "At least one metric failed. The rejection of the build depends on the chosen strategy (all, any, none).";
-  } else {
-    summaryMessage = "Benchmark result is inconclusive.";
-  }
+  let summaryMessage = module.exports.createSummaryMessage(evaluationResult);
   const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
 
   module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults);
+}
+
+module.exports.createWorkflowSummaryForThresholdRange = function (evaluationResult, completeConfig) {
+
+      const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+
+      const headers = [
+     {
+        data: 'Metric',
+        header: true,
+     },
+     {
+        data: `Current: "${currentBenchmark.commitInfo.id.substring(0, 7)}"`,
+        header: true,
+     },
+     {
+        data: "Current should be within",
+        header: true,
+     },
+        {
+        data: 'Result',
+        header: true,
+        }
+
+      ];
+
+      const rows = [];
+      const evaluationResults = evaluationResult.results.result
+      const evaluationParameters = evaluationResult.evalParameters
+      for (let i = 0; i < evaluationResults.length; i++) {
+
+         const resultStatus = evaluationResults[i];
+         const metricName = evaluationParameters.metricNames[i];
+         const metricUnit = evaluationParameters.metricUnits[i];
+         const actualValue = evaluationParameters.is[i];
+         const shouldBeBetween = evaluationParameters.shouldBe[i];
+         let valueAndUnit = actualValue + ' ' + metricUnit
+
+     let graphicalRepresentationOfRes;
+     if (resultStatus === 'failed' || resultStatus === 'passed') {
+        graphicalRepresentationOfRes = resultStatus === 'passed' ? '🟢' : '🔴'
+     } else {
+        graphicalRepresentationOfRes= '🔘';
+     }
+
+     rows.push([
+        {
+          data: metricName,
+        },
+        {
+          data: valueAndUnit,
+        },
+        {
+          data: shouldBeBetween,
+        },
+       {
+            data: graphicalRepresentationOfRes,
+       }
+
+     ])
+      }
+  let summaryMessage = module.exports.createSummaryMessage(evaluationResult);
+  const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
+      module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults);
 }
 
 module.exports.summaryForMethodNotSupported = function (evaluationResult, linkToGraph) {
@@ -604,6 +697,12 @@ module.exports.summaryForMethodNotSupported = function (evaluationResult, linkTo
         .write();
 }
 
+
+
+
+//////////
+/// Helpers
+//////////
 module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMessage, linkToGraph) {
   core.summary
       .addHeading(`Benchmark summary`, 2)
@@ -632,6 +731,9 @@ module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMe
       .addBreak()
       .write();
 }
+
+
+
 module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod = function (evaluationMethod) {
   switch (evaluationMethod) {
     case 'threshold':
@@ -652,3 +754,17 @@ module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod = function (ev
       return "Unsupported evaluation method."
 
   }}
+
+module.exports.createSummaryMessage = function(evaluationResult) {
+  const results = evaluationResult.results.result;
+
+  if (results.every(result => result === 'passed')) {
+    return "All metrics have passed. Benchmark is successful.";
+  } else if (results.every(result => result === 'failed')) {
+    return "All metrics failed. Unless you deliberately choose not to fail the build, it will fail.";
+  } else if (results.includes('failed')) {
+    return "At least one metric failed. The rejection of the build depends on the chosen strategy (all, any, none).";
+  } else {
+    return "Benchmark result is inconclusive.";
+  }
+}
