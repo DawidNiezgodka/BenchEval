@@ -181,7 +181,6 @@ module.exports.compareWithPrevious = function (currentBenchmarkData, completeBen
 };
 
 module.exports.evaluateWithThresholdRanges = function (currentBenchmarkData, config) {
-  //core.debug('Evaluating current benchmark with threshold ranges method')
   const { thresholdLower, thresholdUpper } = config;
 
   const metricNames = [];

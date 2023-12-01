@@ -363,29 +363,42 @@ module.exports.validateThresholdConfig = function (currentResultLength) {
   }
 }
 module.exports.validateThresholdRangeConfig = function (currentResultLength) {
-  console.log('Validating threshold range config')
-  const thresholdUpperInput = core.getInput('threshold_upper')
-  const thresholdLowerInput = core.getInput('threshold_lower')
+  const thresholdUpperInput = core.getInput('threshold_upper');
+  const thresholdLowerInput = core.getInput('threshold_lower');
 
   if (!thresholdUpperInput || !thresholdLowerInput) {
     throw new Error(
         'Threshold range values are required for the threshold_range evaluation method.'
-    )
+    );
   }
 
-  const thresholdUpper = thresholdUpperInput.split(',').map(Number)
-  const thresholdLower = thresholdLowerInput.split(',').map(Number)
+  const thresholdUpper = thresholdUpperInput.split(',').map(Number);
+  const thresholdLower = thresholdLowerInput.split(',').map(Number);
 
   if (thresholdUpper.length !== thresholdLower.length) {
     throw new Error(
         'The number of upper thresholds must match the number of lower thresholds.'
-    )
+    );
   }
 
   if (thresholdUpper.length !== currentResultLength) {
     throw new Error(
         'The number of thresholds must match the number of results.'
-    )
+    );
+  }
+
+  for (let i = 0; i < thresholdUpper.length; i++) {
+    if (thresholdUpper[i] < 0 || thresholdLower[i] < 0) {
+      throw new Error(
+          'Threshold values must be non-negative numbers.'
+      );
+    }
+
+    if (thresholdUpper[i] <= thresholdLower[i]) {
+      throw new Error(
+          'Each upper threshold must be greater than its corresponding lower threshold.'
+      );
+    }
   }
 }
 
