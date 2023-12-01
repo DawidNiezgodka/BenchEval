@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1701416992496,
+    "lastUpdate": 1701417481810,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -3605,6 +3605,109 @@
                     "evaluationResult": {
                         "result": [
                             "passed",
+                            "failed",
+                            "passed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "a573f7b25107bf5f9be15e7dd2fcd9d3e5e3455e",
+                    "message": "Update string to specify minimum size increase",
+                    "timestamp": "2023-12-01T08:57:48+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/a573f7b25107bf5f9be15e7dd2fcd9d3e5e3455e"
+                },
+                "date": 1701417481810,
+                "executionTime": "1 m",
+                "parametrization": {
+                    "ack": 1,
+                    "read-in-ram": false
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "new_metric",
+                        "value": 100,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "metric4",
+                        "value": 392,
+                        "unit": "op/s"
+                    },
+                    {
+                        "name": "abc",
+                        "value": 666,
+                        "unit": "%"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "previous",
+                        "benchToCompare": "Benchmark",
+                        "thresholdValues": null,
+                        "comparisonOperators": [
+                            "smaller",
+                            "bigger",
+                            "tolerance"
+                        ],
+                        "comparisonMargins": [
+                            -1,
+                            10,
+                            20
+                        ],
+                        "thresholdUpper": null,
+                        "thresholdLower": null,
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": null,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "previous",
+                        "metricNames": [
+                            "new_metric",
+                            "metric4",
+                            "abc"
+                        ],
+                        "metricUnits": [
+                            "ms",
+                            "op/s",
+                            "%"
+                        ],
+                        "resultExplanations": [],
+                        "metricToDifferentBenchValues": {},
+                        "is": [
+                            100,
+                            392,
+                            666
+                        ],
+                        "shouldBe": [
+                            "smaller",
+                            "bigger",
+                            "tolerance"
+                        ],
+                        "than": [
+                            100,
+                            392,
+                            666
+                        ]
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "failed",
                             "failed",
                             "passed"
                         ]
