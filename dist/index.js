@@ -30678,11 +30678,11 @@ module.exports.createBodyForComparisonWithThreshold = function (
 
   for (let i = 0; i < evaluationResults.length; i++) {
     const comparisonMargin = evaluationConfiguration.comparisonMargins[i];
+    const comparisonMode = evaluationParameters.shouldBe[i];
     const resultStatus = evaluationResults[i];
     const metricName = evaluationParameters.metricNames[i];
     const metricUnit = evaluationParameters.metricUnits[i];
     const actualValue = evaluationParameters.is[i];
-    const comparisonMode = evaluationParameters.shouldBe[i];
     const thanValue = evaluationParameters.than[i];
     let line
     let valueAndUnit = actualValue + ' ' + metricUnit
@@ -30750,7 +30750,7 @@ module.exports.alertUsersIfBenchFailed = function (benchmarkPassed, completeConf
 ///////////////////////
 /////////////////////// Summary
 ///////////////////////
-module.exports.createWorkflowSummary = function (evaluationResult, linkToGraph) {
+module.exports.createWorkflowSummary = function (evaluationResult, completeConfig) {
 
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
@@ -30774,7 +30774,7 @@ module.exports.createWorkflowSummary = function (evaluationResult, linkToGraph) 
   const hasThan = evaluationResult.evalParameters.than.length > 0;
 
   if (hasShouldBe) {
-    headers.push({ data: 'Should be', header: true });
+    headers.push({ data: 'Curr should be', header: true });
   }
 
   headers.push(  {
@@ -30784,6 +30784,7 @@ module.exports.createWorkflowSummary = function (evaluationResult, linkToGraph) 
   const rows = [];
   const evaluationResults = evaluationResult.results.result
   const evaluationParameters = evaluationResult.evalParameters
+  const evaluationConfiguration = completeConfig.evaluationConfig
   for (let i = 0; i < evaluationResults.length; i++) {
 
     const resultStatus = evaluationResults[i];
@@ -30792,7 +30793,18 @@ module.exports.createWorkflowSummary = function (evaluationResult, linkToGraph) 
     const actualValue = evaluationParameters.is[i];
     const previousBenchRes = evaluationParameters.than[i];
     const prevBenchValAndUnit = previousBenchRes + ' ' + metricUnit;
-    let valueAndUnit = actualValue + ' ' + metricUnit
+    let valueAndUnit = actualValue + ' ' + metricUnit;
+    const comparisonMargin = evaluationConfiguration.comparisonMargins[i];
+    const comparisonMode = evaluationParameters.shouldBe[i];
+    let comparisonResult;
+
+    if (comparisonMargin >= 0 && comparisonMargin <= 100 && (comparisonMode === 'smaller' || comparisonMode === 'bigger')) {
+      comparisonResult = `Up to ${comparisonMargin} % ${comparisonMode} than prev`;
+    } else if (comparisonMargin === -1 && (comparisonMode === 'smaller' || comparisonMode === 'bigger')) {
+      comparisonResult = `Strictly ${comparisonMode} than prev`;
+    } else if (comparisonMode === 'tolerance') {
+      comparisonResult = 'fall within ±' + comparisonMargin + '% of prev';
+    }
 
     let graphicalRepresentationOfRes;
     if (resultStatus === 'failed' || resultStatus === 'passed') {
@@ -30815,7 +30827,7 @@ module.exports.createWorkflowSummary = function (evaluationResult, linkToGraph) 
     ])
 
     if (hasShouldBe) {
-      rows[i].push({ data: evaluationResult.evalParameters.shouldBe[i] });
+      rows[i].push({ data: comparisonResult });
     }
 
     rows[i].push({data: graphicalRepresentationOfRes})
@@ -30835,10 +30847,10 @@ module.exports.createWorkflowSummary = function (evaluationResult, linkToGraph) 
   }
   const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
 
-  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, linkToGraph);
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults);
 }
 
-module.exports.createWorkflowSummaryThreshold = function (evaluationResult, linkToGraph) {
+module.exports.createWorkflowSummaryThreshold = function (evaluationResult, completeConfig) {
 
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
 
@@ -30919,7 +30931,7 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult, link
   }
   const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
 
-  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, linkToGraph);
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults);
 }
 
 module.exports.summaryForMethodNotSupported = function (evaluationResult, linkToGraph) {
@@ -32208,9 +32220,9 @@ async function run() {
 
       // For now only previous is supported
       if (evaluationConfig.evaluationMethod === 'previous') {
-        createWorkflowSummary(evaluationResult, completeConfig.linkToTemplatedGhPageWithResults);
+        createWorkflowSummary(evaluationResult, completeConfig);
       } else if (evaluationConfig.evaluationMethod === 'threshold') {
-        createWorkflowSummaryThreshold(evaluationResult, completeConfig.linkToTemplatedGhPageWithResults);
+        createWorkflowSummaryThreshold(evaluationResult, completeConfig);
       } else {
         summaryForMethodNotSupported(evaluationConfig.evaluationMethod, completeConfig.linkToTemplatedGhPageWithResults);
       }
