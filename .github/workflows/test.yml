@@ -32,8 +32,8 @@ jobs:
           bench_to_compare: "Benchmark"
           current_bench_res_file: ./benchmark_results/curr.json
           evaluation_method: threshold_range
-          threshold_lower: 100,400,600
-          threshold_upper: 300,500,1000
+          threshold_lower: "0.5, 400, 600"
+          threshold_upper: 2.0,500,1000
           action_page_job_summary: on
           failing_condition: any
           comment_to_commit: on
