@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - 041223_MergeResFilesFromBucket
+      - test_merging_res_path
 
 jobs:
   test:
