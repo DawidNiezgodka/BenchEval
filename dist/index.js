@@ -31209,6 +31209,7 @@ const core = __nccwpck_require__(5127)
 const fs = __nccwpck_require__(7147)
 const { Config, EvaluationConfig} = __nccwpck_require__(510)
 const {getCompleteBenchData} = __nccwpck_require__(9790)
+const path = __nccwpck_require__(1017);
 
 module.exports.determineJsonItemCount = function (json) {
   if (Array.isArray(json)) {
@@ -31812,9 +31813,11 @@ module.exports.mergeResults = function(directory, strategies, outputFile) {
   mergedData.results.forEach((metric, index) => {
     const strategy = strategies[index];
     const values = metricsValues[index];
-    metric.value = applyStrategy(strategy, values);
+    metric.value = module.exports.applyStrategy(strategy, values);
   });
 
+  console.log('Merged data: ', mergedData);
+  console.log("Saving merged data to file: ", outputFile);
 
   fs.writeFileSync(outputFile, JSON.stringify(mergedData, null, 2));
 }

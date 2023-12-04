@@ -2,6 +2,7 @@ const core = require('@actions/core')
 const fs = require('fs')
 const { Config, EvaluationConfig} = require('./types')
 const {getCompleteBenchData} = require('./bench_data')
+const path = require("path");
 
 module.exports.determineJsonItemCount = function (json) {
   if (Array.isArray(json)) {
@@ -605,7 +606,7 @@ module.exports.mergeResults = function(directory, strategies, outputFile) {
   mergedData.results.forEach((metric, index) => {
     const strategy = strategies[index];
     const values = metricsValues[index];
-    metric.value = applyStrategy(strategy, values);
+    metric.value = module.exports.applyStrategy(strategy, values);
   });
 
   console.log('Merged data: ', mergedData);
