@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1701713600218,
+    "lastUpdate": 1701714497369,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -5274,6 +5274,93 @@
                     "evaluationResult": {
                         "result": [
                             "failed",
+                            "failed",
+                            "failed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "46bfd90a141fe988145e7de1bf5108a42144f458",
+                    "message": "case4: folder - chosen metrics - forgot about metricToEvaluet",
+                    "timestamp": "2023-12-04T19:28:02+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/46bfd90a141fe988145e7de1bf5108a42144f458"
+                },
+                "date": 1701714497369,
+                "executionTime": "1 m",
+                "parametrization": {
+                    "ack": 1,
+                    "read-in-ram": false
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "abc",
+                        "value": 6,
+                        "unit": "%"
+                    },
+                    {
+                        "name": "metric4",
+                        "value": 6,
+                        "unit": "op/s"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "threshold_range",
+                        "benchToCompare": "Benchmark",
+                        "thresholdValues": null,
+                        "comparisonOperators": null,
+                        "comparisonMargins": null,
+                        "thresholdUpper": [
+                            150,
+                            150
+                        ],
+                        "thresholdLower": [
+                            50,
+                            50
+                        ],
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": null,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "threshold_range",
+                        "metricNames": [
+                            "abc",
+                            "metric4"
+                        ],
+                        "metricUnits": [
+                            "%",
+                            "op/s"
+                        ],
+                        "resultExplanations": [],
+                        "metricToDifferentBenchValues": {},
+                        "is": [
+                            6,
+                            6
+                        ],
+                        "shouldBe": [
+                            "[50, 150]",
+                            "[50, 150]"
+                        ],
+                        "than": []
+                    },
+                    "evaluationResult": {
+                        "result": [
                             "failed",
                             "failed"
                         ]
