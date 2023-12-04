@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1701683067903,
+    "lastUpdate": 1701701406568,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -4322,6 +4322,105 @@
                     "url": "https://github.com/DawidNiezgodka/BenchEval/commit/212002db06d0acd568059971ee86c4bc3c20a8ce"
                 },
                 "date": 1701683067903,
+                "executionTime": "1 m",
+                "parametrization": {
+                    "ack": 1,
+                    "read-in-ram": false
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "new_metric",
+                        "value": 600,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "metric4",
+                        "value": 6,
+                        "unit": "op/s"
+                    },
+                    {
+                        "name": "abc",
+                        "value": 3,
+                        "unit": "%"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "threshold_range",
+                        "benchToCompare": "Benchmark",
+                        "thresholdValues": null,
+                        "comparisonOperators": null,
+                        "comparisonMargins": null,
+                        "thresholdUpper": [
+                            2,
+                            500,
+                            1000
+                        ],
+                        "thresholdLower": [
+                            0.5,
+                            400,
+                            600
+                        ],
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": null,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "threshold_range",
+                        "metricNames": [
+                            "new_metric",
+                            "metric4",
+                            "abc"
+                        ],
+                        "metricUnits": [
+                            "ms",
+                            "op/s",
+                            "%"
+                        ],
+                        "resultExplanations": [],
+                        "metricToDifferentBenchValues": {},
+                        "is": [
+                            600,
+                            6,
+                            3
+                        ],
+                        "shouldBe": [
+                            "[0.5, 2]",
+                            "[400, 500]",
+                            "[600, 1000]"
+                        ],
+                        "than": []
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "failed",
+                            "failed",
+                            "failed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "569b73e904ae277c4df37eb576840777a5985b0f",
+                    "message": "remove unnecessary defaul",
+                    "timestamp": "2023-12-04T15:49:47+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/569b73e904ae277c4df37eb576840777a5985b0f"
+                },
+                "date": 1701701406568,
                 "executionTime": "1 m",
                 "parametrization": {
                     "ack": 1,
