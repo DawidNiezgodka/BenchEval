@@ -1,0 +1,62 @@
+name: "test with file"
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - test_merging_res_path
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout the main branch
+        uses: actions/checkout@v4
+
+      - name: checkout the bench_data branch to a given folder
+        uses: actions/checkout@v4
+        with:
+          ref: 'bench_data'
+          sparse-checkout: |
+            data.json
+          sparse-checkout-cone-mode: false
+          path: 'benchmark_data'
+
+      - run: tree
+
+
+      - name: Evaluate benchmark - test with file
+        uses: ./
+        id: eval2
+        with:
+          name: "Benchmark"
+          folder_with_bench_data: ./benchmark_data
+          file_with_bench_data: data.json
+          bench_to_compare: "Benchmark"
+          current_bench_res_file_or_folder: benchmark_results/curr.json
+          result_files_merge_strategy_for_each_metric: sum,average,max
+          evaluation_method: threshold_range
+          threshold_lower: "0.5, 400, 600"
+          threshold_upper: 2.0,500,1000
+          save_curr_bench_res: true
+          github_token: ${{ secrets.GH_TOKEN }}
+
+
+
+      - name: print the content of the data file after the update
+        run: cat benchmark_data/data.json
+
+      - name: Commit files
+        working-directory: ./benchmark_data
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -a -m "Add changes"
+          git push origin bench_data
+
+      - name: Check output and fail if needed
+        if: steps.eval2.outputs.should_fail == 'true'
+        run: |
+          echo "Failing as indicated by evaluation action"
+          exit 1
+
