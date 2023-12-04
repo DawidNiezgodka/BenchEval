@@ -29,33 +29,35 @@ module.exports.getBoolInput = function (inputName) {
   return input === 'true'
 }
 
-module.exports.validateInputAndFetchConfig = function () {
-  // Part 1: General info + extracting json with current bench data
-  const benchName = core.getInput('name')
-  const pathToCurBenchFile = core.getInput('current_bench_res_file')
-  const pathToCurFolderWithBenchRes = core.getInput('current_bench_res_folder')
-  // either pathToCurBenchFile or pathToCurFolderWithBenchRes must be specified
-  if ((pathToCurBenchFile === '' && pathToCurFolderWithBenchRes === '') ||
-      (pathToCurBenchFile !== '' && pathToCurFolderWithBenchRes !== '')) {
+module.exports.validateAndFetchCurrentResult = function () {
+  const currentBenchResFileOrFolder = core.getInput('current_bench_res_file_or_folder')
+
+  if (currentBenchResFileOrFolder === '') {
     throw new Error(
-        `Either 'current_bench_res_file' or 'current_bench_res_folder' must be specified, but not both.`
+        `current_bench_res_file_or_folder must not be empty.`
     );
   }
-  // if pathToCurBenchFile points to a specific file, i.e. when it has .json extension, read it directly
+
+  module.exports.isValidPath(currentBenchResFileOrFolder);
   let rawData;
-  let parsedData;
-  if (pathToCurBenchFile.endsWith('.json')) {
-    rawData = fs.readFileSync(pathToCurBenchFile)
+  if (currentBenchResFileOrFolder.endsWith('.json')) {
+    rawData = fs.readFileSync(currentBenchResFileOrFolder)
   } else {
     console.log('Merging results from multiple files')
-    const fileWhereMergedResultsWillBeSaved = pathToCurFolderWithBenchRes + '/merged_results.json';
+    const fileWhereMergedResultsWillBeSaved = currentBenchResFileOrFolder + '/merged_results.json';
     const mergingStrategies = core.getInput('result_files_merge_strategy_for_each_metric');
     const mergingStrategiesParsed = mergingStrategies.split(',').map(s => s.trim());
-    module.exports.mergeResults(pathToCurFolderWithBenchRes, mergingStrategiesParsed, fileWhereMergedResultsWillBeSaved);
+    module.exports.mergeResults(currentBenchResFileOrFolder, mergingStrategiesParsed, fileWhereMergedResultsWillBeSaved);
     rawData = fs.readFileSync(fileWhereMergedResultsWillBeSaved);
 
   }
-  parsedData = JSON.parse(rawData);
+  return JSON.parse(rawData);
+}
+
+module.exports.validateInputAndFetchConfig = function () {
+  // Part 1: General info + extracting json with current bench data
+  const benchName = core.getInput('name')
+  let parsedData = module.exports.validateAndFetchCurrentResult();
   let itemCount;
 
   const metricsToEvaluate = core.getInput('metrics_to_evaluate')
@@ -132,6 +134,13 @@ module.exports.validateInputAndFetchConfig = function () {
       linkToTemplatedGhPageWithResults
   )
 }
+
+module.exports.isValidPath = function(p) {
+  const folderRegex = /^[a-zA-Z0-9_\/]+$/;
+  const jsonFileRegex = /^[a-zA-Z0-9_\/]+\.json$/;
+  return folderRegex.test(p) || jsonFileRegex.test(p);
+}
+
 
 module.exports.validateLinkToTemplatedGhPageWithResults = function () {
     const linkToTemplatedGhPageWithResults = core.getInput('link_to_templated_gh_page_with_results');
