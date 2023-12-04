@@ -47,7 +47,6 @@ module.exports.validateInputAndFetchConfig = function () {
   const metricsToEvaluate = core.getInput('metrics_to_evaluate')
 
   if (isFolder) {
-      console.log('Merging results from multiple files')
       const fileWhereMergedResultsWillBeSaved = currentBenchResFileOrFolder + '/merged_results.json';
       const mergingStrategies = core.getInput('result_files_merge_strategy_for_each_metric');
       const mergingStrategiesParsed = mergingStrategies.split(',').map(s => s.trim());
