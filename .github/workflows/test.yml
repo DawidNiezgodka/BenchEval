@@ -1,4 +1,4 @@
-name: "units-test"
+name: "test with folder"
 on:
   pull_request:
   push:
@@ -40,23 +40,6 @@ jobs:
           threshold_upper: 2.0,500,1000
           save_curr_bench_res: true
           github_token: ${{ secrets.GH_TOKEN }}
-
-      - name: Evaluate benchmark - test with file
-        uses: ./
-        id: eval
-        with:
-          name: "Benchmark"
-          folder_with_bench_data: ./benchmark_data
-          file_with_bench_data: data.json
-          bench_to_compare: "Benchmark"
-          current_bench_res_file_or_folder: benchmark_results/curr.json
-          result_files_merge_strategy_for_each_metric: sum,average,max
-          evaluation_method: threshold_range
-          threshold_lower: "0.5, 400, 600"
-          threshold_upper: 2.0,500,1000
-          save_curr_bench_res: true
-          github_token: ${{ secrets.GH_TOKEN }}
-
 
 
       - name: print the content of the data file after the update
