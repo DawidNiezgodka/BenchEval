@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - threshold_range
       - 041223_MergeResFilesFromBucket
 
 jobs:
@@ -22,6 +21,8 @@ jobs:
             data.json
           sparse-checkout-cone-mode: false
           path: 'benchmark_data'
+
+      - run: tree
 
       - name: evaluate benchmark
         uses: ./
@@ -61,12 +62,4 @@ jobs:
         run: |
           echo "Failing as indicated by evaluation action"
           exit 1
-          
-          
-
-#    - name: Push changes
-#      uses: ad-m/github-push-action@master
-#      with:
-#        github_token: ${{ secrets.GH_TOKEN }}
-#        branch: bench_data
 
