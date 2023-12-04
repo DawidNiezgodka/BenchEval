@@ -53,9 +53,13 @@ module.exports.validateInputAndFetchConfig = function () {
       const mergingStrategiesParsed = mergingStrategies.split(',').map(s => s.trim());
       module.exports.mergeResults(currentBenchResFileOrFolder, mergingStrategiesParsed,
           fileWhereMergedResultsWillBeSaved);
+      console.log("After execution of mergeResulsts")
       rawData = fs.readFileSync(fileWhereMergedResultsWillBeSaved);
+      console.log("Raw data: ", rawData)
       parsedData = JSON.parse(rawData);
+      console.log("Parsed data: ", parsedData)
       subsetParsedData = parsedData;
+      itemCount = module.exports.determineJsonItemCount(parsedData.results)
 
   } else {
     rawData = fs.readFileSync(currentBenchResFileOrFolder)
