@@ -608,6 +608,8 @@ module.exports.mergeResults = function(directory, strategies, outputFile) {
     metric.value = applyStrategy(strategy, values);
   });
 
+  console.log('Merged data: ', mergedData);
+  console.log("Saving merged data to file: ", outputFile);
 
   fs.writeFileSync(outputFile, JSON.stringify(mergedData, null, 2));
 }
