@@ -31851,6 +31851,10 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
     });
   });
 
+  console.log("Merged data before applying strategies: ", mergedData);
+  console.log("Metrics to evaluate: ", evaluatedMetrics);
+  console.log("Strategies: ", strategies);
+
   mergedData.results.forEach((metric, index) => {
     const strategy = mergeAllMetrics ? strategies[index] : strategies[evaluatedMetrics.indexOf(metric.name)];
     if (!validStrategies.includes(strategy)) {
