@@ -29,58 +29,59 @@ module.exports.getBoolInput = function (inputName) {
   return input === 'true'
 }
 
-module.exports.validateAndFetchCurrentResult = function () {
+module.exports.validateInputAndFetchConfig = function () {
+  // Part 1: General info + extracting json with current bench data
+  const benchName = core.getInput('name')
   const currentBenchResFileOrFolder = core.getInput('current_bench_res_file_or_folder')
-
   if (currentBenchResFileOrFolder === '') {
     throw new Error(
         `current_bench_res_file_or_folder must not be empty.`
     );
   }
-
   module.exports.isValidPath(currentBenchResFileOrFolder);
-  let rawData;
-  if (currentBenchResFileOrFolder.endsWith('.json')) {
-    rawData = fs.readFileSync(currentBenchResFileOrFolder)
-  } else {
-    console.log('Merging results from multiple files')
-    const fileWhereMergedResultsWillBeSaved = currentBenchResFileOrFolder + '/merged_results.json';
-    const mergingStrategies = core.getInput('result_files_merge_strategy_for_each_metric');
-    const mergingStrategiesParsed = mergingStrategies.split(',').map(s => s.trim());
-    module.exports.mergeResults(currentBenchResFileOrFolder, mergingStrategiesParsed, fileWhereMergedResultsWillBeSaved);
-    rawData = fs.readFileSync(fileWhereMergedResultsWillBeSaved);
-
-  }
-  return JSON.parse(rawData);
-}
-
-module.exports.validateInputAndFetchConfig = function () {
-  // Part 1: General info + extracting json with current bench data
-  const benchName = core.getInput('name')
-  let parsedData = module.exports.validateAndFetchCurrentResult();
-  let itemCount;
-
-  const metricsToEvaluate = core.getInput('metrics_to_evaluate')
+  let isFolder = module.exports.checkIfResultInFolder(currentBenchResFileOrFolder);
+  let parsedData;
   let subsetParsedData;
-  if (metricsToEvaluate) {
-    const inputMetrics = metricsToEvaluate.split(',').map(metric => metric.trim());
-    const fileMetrics = parsedData.results.map(result => result.name);
-    const isValidSubset = module.exports.areMetricsValid(inputMetrics, fileMetrics);
-    if (!isValidSubset) {
-      throw new Error(
-          `Invalid metrics_to_evaluate: ${metricsToEvaluate}. Valid metrics are: ${fileMetrics.join(
-              ', '
-          )}`
-      )
-    }
-    subsetParsedData = module.exports.filterMetrics(parsedData, metricsToEvaluate);
-    itemCount = module.exports.determineJsonItemCount(subsetParsedData.results)
+  let itemCount;
+  let rawData;
+  const metricsToEvaluate = core.getInput('metrics_to_evaluate')
+
+  if (isFolder) {
+      const fileWhereMergedResultsWillBeSaved = currentBenchResFileOrFolder + '/merged_results.json';
+      const mergingStrategies = core.getInput('result_files_merge_strategy_for_each_metric');
+      const mergingStrategiesParsed = mergingStrategies.split(',').map(s => s.trim());
+      module.exports.mergeResults(currentBenchResFileOrFolder, mergingStrategiesParsed,
+          fileWhereMergedResultsWillBeSaved,metricsToEvaluate);
+      console.log("After execution of mergeResulsts")
+      rawData = fs.readFileSync(fileWhereMergedResultsWillBeSaved);
+      console.log("Raw data: ", rawData)
+      parsedData = JSON.parse(rawData);
+      console.log("Parsed data: ", parsedData)
+      subsetParsedData = parsedData;
+      itemCount = module.exports.determineJsonItemCount(parsedData.results)
+
   } else {
-    itemCount = module.exports.determineJsonItemCount(parsedData.results)
+    rawData = fs.readFileSync(currentBenchResFileOrFolder)
+    parsedData = JSON.parse(rawData);
+    if (metricsToEvaluate) {
+      const inputMetrics = metricsToEvaluate.split(',').map(metric => metric.trim());
+      const fileMetrics = parsedData.results.map(result => result.name);
+      const isValidSubset = module.exports.areMetricsValid(inputMetrics, fileMetrics);
+      if (!isValidSubset) {
+        throw new Error(
+            `Invalid metrics_to_evaluate: ${metricsToEvaluate}. Valid metrics are: ${fileMetrics.join(
+                ', '
+            )}`
+        )
+      }
+      subsetParsedData = module.exports.filterMetrics(parsedData, metricsToEvaluate);
+      itemCount = module.exports.determineJsonItemCount(subsetParsedData.results)
+    } else {
+      itemCount = module.exports.determineJsonItemCount(parsedData.results)
+    }
   }
 
 
-  // Part 2: Get and validate failing condition
   const failingCondition = core.getInput('failing_condition')
   if (
       failingCondition !== 'any' &&
@@ -133,6 +134,16 @@ module.exports.validateInputAndFetchConfig = function () {
       alertUsersIfBenchFailed,
       linkToTemplatedGhPageWithResults
   )
+}
+
+module.exports.checkIfResultInFolder = function (currentBenchResFileOrFolder) {
+    let wasMerged = false;
+    if (currentBenchResFileOrFolder.endsWith('.json')) {
+        wasMerged = false;
+    } else {
+        wasMerged = true;
+    }
+    return wasMerged;
 }
 
 module.exports.isValidPath = function(p) {
@@ -580,18 +591,25 @@ module.exports.checkForWeekOldBenchmark = function(data, benchmarkKey) {
   }
 }
 
-module.exports.mergeResults = function(directory, strategies, outputFile) {
 
+module.exports.mergeResults = function(directory, strategies, outputFile, metricsToEvaluate) {
   const validStrategies = ['sum', 'average', 'min', 'max', 'median'];
-  strategies.forEach(strategy => {
-    if (!validStrategies.includes(strategy)) {
-      throw new Error(`Invalid strategy: ${strategy}. Valid strategies are sum, average, min, max, median.`);
+
+  let evaluatedMetrics;
+  let mergeAllMetrics = false;
+
+  if (metricsToEvaluate) {
+    evaluatedMetrics = metricsToEvaluate.split(',').map(metric => metric.trim());
+    if (evaluatedMetrics.length !== strategies.length) {
+      throw new Error('The number of metrics in metricsToEvaluate does not match the number of provided strategies');
     }
-  });
+  } else {
+    mergeAllMetrics = true;
+  }
 
   const files = fs.readdirSync(directory);
   let mergedData = {};
-  let metricsValues = [];
+  let metricsValues = new Map();
 
   files.forEach((file, fileIndex) => {
     const content = fs.readFileSync(path.join(directory, file), 'utf8');
@@ -599,22 +617,43 @@ module.exports.mergeResults = function(directory, strategies, outputFile) {
 
     if (fileIndex === 0) {
       mergedData = {...result};
-      mergedData.results = result.results.map(r => ({ ...r, value: [] }));
-      metricsValues = mergedData.results.map(() => []);
+      mergedData.results = [];
+
+      if (mergeAllMetrics) {
+        result.results.forEach((metric, index) => {
+          mergedData.results.push({ ...metric, value: [] });
+          metricsValues.set(metric.name, []);
+        });
+      } else {
+        evaluatedMetrics.forEach((metricName) => {
+          const metric = result.results.find(r => r.name === metricName);
+          if (metric) {
+            mergedData.results.push({ ...metric, value: [] });
+            metricsValues.set(metricName, []);
+          } else {
+            throw new Error(`Metric ${metricName} not found in the results`);
+          }
+        });
+      }
     }
 
-    if (result.results.length !== strategies.length) {
-      throw new Error('Number of metrics does not match number of strategies');
-    }
-
-    result.results.forEach((metric, index) => {
-      metricsValues[index].push(metric.value);
+    result.results.forEach((metric) => {
+      if (mergeAllMetrics || evaluatedMetrics.includes(metric.name)) {
+        metricsValues.get(metric.name).push(metric.value);
+      }
     });
   });
 
+  console.log("Merged data before applying strategies: ", mergedData);
+  console.log("Metrics to evaluate: ", evaluatedMetrics);
+  console.log("Strategies: ", strategies);
+
   mergedData.results.forEach((metric, index) => {
-    const strategy = strategies[index];
-    const values = metricsValues[index];
+    const strategy = mergeAllMetrics ? strategies[index] : strategies[evaluatedMetrics.indexOf(metric.name)];
+    if (!validStrategies.includes(strategy)) {
+      throw new Error(`Invalid strategy: ${strategy}. Valid strategies are sum, average, min, max, median.`);
+    }
+    const values = metricsValues.get(metric.name);
     metric.value = module.exports.applyStrategy(strategy, values);
   });
 
