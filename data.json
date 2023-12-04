@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1701718214399,
+    "lastUpdate": 1701718241870,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -5383,6 +5383,93 @@
                     "url": "https://github.com/DawidNiezgodka/BenchEval/pull/12/commits/46bfd90a141fe988145e7de1bf5108a42144f458"
                 },
                 "date": 1701718214399,
+                "executionTime": "1 m",
+                "parametrization": {
+                    "ack": 1,
+                    "read-in-ram": false
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "abc",
+                        "value": 6,
+                        "unit": "%"
+                    },
+                    {
+                        "name": "metric4",
+                        "value": 6,
+                        "unit": "op/s"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "threshold_range",
+                        "benchToCompare": "Benchmark",
+                        "thresholdValues": null,
+                        "comparisonOperators": null,
+                        "comparisonMargins": null,
+                        "thresholdUpper": [
+                            150,
+                            150
+                        ],
+                        "thresholdLower": [
+                            50,
+                            50
+                        ],
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": null,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "threshold_range",
+                        "metricNames": [
+                            "abc",
+                            "metric4"
+                        ],
+                        "metricUnits": [
+                            "%",
+                            "op/s"
+                        ],
+                        "resultExplanations": [],
+                        "metricToDifferentBenchValues": {},
+                        "is": [
+                            6,
+                            6
+                        ],
+                        "shouldBe": [
+                            "[50, 150]",
+                            "[50, 150]"
+                        ],
+                        "than": []
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "failed",
+                            "failed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "22837704+DawidNiezgodka@users.noreply.github.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "noreply@github.com",
+                        "name": "GitHub",
+                        "username": "web-flow"
+                    },
+                    "id": "b81b3b08522babef924e8e3d93edf5440a3a71c6",
+                    "message": "Merge pull request #12 from DawidNiezgodka/chosen_metrics_and_merging\n\nChosen metrics and merging",
+                    "timestamp": "2023-12-04T20:30:29+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/b81b3b08522babef924e8e3d93edf5440a3a71c6"
+                },
+                "date": 1701718241870,
                 "executionTime": "1 m",
                 "parametrization": {
                     "ack": 1,
