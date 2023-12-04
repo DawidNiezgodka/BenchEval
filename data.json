@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1701682008212,
+    "lastUpdate": 1701683054778,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -4126,6 +4126,103 @@
                     "url": "https://github.com/DawidNiezgodka/BenchEval/commit/364d0a09cab3e51b9390193f008476011951568d"
                 },
                 "date": 1701682008212,
+                "executionTime": "1 m",
+                "parametrization": {
+                    "ack": 1,
+                    "read-in-ram": false
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "new_metric",
+                        "value": 600,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "metric4",
+                        "value": 6,
+                        "unit": "op/s"
+                    },
+                    {
+                        "name": "abc",
+                        "value": 3,
+                        "unit": "%"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "threshold_range",
+                        "benchToCompare": "Benchmark",
+                        "thresholdValues": null,
+                        "comparisonOperators": null,
+                        "comparisonMargins": null,
+                        "thresholdUpper": [
+                            2,
+                            500,
+                            1000
+                        ],
+                        "thresholdLower": [
+                            0.5,
+                            400,
+                            600
+                        ],
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": null,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "threshold_range",
+                        "metricNames": [
+                            "new_metric",
+                            "metric4",
+                            "abc"
+                        ],
+                        "metricUnits": [
+                            "ms",
+                            "op/s",
+                            "%"
+                        ],
+                        "resultExplanations": [],
+                        "metricToDifferentBenchValues": {},
+                        "is": [
+                            600,
+                            6,
+                            3
+                        ],
+                        "shouldBe": [
+                            "[0.5, 2]",
+                            "[400, 500]",
+                            "[600, 1000]"
+                        ],
+                        "than": []
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "failed",
+                            "failed",
+                            "failed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "name": "DawidNiezgodka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "name": "DawidNiezgodka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "364d0a09cab3e51b9390193f008476011951568d",
+                    "message": "041223 merge res files from bucket",
+                    "timestamp": "2023-11-29T17:15:58Z",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/pull/10/commits/364d0a09cab3e51b9390193f008476011951568d"
+                },
+                "date": 1701683054778,
                 "executionTime": "1 m",
                 "parametrization": {
                     "ack": 1,
