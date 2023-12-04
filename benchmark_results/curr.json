@@ -15,12 +15,12 @@
     },
     {
       "unit": "op/s",
-      "value": 392,
+      "value": 100,
       "name": "metric4"
     },
     {
       "unit": "%",
-      "value": 666,
+      "value": 100,
       "name": "abc"
     }
   ]

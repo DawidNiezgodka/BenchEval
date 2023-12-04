@@ -37,8 +37,8 @@ jobs:
           #current_bench_res_file_or_folder: resultsFolder
           result_files_merge_strategy_for_each_metric: sum,average,max
           evaluation_method: threshold_range
-          threshold_lower: "0.5, 400, 600"
-          threshold_upper: 2.0,500,1000
+          threshold_lower: 50,50
+          threshold_upper: 150,150
           save_curr_bench_res: true
           github_token: ${{ secrets.GH_TOKEN }}
 
