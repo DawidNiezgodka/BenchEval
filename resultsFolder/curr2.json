@@ -1,0 +1,27 @@
+{
+  "benchInfo": {
+    "executionTime": "1 m",
+    "parametrization": {
+      "ack": 1,
+      "read-in-ram": false
+    },
+    "otherInfo": "kafka, v2.3"
+  },
+  "results": [
+    {
+      "unit": "ms",
+      "value": 200,
+      "name": "new_metric"
+    },
+    {
+      "unit": "op/s",
+      "value": 6,
+      "name": "metric4"
+    },
+    {
+      "unit": "%",
+      "value": 2,
+      "name": "abc"
+    }
+  ]
+}

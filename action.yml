@@ -6,12 +6,23 @@ inputs:
     description: 'The name of a specific benchmark. This name will be used to identify the benchmark ...'
     required: false
     default: 'Benchmark'
-  # curr_bench_folder?
   current_bench_res_file:
     description: |
       The name of a file that contains the current benchmark result.
       Currently, only JSON files are supported.
-    required: true
+    required: false
+  current_bench_res_folder:
+    description: |
+      The name of a folder that contains the current benchmark result.
+      Currently, only JSON files are supported.
+    required: false
+  result_files_merge_strategy_for_each_metric:
+    description: |
+      The strategy to use when merging the the benchmark results from the downloaded folder.
+      This should be a comma separated list of strategies. Each strategy corresponds to a metric.
+      The possible values are: sum, average, max, min, median.
+    required: false
+    default: "overwrite"
   metrics_to_evaluate:
     description: |
       A comma-separated list of metrics to evaluate for the current benchmark.
