@@ -32,9 +32,9 @@ jobs:
           folder_with_bench_data: ./benchmark_data
           file_with_bench_data: data.json
           bench_to_compare: "Benchmark"
-          current_bench_res_file_or_folder: ./benchmark_results/curr.json
+          #current_bench_res_file_or_folder: ./benchmark_results/curr.json
           #metrics_to_evaluate: "abc, metric4"
-          #current_bench_res_file_or_folder: resultsFolder
+          current_bench_res_file_or_folder: resultsFolder
           result_files_merge_strategy_for_each_metric: sum,average,max
           evaluation_method: threshold_range
           threshold_lower: 50,50, 50
