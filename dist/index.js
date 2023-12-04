@@ -31258,7 +31258,7 @@ module.exports.validateInputAndFetchConfig = function () {
       const mergingStrategies = core.getInput('result_files_merge_strategy_for_each_metric');
       const mergingStrategiesParsed = mergingStrategies.split(',').map(s => s.trim());
       module.exports.mergeResults(currentBenchResFileOrFolder, mergingStrategiesParsed,
-          fileWhereMergedResultsWillBeSaved);
+          fileWhereMergedResultsWillBeSaved,metricsToEvaluate);
       console.log("After execution of mergeResulsts")
       rawData = fs.readFileSync(fileWhereMergedResultsWillBeSaved);
       console.log("Raw data: ", rawData)
