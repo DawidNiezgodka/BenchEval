@@ -33,12 +33,12 @@ jobs:
           file_with_bench_data: data.json
           bench_to_compare: "Benchmark"
           current_bench_res_file_or_folder: ./benchmark_results/curr.json
-          metrics_to_evaluate: "abc, metric4"
+          #metrics_to_evaluate: "abc, metric4"
           #current_bench_res_file_or_folder: resultsFolder
           result_files_merge_strategy_for_each_metric: sum,average,max
           evaluation_method: threshold_range
-          threshold_lower: 50,50
-          threshold_upper: 150,150
+          threshold_lower: 50,50, 50
+          threshold_upper: 150,150, 150
           save_curr_bench_res: true
           github_token: ${{ secrets.GH_TOKEN }}
 
