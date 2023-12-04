@@ -2,6 +2,7 @@ const core = require('@actions/core')
 const fs = require('fs')
 const { Config, EvaluationConfig} = require('./types')
 const {getCompleteBenchData} = require('./bench_data')
+const path = require("path");
 
 module.exports.determineJsonItemCount = function (json) {
   if (Array.isArray(json)) {
@@ -32,11 +33,31 @@ module.exports.validateInputAndFetchConfig = function () {
   // Part 1: General info + extracting json with current bench data
   const benchName = core.getInput('name')
   const pathToCurBenchFile = core.getInput('current_bench_res_file')
-  const rawData = fs.readFileSync(pathToCurBenchFile)
-  const parsedData = JSON.parse(rawData)
+  const pathToCurFolderWithBenchRes = core.getInput('current_bench_res_folder')
+  // either pathToCurBenchFile or pathToCurFolderWithBenchRes must be specified
+  if ((pathToCurBenchFile === '' && pathToCurFolderWithBenchRes === '') ||
+      (pathToCurBenchFile !== '' && pathToCurFolderWithBenchRes !== '')) {
+    throw new Error(
+        `Either 'current_bench_res_file' or 'current_bench_res_folder' must be specified, but not both.`
+    );
+  }
+  // if pathToCurBenchFile points to a specific file, i.e. when it has .json extension, read it directly
+  let rawData;
+  let parsedData;
+  if (pathToCurBenchFile.endsWith('.json')) {
+    rawData = fs.readFileSync(pathToCurBenchFile)
+  } else {
+    console.log('Merging results from multiple files')
+    const fileWhereMergedResultsWillBeSaved = pathToCurFolderWithBenchRes + '/merged_results.json';
+    const mergingStrategies = core.getInput('result_files_merge_strategy_for_each_metric');
+    const mergingStrategiesParsed = mergingStrategies.split(',').map(s => s.trim());
+    module.exports.mergeResults(pathToCurFolderWithBenchRes, mergingStrategiesParsed, fileWhereMergedResultsWillBeSaved);
+    rawData = fs.readFileSync(fileWhereMergedResultsWillBeSaved);
+
+  }
+  parsedData = JSON.parse(rawData);
   let itemCount;
 
-  // Validate input if `metrics_to_evaluate` is specified
   const metricsToEvaluate = core.getInput('metrics_to_evaluate')
   let subsetParsedData;
   if (metricsToEvaluate) {
@@ -547,6 +568,78 @@ module.exports.checkForWeekOldBenchmark = function(data, benchmarkKey) {
     throw new Error(`No benchmark under '${benchmarkKey}' is approximately one week old.`);
   } else {
     console.log(`A benchmark under '${benchmarkKey}' is approximately one week old.`);
+  }
+}
+
+module.exports.mergeResults = function(directory, strategies, outputFile) {
+
+  const validStrategies = ['sum', 'average', 'min', 'max', 'median'];
+  strategies.forEach(strategy => {
+    if (!validStrategies.includes(strategy)) {
+      throw new Error(`Invalid strategy: ${strategy}. Valid strategies are sum, average, min, max, median.`);
+    }
+  });
+
+  const files = fs.readdirSync(directory);
+  let mergedData = {};
+  let metricsValues = [];
+
+  files.forEach((file, fileIndex) => {
+    const content = fs.readFileSync(path.join(directory, file), 'utf8');
+    const result = JSON.parse(content);
+
+    if (fileIndex === 0) {
+      mergedData = {...result};
+      mergedData.results = result.results.map(r => ({ ...r, value: [] }));
+      metricsValues = mergedData.results.map(() => []);
+    }
+
+    if (result.results.length !== strategies.length) {
+      throw new Error('Number of metrics does not match number of strategies');
+    }
+
+    result.results.forEach((metric, index) => {
+      metricsValues[index].push(metric.value);
+    });
+  });
+
+  mergedData.results.forEach((metric, index) => {
+    const strategy = strategies[index];
+    const values = metricsValues[index];
+    metric.value = module.exports.applyStrategy(strategy, values);
+  });
+
+  console.log('Merged data: ', mergedData);
+  console.log("Saving merged data to file: ", outputFile);
+
+  fs.writeFileSync(outputFile, JSON.stringify(mergedData, null, 2));
+}
+
+module.exports.applyStrategy = function(strategy, values) {
+  switch (strategy) {
+    case 'sum':
+      return values.reduce((a, b) => a + b, 0);
+    case 'average':
+      return values.reduce((a, b) => a + b, 0) / values.length;
+    case 'min':
+      return Math.min(...values);
+    case 'max':
+      return Math.max(...values);
+    case 'median':
+      return module.exports.calculateMedian(values);
+    default:
+      throw new Error('Invalid strategy');
+  }
+}
+
+module.exports.calculateMedian = function(values) {
+  const sortedValues = values.slice().sort((a, b) => a - b);
+  const mid = Math.floor(sortedValues.length / 2);
+
+  if (sortedValues.length % 2 === 0) {
+    return (sortedValues[mid - 1] + sortedValues[mid]) / 2;
+  } else {
+    return sortedValues[mid];
   }
 }
 

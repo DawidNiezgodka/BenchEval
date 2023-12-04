@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - threshold_range
+      - 041223_MergeResFilesFromBucket
 
 jobs:
   test:
@@ -22,6 +22,8 @@ jobs:
           sparse-checkout-cone-mode: false
           path: 'benchmark_data'
 
+      - run: tree
+
       - name: evaluate benchmark
         uses: ./
         id: eval
@@ -30,7 +32,9 @@ jobs:
           folder_with_bench_data: ./benchmark_data
           file_with_bench_data: data.json
           bench_to_compare: "Benchmark"
-          current_bench_res_file: ./benchmark_results/curr.json
+          #current_bench_res_file: ./benchmark_results/curr.json
+          current_bench_res_folder: ./resultsFolder
+          result_files_merge_strategy_for_each_metric: sum,average,max
           evaluation_method: threshold_range
           threshold_lower: "0.5, 400, 600"
           threshold_upper: 2.0,500,1000
@@ -58,12 +62,4 @@ jobs:
         run: |
           echo "Failing as indicated by evaluation action"
           exit 1
-          
-          
-
-#    - name: Push changes
-#      uses: ad-m/github-push-action@master
-#      with:
-#        github_token: ${{ secrets.GH_TOKEN }}
-#        branch: bench_data
 
