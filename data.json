@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1701704005300,
+    "lastUpdate": 1701704019863,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -4597,6 +4597,105 @@
                             "failed",
                             "failed",
                             "failed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "a5b6dfb88cb02fd1e0b446f3f428796c4fbc0ae4",
+                    "message": "add second test",
+                    "timestamp": "2023-12-04T16:33:26+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/a5b6dfb88cb02fd1e0b446f3f428796c4fbc0ae4"
+                },
+                "date": 1701704019863,
+                "executionTime": "1 m",
+                "parametrization": {
+                    "ack": 1,
+                    "read-in-ram": false
+                },
+                "otherInfo": "kafka, v2.3",
+                "metrics": [
+                    {
+                        "name": "new_metric",
+                        "value": 100,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "metric4",
+                        "value": 392,
+                        "unit": "op/s"
+                    },
+                    {
+                        "name": "abc",
+                        "value": 666,
+                        "unit": "%"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "threshold_range",
+                        "benchToCompare": "Benchmark",
+                        "thresholdValues": null,
+                        "comparisonOperators": null,
+                        "comparisonMargins": null,
+                        "thresholdUpper": [
+                            2,
+                            500,
+                            1000
+                        ],
+                        "thresholdLower": [
+                            0.5,
+                            400,
+                            600
+                        ],
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": null,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "threshold_range",
+                        "metricNames": [
+                            "new_metric",
+                            "metric4",
+                            "abc"
+                        ],
+                        "metricUnits": [
+                            "ms",
+                            "op/s",
+                            "%"
+                        ],
+                        "resultExplanations": [],
+                        "metricToDifferentBenchValues": {},
+                        "is": [
+                            100,
+                            392,
+                            666
+                        ],
+                        "shouldBe": [
+                            "[0.5, 2]",
+                            "[400, 500]",
+                            "[600, 1000]"
+                        ],
+                        "than": []
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "failed",
+                            "failed",
+                            "passed"
                         ]
                     }
                 }
