@@ -22,7 +22,6 @@ inputs:
       This should be a comma separated list of strategies. Each strategy corresponds to a metric.
       The possible values are: sum, average, max, min, median.
     required: false
-    default: "overwrite"
   metrics_to_evaluate:
     description: |
       A comma-separated list of metrics to evaluate for the current benchmark.
