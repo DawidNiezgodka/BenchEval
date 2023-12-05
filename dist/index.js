@@ -30049,6 +30049,7 @@ const { CompleteBenchmark } = __nccwpck_require__(510)
 const { BenchmarkInfo } = __nccwpck_require__(510)
 
 module.exports.createCurrBench = function (config) {
+  core.debug('--- start createCurrBench ---')
   let currBenchResJson;
   if (config.subsetOfBenchRes) {
     currBenchResJson = config.subsetOfBenchRes;
@@ -30065,12 +30066,14 @@ module.exports.createCurrBench = function (config) {
     item => new SimpleMetricResult(item.name, item.value, item.unit)
   )
   const commit = getCommit()
-  return new CompleteBenchmark(
+  const completeBenchmark = new CompleteBenchmark(
     config.benchName,
     benchInfo,
     metricResults,
     commit
   )
+  core.debug('completeBenchmark: ' + JSON.stringify(completeBenchmark))
+  core.debug('--- end createCurrBench ---')
 }
 
 
@@ -30103,6 +30106,7 @@ module.exports.addCompleteBenchmarkToFile = async (
       'benchmark_data',
       currentDataFileName
     )
+    core.debug('--- start addCompleteBenchmarkToFile ---')
     core.debug(`Reading file at ${pathToPreviousDataFile}`)
     try {
       const data = await fs.readFile(pathToPreviousDataFile, 'utf8')
@@ -30141,7 +30145,7 @@ module.exports.addCompleteBenchmarkToFile = async (
 
     }
 
-    console.log('-- addCompleteBenchmarkToFile -- Benchmark name: ' + benchmarkInstance.benchmarkName)
+    core.debug('-- addCompleteBenchmarkToFile -- Benchmark name: ' + benchmarkInstance.benchmarkName)
     if (!jsonData.entries[benchmarkInstance.benchmarkName]) {
       jsonData.entries[benchmarkInstance.benchmarkName] = []
     }
@@ -30151,6 +30155,7 @@ module.exports.addCompleteBenchmarkToFile = async (
     await fs.writeFile(pth, JSON.stringify(jsonData, null, 4), 'utf8')
 
     core.debug('Successfully added new benchmark to file')
+    core.debug('--- end addCompleteBenchmarkToFile ---')
   } catch (err) {
     console.error('An error occurred:', err)
   }
@@ -30163,6 +30168,8 @@ module.exports.getLatestBenchmark = function (
   n,
   successful = false
 )  {
+
+  core.debug('--- start getLatestBenchmark ---')
 
   const sortedBenchmarkData = module.exports.getSortedBenchmarkData(
       folderWithBenchData, fileNameWithBenchData, benchmarkName, n, successful
@@ -30178,6 +30185,9 @@ module.exports.getCompleteBenchData = function (
     folderWithBenchData,
     fileNameWithBenchData
 )  {
+  core.debug('--- start getCompleteBenchData ---')
+  core.debug('folderWithBenchData: ' + folderWithBenchData)
+  core.debug('fileNameWithBenchData: ' + fileNameWithBenchData)
   const filePath = path.join(folderWithBenchData, fileNameWithBenchData)
 
   try {
@@ -30190,6 +30200,7 @@ module.exports.getCompleteBenchData = function (
       return null
     }
 
+    core.debug('--- end getCompleteBenchData ---')
     return benchmarkData;
   } catch (error) {
       console.error('An error occurred:', error)
@@ -30204,6 +30215,7 @@ function convertBenchDataToCompleteBenchmarkInstance(data, benchmarkName) {
   const benchmarkInfo = new BenchmarkInfo(exeTime, parametrization, otherInfo);
   const benchSuccessful = data.benchSuccessful;
 
+  core.debug('-- convertBenchDataToCompleteBenchmarkInstance -- Benchmark name: ' + benchmarkName)
   const simpleMetricResults = data.metrics.map(
       metric => new SimpleMetricResult(metric.name, metric.value, metric.unit)
   );
@@ -30217,6 +30229,7 @@ function convertBenchDataToCompleteBenchmarkInstance(data, benchmarkName) {
       data.commit.url
   );
 
+  core.debug('--- end convertBenchDataToCompleteBenchmarkInstance ---')
   return new CompleteBenchmark(
       benchmarkName,
       benchmarkInfo,
@@ -30233,14 +30246,17 @@ module.exports.getNLatestBenchmarks = function (
     n,
     successful = false
 ) {
+  core.debug('--- start getNLatestBenchmarks ---')
   try {
     const sortedBenchmarkData = module.exports.getSortedBenchmarkData(
         folderWithBenchData, fileNameWithBenchData, benchmarkName, n, successful
     )
 
-    return sortedBenchmarkData.slice(0, n).map(data => {
+    const nthLatest = sortedBenchmarkData.slice(0, n).map(data => {
       return convertBenchDataToCompleteBenchmarkInstance(data, benchmarkName);
     });
+    core.debug(`nthLatest ${JSON.stringify(nthLatest)}`)
+    core.debug('--- end getNLatestBenchmarks ---')
   } catch (error) {
     console.error('An error occurred:', error);
     return null;
@@ -30250,6 +30266,7 @@ module.exports.getNLatestBenchmarks = function (
 module.exports.getSortedBenchmarkData = function (folderWithBenchData, fileNameWithBenchData,
                                                   benchmarkName, n, successful = false) {
 
+  core.debug('--- start getSortedBenchmarkData ---')
   try {
     const benchmarkData = module.exports.getCompleteBenchData(
         folderWithBenchData, fileNameWithBenchData
@@ -30275,6 +30292,7 @@ module.exports.getSortedBenchmarkData = function (folderWithBenchData, fileNameW
       return null;
     }
 
+    core.debug('--- end getSortedBenchmarkData (before returning) ---')
     return sortedBenchmarkData;
   } catch (error) {
     console.error('An error occurred:', error);
@@ -30284,6 +30302,7 @@ module.exports.getSortedBenchmarkData = function (folderWithBenchData, fileNameW
 
 module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchData, fileNameWithBenchData) {
 
+  core.debug('--- start getBenchFromWeekAgo ---')
   const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
   const now = Date.now();
 
@@ -30310,7 +30329,8 @@ module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchDa
   if (closestBenchmark === null) {
     throw new Error(`No benchmark under '${benchToCompare}' is close to one week old.`);
   } else {
-    console.log(`The closest benchmark to one week old under '${benchToCompare}' is:`, closestBenchmark);
+    core.debug(`The closest benchmark to one week old under '${benchToCompare}' is: ${closestBenchmark}`);
+    core.debug('--- end getBenchFromWeekAgo (before calling convertBenchData... ---')
     return convertBenchDataToCompleteBenchmarkInstance(closestBenchmark, benchToCompare);
   }
 }
@@ -30318,6 +30338,7 @@ module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchDa
 module.exports.getBenchmarkOfStableBranch = function (benchToCompare, folderWithBenchData,
                                                       fileNameWithBenchData, latestBenchSha) {
 
+  core.debug('--- start getBenchmarkOfStableBranch ---')
   let data = module.exports.getCompleteBenchData(
         folderWithBenchData, fileNameWithBenchData
     );
@@ -30329,7 +30350,7 @@ module.exports.getBenchmarkOfStableBranch = function (benchToCompare, folderWith
     if (benchmark === undefined) {
         throw new Error(`No benchmark under '${benchToCompare}' with commit sha ${latestBenchSha} found.`);
     } else {
-        console.log(`The benchmark of the stable branch under '${benchToCompare}' is:`, benchmark);
+        core.debug(`The benchmark of the stable branch under '${benchToCompare}' is: ${benchmark}`);
         return convertBenchDataToCompleteBenchmarkInstance(benchmark, benchToCompare);
     }
 }
@@ -31261,7 +31282,6 @@ module.exports.validateInputAndFetchConfig = function () {
           fileWhereMergedResultsWillBeSaved,metricsToEvaluate);
       console.log("After execution of mergeResulsts")
       rawData = fs.readFileSync(fileWhereMergedResultsWillBeSaved);
-      console.log("Raw data: ", rawData)
       parsedData = JSON.parse(rawData);
       console.log("Parsed data: ", parsedData)
       subsetParsedData = parsedData;

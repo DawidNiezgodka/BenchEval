@@ -54,7 +54,6 @@ module.exports.validateInputAndFetchConfig = function () {
           fileWhereMergedResultsWillBeSaved,metricsToEvaluate);
       console.log("After execution of mergeResulsts")
       rawData = fs.readFileSync(fileWhereMergedResultsWillBeSaved);
-      console.log("Raw data: ", rawData)
       parsedData = JSON.parse(rawData);
       console.log("Parsed data: ", parsedData)
       subsetParsedData = parsedData;

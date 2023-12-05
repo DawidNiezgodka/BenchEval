@@ -6,6 +6,7 @@ const { CompleteBenchmark } = require('./types')
 const { BenchmarkInfo } = require('./types')
 
 module.exports.createCurrBench = function (config) {
+  core.debug('--- start createCurrBench ---')
   let currBenchResJson;
   if (config.subsetOfBenchRes) {
     currBenchResJson = config.subsetOfBenchRes;
@@ -22,10 +23,12 @@ module.exports.createCurrBench = function (config) {
     item => new SimpleMetricResult(item.name, item.value, item.unit)
   )
   const commit = getCommit()
-  return new CompleteBenchmark(
+  const completeBenchmark = new CompleteBenchmark(
     config.benchName,
     benchInfo,
     metricResults,
     commit
   )
+  core.debug('completeBenchmark: ' + JSON.stringify(completeBenchmark))
+  core.debug('--- end createCurrBench ---')
 }
