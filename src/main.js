@@ -19,7 +19,6 @@ const { createComment, createWorkflowSummaryForCompWithPrev, createWorkflowSumma
 
 const {
   addCompleteBenchmarkToFile,
-  getLatestBenchmark,
   getCompleteBenchData
 } = require('./bench_data')
 
@@ -41,17 +40,14 @@ async function run() {
         completeConfig.fileWithBenchData
     );
 
-    //core.debug('Complete bench data: ' + JSON.stringify(completeBenchData))
-
     let latestBenchSha = null;
-    if (core.getInput('trend_det_successful_release_branch') !== 'null') {
+    if (completeConfig.evaluationConfig.evaluationMethod === 'trend_detection_deltas') {
       const branchName = core.getInput('trend_det_successful_release_branch');
       latestBenchSha = await getLastCommitSha(branchName, completeBenchData,
           completeConfig.benchName);
-      // get sha of the last successful commit to branchName
-      console.log('Latest bench sha: ' + latestBenchSha);
+      core.debug(`Latest bench sha: ${latestBenchSha}`);
       completeConfig.latestBenchSha = latestBenchSha;
-    }
+
 
     const evaluationResult = evaluateCurrentBenchmark(
         completeBenchmarkObject,
@@ -91,12 +87,9 @@ async function run() {
       createComment(completeConfig, evaluationResult)
     }
 
-    console.log("After comment")
-
     const addJobSummary = completeConfig.addJobSummary;
     if (addJobSummary === 'on' || (addJobSummary === 'if_failed' && shouldFail)) {
 
-      // For now only previous is supported
       if (evaluationConfig.evaluationMethod === 'previous') {
         createWorkflowSummaryForCompWithPrev(evaluationResult, completeConfig);
       } else if (evaluationConfig.evaluationMethod === 'threshold') {

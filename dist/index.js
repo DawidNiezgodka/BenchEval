@@ -31280,10 +31280,10 @@ module.exports.validateInputAndFetchConfig = function () {
       const mergingStrategiesParsed = mergingStrategies.split(',').map(s => s.trim());
       module.exports.mergeResults(currentBenchResFileOrFolder, mergingStrategiesParsed,
           fileWhereMergedResultsWillBeSaved,metricsToEvaluate);
-      console.log("After execution of mergeResulsts")
+      core.debug("After execution of mergeResulsts")
       rawData = fs.readFileSync(fileWhereMergedResultsWillBeSaved);
       parsedData = JSON.parse(rawData);
-      console.log("Parsed data: ", parsedData)
+      core.debug(`Parsed data: ${parsedData}`)
       subsetParsedData = parsedData;
       itemCount = module.exports.determineJsonItemCount(parsedData.results)
 
@@ -31320,7 +31320,6 @@ module.exports.validateInputAndFetchConfig = function () {
     )
   }
 
-  // Part 3: Get and validate the benchmark to compare; if not specified, use the current benchmark
   let benchToCompare = core.getInput('bench_to_compare')
   if (benchToCompare === '' || benchToCompare === null) {
     benchToCompare = benchName
@@ -31328,7 +31327,6 @@ module.exports.validateInputAndFetchConfig = function () {
 
   const folderWithBenchData = core.getInput('folder_with_bench_data')
   const fileWithBenchData = core.getInput('file_with_bench_data')
-  // Part 4 (new): Check if evaluation_method is valid and carry out validation for this specific method
   const evalConfig = module.exports.validateAndFetchEvaluationConfig(
       itemCount, benchToCompare, folderWithBenchData, fileWithBenchData);
 
@@ -31460,6 +31458,15 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
   }
 
   let benchmarkData = getCompleteBenchData(folderWithBenchData, fileWithBenchData);
+  if (benchmarkData === null) {
+    core.info("No previous data found. Hence, the only valid evaluation method is threshold and threshold range." +
+        "The action will fail if the evaluation method is not one of these two.");
+    if (evaluationMethod !== 'threshold' && evaluationMethod !== 'threshold_range') {
+        throw new Error(
+            `Invalid evaluation method: ${evaluationMethod}. Must be one of threshold or threshold_range.`
+        )
+    }
+  }
   switch (evaluationMethod) {
     case 'threshold':
       console.log('Validating threshold evaluation configuration.')
@@ -31486,7 +31493,7 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
       module.exports.validateJumpDetectionConfig(currentResultLength)
       break
     case 'trend_detection_moving_ave':
-      console.log('Validating trend detection with moving average evaluation configuration.')
+      core.debug('Validating trend detection with moving average evaluation configuration.')
       module.exports.validateTrendDetectionMovingAveConfig(currentResultLength)
       const movingAveWindowSize = core.getInput('moving_ave_window_size')
         try {
@@ -31501,10 +31508,10 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
             } else if (noSufficientDataStrategy === 'use_available') {
                 const numberOfBenchsForName = benchmarkData.entries[benchToCompare].length;
                 const stringOfNumberOfBenchs= numberOfBenchsForName.toString();
-                console.log(`Not enough data for trend detection with moving average. Using available data.`)
+                core.info(`Not enough data for trend detection with moving average. Using available data.`)
                 process.env[`INPUT_MOVING_AVE_WINDOW_SIZE`] = stringOfNumberOfBenchs;
                 const newVal = core.getInput('moving_ave_window_size');
-              console.log(`New value for moving_ave_window: ${newVal}`)
+                core.info(`New value for moving_ave_window: ${newVal}`)
             } else {
                 throw new Error(`Invalid value for trend_det_no_sufficient_data_strategy: 
                 ${noSufficientDataStrategy}. Valid values are: fail, use_available_data.`)
@@ -32430,7 +32437,6 @@ const { createComment, createWorkflowSummaryForCompWithPrev, createWorkflowSumma
 
 const {
   addCompleteBenchmarkToFile,
-  getLatestBenchmark,
   getCompleteBenchData
 } = __nccwpck_require__(9790)
 
@@ -32452,15 +32458,12 @@ async function run() {
         completeConfig.fileWithBenchData
     );
 
-    //core.debug('Complete bench data: ' + JSON.stringify(completeBenchData))
-
     let latestBenchSha = null;
-    if (core.getInput('trend_det_successful_release_branch') !== 'null') {
+    if (completeConfig.evaluationConfig.evaluationMethod === 'trend_detection_deltas') {
       const branchName = core.getInput('trend_det_successful_release_branch');
       latestBenchSha = await getLastCommitSha(branchName, completeBenchData,
           completeConfig.benchName);
-      // get sha of the last successful commit to branchName
-      console.log('Latest bench sha: ' + latestBenchSha);
+      core.debug(`Latest bench sha: ${latestBenchSha}`);
       completeConfig.latestBenchSha = latestBenchSha;
     }
 
@@ -32502,12 +32505,9 @@ async function run() {
       createComment(completeConfig, evaluationResult)
     }
 
-    console.log("After comment")
-
     const addJobSummary = completeConfig.addJobSummary;
     if (addJobSummary === 'on' || (addJobSummary === 'if_failed' && shouldFail)) {
 
-      // For now only previous is supported
       if (evaluationConfig.evaluationMethod === 'previous') {
         createWorkflowSummaryForCompWithPrev(evaluationResult, completeConfig);
       } else if (evaluationConfig.evaluationMethod === 'threshold') {
