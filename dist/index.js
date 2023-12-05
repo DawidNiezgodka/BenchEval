@@ -30074,6 +30074,7 @@ module.exports.createCurrBench = function (config) {
   )
   core.debug('completeBenchmark: ' + JSON.stringify(completeBenchmark))
   core.debug('--- end createCurrBench ---')
+  return completeBenchmark;
 }
 
 
@@ -30203,7 +30204,9 @@ module.exports.getCompleteBenchData = function (
     core.debug('--- end getCompleteBenchData ---')
     return benchmarkData;
   } catch (error) {
-      console.error('An error occurred:', error)
+      console.error(`There was an error reading the file at ${filePath}.
+       If the file exists, it might be empty. The function will return null.`)
+      console.error('The actual error was:', error)
       return null
     }
 }
@@ -32117,6 +32120,9 @@ module.exports.compareWithPrevious = function (currentBenchmarkData, completeBen
 };
 
 module.exports.evaluateWithThresholdRanges = function (currentBenchmarkData, config) {
+
+  core.debug('--- start evaluateWithThresholdRanges ---')
+
   const { thresholdLower, thresholdUpper } = config;
 
   const metricNames = [];
@@ -32139,6 +32145,7 @@ module.exports.evaluateWithThresholdRanges = function (currentBenchmarkData, con
     evaluationResults.push(isPassed ? 'passed' : 'failed');
   });
 
+  core.debug('--- end evaluateWithThresholdRanges (before return) ---')
   return module.exports.createEvaluationObject(
       {
         "evaluation_method": "threshold_range",
@@ -32479,9 +32486,6 @@ async function run() {
     const resultArray = evaluationResult.results.result
     if (completeConfig.failingCondition === 'any') {
       shouldFail = anyFailed(resultArray)
-      if (anyFailed(resultArray)) {
-
-      }
     }
     if (completeConfig.failingCondition === 'all') {
       shouldFail = allFailed(resultArray)

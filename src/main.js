@@ -47,7 +47,7 @@ async function run() {
           completeConfig.benchName);
       core.debug(`Latest bench sha: ${latestBenchSha}`);
       completeConfig.latestBenchSha = latestBenchSha;
-
+    }
 
     const evaluationResult = evaluateCurrentBenchmark(
         completeBenchmarkObject,
@@ -61,9 +61,6 @@ async function run() {
     const resultArray = evaluationResult.results.result
     if (completeConfig.failingCondition === 'any') {
       shouldFail = anyFailed(resultArray)
-      if (anyFailed(resultArray)) {
-
-      }
     }
     if (completeConfig.failingCondition === 'all') {
       shouldFail = allFailed(resultArray)

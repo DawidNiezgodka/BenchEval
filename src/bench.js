@@ -31,4 +31,5 @@ module.exports.createCurrBench = function (config) {
   )
   core.debug('completeBenchmark: ' + JSON.stringify(completeBenchmark))
   core.debug('--- end createCurrBench ---')
+  return completeBenchmark;
 }

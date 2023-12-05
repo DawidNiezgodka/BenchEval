@@ -119,7 +119,9 @@ module.exports.getCompleteBenchData = function (
     core.debug('--- end getCompleteBenchData ---')
     return benchmarkData;
   } catch (error) {
-      console.error('An error occurred:', error)
+      console.error(`There was an error reading the file at ${filePath}.
+       If the file exists, it might be empty. The function will return null.`)
+      console.error('The actual error was:', error)
       return null
     }
 }

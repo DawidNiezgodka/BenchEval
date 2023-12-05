@@ -181,6 +181,9 @@ module.exports.compareWithPrevious = function (currentBenchmarkData, completeBen
 };
 
 module.exports.evaluateWithThresholdRanges = function (currentBenchmarkData, config) {
+
+  core.debug('--- start evaluateWithThresholdRanges ---')
+
   const { thresholdLower, thresholdUpper } = config;
 
   const metricNames = [];
@@ -203,6 +206,7 @@ module.exports.evaluateWithThresholdRanges = function (currentBenchmarkData, con
     evaluationResults.push(isPassed ? 'passed' : 'failed');
   });
 
+  core.debug('--- end evaluateWithThresholdRanges (before return) ---')
   return module.exports.createEvaluationObject(
       {
         "evaluation_method": "threshold_range",
