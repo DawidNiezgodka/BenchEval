@@ -30494,13 +30494,15 @@ module.exports.addInfoAboutBenchRes = function(lines, completeConfig, evaluation
           failingCondition === 'all' ? !evaluationResults.includes('passed') :
               failingCondition === 'none' ? true : null;
 
-  const conditionMessage =
-      failingCondition === 'any' ? (benchmarkPassed ? "all metrics satisfied" : "at least one metric didn't satisfy") :
-          failingCondition === 'all' ? (benchmarkPassed ? "all metrics passed" : "all metrics failed") :
-              "the benchmark passes regardless of results.";
+  const resultMessage =
+      failingCondition === 'any' ? (benchmarkPassed ? "All metrics passed the tests." : "At least one metric didn't pass the tests.") :
+          failingCondition === 'all' ? (benchmarkPassed ? "At least one metric passed the tests" : "All metrics failed") :
+              "The benchmark passes regardless of results.";
 
   lines.push(`## Benchmark ${benchmarkPassed ? 'passed' : 'failed'}`);
-  lines.push(`The chosen failing condition is '${failingCondition}', and ${conditionMessage} the condition.`);
+  lines.push(`The chosen failing condition was ${failingCondition}.`);
+  lines.push(`${resultMessage}`);
+
   return benchmarkPassed;
 }
 
@@ -30682,7 +30684,6 @@ module.exports.createBodyForComparisonWithThreshold = function (
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   console.log("Current benchmark from creaBodyWithThr: " + JSON.stringify(currentBenchmark))
   const bName = "Benchmark";
-  console.log("Hello worlds")
   const lines = [`# ${bName}`, '', '']
   const benchDataText = module.exports.createBenchDataText(currentBenchmark);
 
