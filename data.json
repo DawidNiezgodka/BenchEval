@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1701863226781,
+    "lastUpdate": 1701863641031,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -5824,6 +5824,95 @@
                     "url": "https://github.com/DawidNiezgodka/BenchEval/commit/49deb3be81b2dafb584037996103350572f97bd9"
                 },
                 "date": 1701863226781,
+                "executionTime": "20m 31s",
+                "parametrization": {
+                    "protocol": "http:",
+                    "func": "/sieve",
+                    "threads": 256,
+                    "ops": 500
+                },
+                "otherInfo": "edge-server: e2-medium",
+                "metrics": [
+                    {
+                        "name": "avg latency",
+                        "value": null,
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "throughput",
+                        "value": "0103.96103.97103.98",
+                        "unit": "ops/s"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "threshold_range",
+                        "benchToCompare": "TinyFaaS Bench 2.0",
+                        "thresholdValues": null,
+                        "comparisonOperators": null,
+                        "comparisonMargins": null,
+                        "thresholdUpper": [
+                            1000,
+                            1000
+                        ],
+                        "thresholdLower": [
+                            300,
+                            300
+                        ],
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": null,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "threshold_range",
+                        "metricNames": [
+                            "avg latency",
+                            "throughput"
+                        ],
+                        "metricUnits": [
+                            "ms",
+                            "ops/s"
+                        ],
+                        "resultExplanations": [],
+                        "metricToDifferentBenchValues": {},
+                        "is": [
+                            null,
+                            "0103.96103.97103.98"
+                        ],
+                        "shouldBe": [
+                            "[300, 1000]",
+                            "[300, 1000]"
+                        ],
+                        "than": []
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "failed",
+                            "failed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "9dc609ae70f771c7ca332fd7a966bbc5955594ea",
+                    "message": "more debugging",
+                    "timestamp": "2023-12-06T12:53:47+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/9dc609ae70f771c7ca332fd7a966bbc5955594ea"
+                },
+                "date": 1701863641031,
                 "executionTime": "20m 31s",
                 "parametrization": {
                     "protocol": "http:",
