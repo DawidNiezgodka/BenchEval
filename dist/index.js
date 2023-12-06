@@ -31883,8 +31883,11 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
     core.debug(`Merged data after first iteration: ${JSON.stringify(mergedData)}. Current index is: ${fileIndex}`);
     result.results.forEach((metric) => {
       if (mergeAllMetrics || evaluatedMetrics.includes(metric.name)) {
-        core.debug(`Adding metric: ${metric.name} to metricsValues map with value: ${metric.value}`);
-        metricsValues.get(metric.name).push(metric.value);
+        //core.debug(`Adding metric: ${metric.name} to metricsValues map with value: ${metric.value}`);
+        console.log(`metricsValue.get(${metric.name}): ${metricsValues.get(metric.name)}`)
+        console.log(`metric.value: ${metric.value}`)
+        let push = metricsValues.get(metric.name).push(metric.value);
+        console.log(`push: ${push}`)
       }
     });
   });
