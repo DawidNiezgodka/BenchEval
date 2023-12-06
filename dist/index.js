@@ -31911,17 +31911,18 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
 
 module.exports.applyStrategy = function(strategy, values) {
   console.log(`Applying strategy: ${strategy} to values: ${values}`)
+  const numericValues = values.map(value => parseFloat(value));
   switch (strategy) {
     case 'sum':
-      return values.reduce((a, b) => a + b, 0);
+      return numericValues.reduce((a, b) => a + b, 0);
     case 'average':
-      return values.reduce((a, b) => a + b, 0) / values.length;
+      return numericValues.reduce((a, b) => a + b, 0) / numericValues.length;
     case 'min':
-      return Math.min(...values);
+      return Math.min(...numericValues);
     case 'max':
-      return Math.max(...values);
+      return Math.max(...numericValues);
     case 'median':
-      return module.exports.calculateMedian(values);
+      return module.exports.calculateMedian(numericValues);
     default:
       throw new Error('Invalid strategy');
   }
