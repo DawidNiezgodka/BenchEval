@@ -84,9 +84,9 @@ module.exports.createBodyForComparisonWithPrev = function (
     const resultStatus = evaluationResults[i];
     const metricName = evaluationParameters.metricNames[i];
     const metricUnit = evaluationParameters.metricUnits[i];
-    const actualValue = evaluationParameters.is[i];
+    const actualValue = parseFloat(evaluationParameters.is[i]).toFixed(2);
     const comparisonMode = evaluationParameters.shouldBe[i];
-    const previousBenchRes = evaluationParameters.than[i];
+    const previousBenchRes = parseFloat(evaluationParameters.than[i]).toFixed(2);
     const prevBenchValAndUnit = previousBenchRes + ' ' + metricUnit;
     let line
     let valueAndUnit = actualValue + ' ' + metricUnit
@@ -180,25 +180,17 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
     const resultExplanation = evaluationParameters.resultExplanations[i];
     const resultStatus = evaluationResults[i];
     const metricName = evaluationParameters.metricNames[i];
-    console.log("Metric name: " + metricName)
     const metricUnit = evaluationParameters.metricUnits[i];
     const metricValues = evaluationParameters.metricToDifferentBenchValues.get(metricName);
-    // print vales for metricValues map
-    console.log("Metric values: " + JSON.stringify(metricValues))
 
     if (!metricValues) {
-      console.log(`No benchmark values found for metric: ${metricName}`);
       continue;
     }
-    const currBenchValue = metricValues?.current ?? 'N/A';
-    console.log("Current bench value: " + currBenchValue)
-    const prevBenchValue = metricValues?.previous ?? 'N/A';
-    console.log("Previous bench value: " + prevBenchValue)
-    const weekAgoBenchValue = metricValues?.week_ago ?? 'N/A';
-    console.log("Week ago bench value: " + weekAgoBenchValue)
-    const lastStableReleaseBenchValue = metricValues?.last_stable_release ?? 'N/A';
-    console.log("Last stable release bench value: " + lastStableReleaseBenchValue)
 
+    let currBenchValue = metricValues?.current ?? 'N/A';
+    let prevBenchValue = metricValues?.previous ?? 'N/A';
+    let weekAgoBenchValue = metricValues?.week_ago ?? 'N/A';
+    let lastStableReleaseBenchValue = metricValues?.last_stable_release ?? 'N/A';
 
     const x = evaluationConfiguration.trendThresholds[i];
     let line;
@@ -498,8 +490,8 @@ module.exports.createWorkflowSummaryForCompWithPrev = function (evaluationResult
     const resultStatus = evaluationResults[i];
     const metricName = evaluationParameters.metricNames[i];
     const metricUnit = evaluationParameters.metricUnits[i];
-    const actualValue = evaluationParameters.is[i];
-    const previousBenchRes = evaluationParameters.than[i];
+    const actualValue = parseFloat(evaluationParameters.is[i]).toFixed(2);
+    const previousBenchRes = parseFloat(evaluationParameters.than[i]).toFixed(2);
     const prevBenchValAndUnit = previousBenchRes + ' ' + metricUnit;
     let valueAndUnit = actualValue + ' ' + metricUnit;
     const comparisonMargin = evaluationConfiguration.comparisonMargins[i];
