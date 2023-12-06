@@ -31865,8 +31865,10 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
         });
       } else {
         evaluatedMetrics.forEach((metricName) => {
+          core.debug(`Current evaluated metric name: ${metricName}`);
           const metric = result.results.find(r => r.name === metricName);
           if (metric) {
+            core.debug(`Metric found: ${metric}`);
             mergedData.results.push({ ...metric, value: [] });
             metricsValues.set(metricName, []);
           } else {
@@ -31876,8 +31878,10 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
       }
     }
 
+    core.debug(`Merged data after first iteration: ${mergedData}. Current index is: ${fileIndex}`);
     result.results.forEach((metric) => {
       if (mergeAllMetrics || evaluatedMetrics.includes(metric.name)) {
+        core.debug(`Adding metric: ${metric.name} to metricsValues map with value: ${metric.value}`);
         metricsValues.get(metric.name).push(metric.value);
       }
     });
