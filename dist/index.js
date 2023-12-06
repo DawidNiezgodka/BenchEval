@@ -31284,10 +31284,8 @@ module.exports.validateInputAndFetchConfig = function () {
       const mergingStrategiesParsed = mergingStrategies.split(',').map(s => s.trim());
       module.exports.mergeResults(currentBenchResFileOrFolder, mergingStrategiesParsed,
           fileWhereMergedResultsWillBeSaved,metricsToEvaluate);
-      core.debug("After execution of mergeResulsts")
       rawData = fs.readFileSync(fileWhereMergedResultsWillBeSaved);
       parsedData = JSON.parse(rawData);
-      core.debug(`Parsed data: ${parsedData}`)
       subsetParsedData = parsedData;
       itemCount = module.exports.determineJsonItemCount(parsedData.results)
 
@@ -31852,7 +31850,6 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
   files.forEach((file, fileIndex) => {
     const content = fs.readFileSync(path.join(directory, file), 'utf8');
     const result = JSON.parse(content);
-    core.debug(`Result: ${result} for file: ${file}`);
 
     if (fileIndex === 0) {
       mergedData = {...result};
@@ -31865,10 +31862,8 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
         });
       } else {
         evaluatedMetrics.forEach((metricName) => {
-          core.debug(`Current evaluated metric name: ${metricName}`);
           const metric = result.results.find(r => r.name === metricName);
           if (metric) {
-            core.debug(`Metric found: ${metric}`);
             mergedData.results.push({ ...metric, value: [] });
             metricsValues.set(metricName, []);
           } else {
@@ -31878,7 +31873,6 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
       }
     }
 
-    core.debug(`Merged data after first iteration: ${mergedData}. Current index is: ${fileIndex}`);
     result.results.forEach((metric) => {
       if (mergeAllMetrics || evaluatedMetrics.includes(metric.name)) {
         core.debug(`Adding metric: ${metric.name} to metricsValues map with value: ${metric.value}`);
@@ -31886,10 +31880,6 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
       }
     });
   });
-
-  console.log("Merged data before applying strategies: ", mergedData);
-  console.log("Metrics to evaluate: ", evaluatedMetrics);
-  console.log("Strategies: ", strategies);
 
   mergedData.results.forEach((metric, index) => {
     const strategy = mergeAllMetrics ? strategies[index] : strategies[evaluatedMetrics.indexOf(metric.name)];
@@ -31900,24 +31890,23 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
     metric.value = module.exports.applyStrategy(strategy, values);
   });
 
-  console.log('Merged data: ', mergedData);
-  console.log("Saving merged data to file: ", outputFile);
-
   fs.writeFileSync(outputFile, JSON.stringify(mergedData, null, 2));
 }
 
 module.exports.applyStrategy = function(strategy, values) {
+  core.debug(`Applying strategy: ${strategy} to values: ${values}`);
+  const numericValues = values.map(value => parseFloat(value));
   switch (strategy) {
     case 'sum':
-      return values.reduce((a, b) => a + b, 0);
+      return numericValues.reduce((a, b) => a + b, 0);
     case 'average':
-      return values.reduce((a, b) => a + b, 0) / values.length;
+      return numericValues.reduce((a, b) => a + b, 0) / numericValues.length;
     case 'min':
-      return Math.min(...values);
+      return Math.min(...numericValues);
     case 'max':
-      return Math.max(...values);
+      return Math.max(...numericValues);
     case 'median':
-      return module.exports.calculateMedian(values);
+      return module.exports.calculateMedian(numericValues);
     default:
       throw new Error('Invalid strategy');
   }
