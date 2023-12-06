@@ -1,1 +1,0 @@
-{"date":"2023-12-05T10:25:13.770Z","benchInfo":{"executionTime":3.015,"parametrization":{"protocol":"http:","func":"/sieve","threads":256,"ops":500},"otherInfo":"edge-server: e2-micro"},"results":[{"name":"avg latency","value":680.078,"unit":"ms"},{"name":"success rate","value":100,"unit":"%"},{"name":"throughput","value":165.83747927031507,"unit":"ops/s"}]}

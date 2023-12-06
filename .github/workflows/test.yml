@@ -31,14 +31,14 @@ jobs:
           name: "Benchmark"
           folder_with_bench_data: ./benchmark_data
           file_with_bench_data: data.json
-          bench_to_compare: "Benchmark"
-          current_bench_res_file_or_folder: ./benchmark_results/curr.json
-          metrics_to_evaluate: "ave latency, throughput"
-          #current_bench_res_file_or_folder: resultsFolder
+          bench_to_compare: "TinyFaaS Bench 2.0"
+          #current_bench_res_file_or_folder: ./benchmark_results/curr.json
+          current_bench_res_file_or_folder: resultsFolder
           result_files_merge_strategy_for_each_metric: average, sum
+          metrics_to_evaluate: avg latency, throughput
           evaluation_method: threshold_range
           threshold_lower: 300,300
-          threshold_upper: 800,1500
+          threshold_upper: 1000,1000
           save_curr_bench_res: true
           github_token: ${{ secrets.GH_TOKEN }}
 
