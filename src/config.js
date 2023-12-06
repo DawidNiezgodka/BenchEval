@@ -660,16 +660,14 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
     });
   });
 
-  console.log("Merged data before applying strategies: ", mergedData);
-  console.log("Metrics to evaluate: ", evaluatedMetrics);
-  console.log("Strategies: ", strategies);
-
   mergedData.results.forEach((metric, index) => {
     const strategy = mergeAllMetrics ? strategies[index] : strategies[evaluatedMetrics.indexOf(metric.name)];
+    console.log(`Strategy: ${strategy}`)
     if (!validStrategies.includes(strategy)) {
       throw new Error(`Invalid strategy: ${strategy}. Valid strategies are sum, average, min, max, median.`);
     }
     const values = metricsValues.get(metric.name);
+    console.log(`Values: ${values}`)
     metric.value = module.exports.applyStrategy(strategy, values);
   });
 
@@ -680,6 +678,7 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
 }
 
 module.exports.applyStrategy = function(strategy, values) {
+  console.log(`Applying strategy: ${strategy} to values: ${values}`)
   switch (strategy) {
     case 'sum':
       return values.reduce((a, b) => a + b, 0);
