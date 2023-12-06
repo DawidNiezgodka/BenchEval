@@ -31852,6 +31852,7 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
   files.forEach((file, fileIndex) => {
     const content = fs.readFileSync(path.join(directory, file), 'utf8');
     const result = JSON.parse(content);
+    core.debug(`Result: ${result} for file: ${file}`);
 
     if (fileIndex === 0) {
       mergedData = {...result};
