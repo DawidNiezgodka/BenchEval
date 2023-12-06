@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - chosen_metrics_and_merging
+      - TFProblem
 
 jobs:
   test:
@@ -35,7 +35,7 @@ jobs:
           #current_bench_res_file_or_folder: ./benchmark_results/curr.json
           current_bench_res_file_or_folder: resultsFolder
           result_files_merge_strategy_for_each_metric: average, sum
-          metrics_to_evaluate: avg latency, throughput
+          #metrics_to_evaluate: avg latency, throughput
           evaluation_method: threshold_range
           threshold_lower: 300,300
           threshold_upper: 1000,1000
