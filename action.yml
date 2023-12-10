@@ -15,16 +15,10 @@ inputs:
       Currently, only .js files are supported.
     required: false
     default: 'data.json'
-  current_bench_res_file_or_folder:
+  folder_with_current_benchmark_results:
     description: |
-      The name of a file that contains the current benchmark result or folder that contains more than one such file.
-      If you provide a single file, it must end with an extension (.json).
-      If you provide a folder, it must contains folder name without an additional slash (/).
-      In either case, please provide path relative to the root of the repository.
-      For example, if the file is located in the folder 'benchmark_results' and the file name is 'curr.json',
-      the input should look as follows: 'benchmark_results/curr.json'.
-      If the folder is located in the root of the repository and the folder name is 'resultsFolder',
-      the input should look as follows: 'resultsFolder'.
+      A path to the folder where benchmark results are stored.
+      Can be a single file or multiple files.
     required: true
 
   name:

@@ -31255,10 +31255,10 @@ module.exports.getBoolInput = function (inputName) {
 module.exports.validateInputAndFetchConfig = function () {
   // Part 1: General info + extracting json with current bench data
   const benchName = core.getInput('name')
-  const currentBenchResFileOrFolder = core.getInput('current_bench_res_file_or_folder')
+  const currentBenchResFileOrFolder = core.getInput('folder_with_current_benchmark_results')
   if (currentBenchResFileOrFolder === '') {
     throw new Error(
-        `current_bench_res_file_or_folder must not be empty.`
+        `folder_with_current_benchmark_results must not be empty.`
     );
   }
   module.exports.isValidPath(currentBenchResFileOrFolder);
@@ -31283,7 +31283,8 @@ module.exports.validateInputAndFetchConfig = function () {
       itemCount = module.exports.determineJsonItemCount(parsedData.results)
 
   } else {
-    rawData = fs.readFileSync(currentBenchResFileOrFolder)
+    const fileName = path.basename(currentBenchResFileOrFolder);
+    rawData = fs.readFileSync(fileName)
     parsedData = JSON.parse(rawData);
     if (metricsToEvaluate) {
       const inputMetrics = metricsToEvaluate.split(',').map(metric => metric.trim());
