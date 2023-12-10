@@ -49,7 +49,7 @@ module.exports.validateInputAndFetchConfig = function () {
   const metricsToEvaluate = core.getInput('metrics_to_evaluate')
 
   if (hasMultipleFiles) {
-      core.debug(`There are multiple files/directories in ${folderWithCurrentBenchmarkResults}`);
+      core.debug(`Starting to merge results in ${folderWithCurrentBenchmarkResults}`);
       const fileWhereMergedResultsWillBeSaved = folderWithCurrentBenchmarkResults + '/merged_results.json';
       const mergingStrategies = core.getInput('result_files_merge_strategy_for_each_metric');
       const mergingStrategiesParsed = mergingStrategies.split(',').map(s => s.trim());
@@ -61,10 +61,11 @@ module.exports.validateInputAndFetchConfig = function () {
       itemCount = module.exports.determineJsonItemCount(parsedData.results)
 
   } else {
-    core.debug(`There is one file/directory in ${folderWithCurrentBenchmarkResults}`);
+    core.debug(`There is only one file in ${folderWithCurrentBenchmarkResults}`);
     const fileName = fs.readdirSync(folderWithCurrentBenchmarkResults)[0];
-    core.debug(`File name: ${fileName}`);
-    rawData = fs.readFileSync(fileName)
+    const pathToCurrentBenchResFile = folderWithCurrentBenchmarkResults + '/' + fileName;
+    core.debug(`Path to current bench res file: ${pathToCurrentBenchResFile}`);
+    rawData = fs.readFileSync(pathToCurrentBenchResFile)
     parsedData = JSON.parse(rawData);
     if (metricsToEvaluate) {
       const inputMetrics = metricsToEvaluate.split(',').map(metric => metric.trim());
