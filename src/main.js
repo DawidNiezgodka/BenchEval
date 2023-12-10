@@ -72,7 +72,8 @@ async function run() {
     completeBenchmarkObject.benchSuccessful = !shouldFail;
     if (completeConfig.saveCurrBenchRes) {
       core.debug('Saving current benchmark results to file')
-      await addCompleteBenchmarkToFile(completeBenchmarkObject, completeConfig.fileWithBenchData,
+      await addCompleteBenchmarkToFile(completeBenchmarkObject,
+          completeConfig.folderWithBenchData, completeConfig.fileWithBenchData,
           evaluationResult.results, evaluationResult.evalParameters,
           completeConfig.evaluationConfig
       )

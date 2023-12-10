@@ -2,10 +2,19 @@ name: 'evaluate benchmark'
 description: 'Evaluate benchmark results'
 
 inputs:
-  name:
-    description: 'The name of a specific benchmark. This name will be used to identify the benchmark ...'
+  folder_with_bench_data:
+    description: |
+      The file serves as the repository for both historical benchmark data
+      and the location where new benchmark data will be appended.
+      Currently, only .js files are supported.
     required: false
-    default: 'Benchmark'
+    default: 'bench_data'
+  file_with_bench_data:
+    description: |
+      The name of the file that contains the benchmark data.
+      Currently, only .js files are supported.
+    required: false
+    default: 'data.json'
   current_bench_res_file_or_folder:
     description: |
       The name of a file that contains the current benchmark result or folder that contains more than one such file.
@@ -17,6 +26,11 @@ inputs:
       If the folder is located in the root of the repository and the folder name is 'resultsFolder',
       the input should look as follows: 'resultsFolder'.
     required: true
+
+  name:
+    description: 'The name of a specific benchmark. This name will be used to identify the benchmark ...'
+    required: false
+    default: 'Benchmark'
   result_files_merge_strategy_for_each_metric:
     description: |
       The strategy to use when merging the the benchmark results from the downloaded folder.
@@ -29,19 +43,6 @@ inputs:
       This must be a subset of metrics from the file pointed to by current_bench_res_file.
       If not specified, all metrics will be evaluated.
     required: false
-  folder_with_bench_data:
-    description: |
-      The file serves as the repository for both historical benchmark data
-      and the location where new benchmark data will be appended.
-      Currently, only .js files are supported.
-    required: false
-    default: 'benchmark_data'
-  file_with_bench_data:
-    description: |
-      The name of the file that contains the benchmark data.
-      Currently, only .js files are supported.
-    required: false
-    default: 'data.json'
   github_token:
     description: 'GitHub token to pull/push to repo, add benchmark info to the repo, etc.'
     required: false
@@ -138,7 +139,6 @@ outputs:
     description: |
       Indicates whether the benchmark should fail or not.
       The possible values are true and false.
-
 
 runs:
   using: node20

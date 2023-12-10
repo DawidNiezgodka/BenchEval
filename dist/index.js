@@ -30096,7 +30096,8 @@ const {
 
 module.exports.addCompleteBenchmarkToFile = async (
   benchmarkInstance,
-  currentDataFileName,
+  folderWithBenchData,
+  fileWithBenchData,
   evaluationResult,
   evaluationParams,
   evaluationConfig
@@ -30104,8 +30105,7 @@ module.exports.addCompleteBenchmarkToFile = async (
   try {
     let jsonData
     const pathToPreviousDataFile = path.join(
-      'benchmark_data',
-      currentDataFileName
+        folderWithBenchData, fileWithBenchData
     )
     core.debug('--- start addCompleteBenchmarkToFile ---')
     core.debug(`Reading file at ${pathToPreviousDataFile}`)
@@ -30152,8 +30152,7 @@ module.exports.addCompleteBenchmarkToFile = async (
     }
     jsonData.entries[benchmarkInstance.benchmarkName].push(newBenchmarkJSON)
 
-    const pth = path.join('benchmark_data', currentDataFileName)
-    await fs.writeFile(pth, JSON.stringify(jsonData, null, 4), 'utf8')
+    await fs.writeFile(pathToPreviousDataFile, JSON.stringify(jsonData, null, 4), 'utf8')
 
     core.debug('Successfully added new benchmark to file')
     core.debug('--- end addCompleteBenchmarkToFile ---')
@@ -31263,6 +31262,8 @@ module.exports.validateInputAndFetchConfig = function () {
     );
   }
   module.exports.isValidPath(currentBenchResFileOrFolder);
+  // print content of currentBenchResFileOrFolder
+  console.log("Content of currentBenchResFileOrFolder: ", fs.readdirSync(currentBenchResFileOrFolder));
   let isFolder = module.exports.checkIfResultInFolder(currentBenchResFileOrFolder);
   let parsedData;
   let subsetParsedData;
@@ -32484,7 +32485,8 @@ async function run() {
     completeBenchmarkObject.benchSuccessful = !shouldFail;
     if (completeConfig.saveCurrBenchRes) {
       core.debug('Saving current benchmark results to file')
-      await addCompleteBenchmarkToFile(completeBenchmarkObject, completeConfig.fileWithBenchData,
+      await addCompleteBenchmarkToFile(completeBenchmarkObject,
+          completeConfig.folderWithBenchData, completeConfig.fileWithBenchData,
           evaluationResult.results, evaluationResult.evalParameters,
           completeConfig.evaluationConfig
       )

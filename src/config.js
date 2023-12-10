@@ -39,6 +39,8 @@ module.exports.validateInputAndFetchConfig = function () {
     );
   }
   module.exports.isValidPath(currentBenchResFileOrFolder);
+  // print content of currentBenchResFileOrFolder
+  console.log("Content of currentBenchResFileOrFolder: ", fs.readdirSync(currentBenchResFileOrFolder));
   let isFolder = module.exports.checkIfResultInFolder(currentBenchResFileOrFolder);
   let parsedData;
   let subsetParsedData;

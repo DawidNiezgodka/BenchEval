@@ -20,7 +20,7 @@ jobs:
           sparse-checkout: |
             data.json
           sparse-checkout-cone-mode: false
-          path: 'benchmark_data'
+          path: 'bench_data'
 
       - run: tree
 
