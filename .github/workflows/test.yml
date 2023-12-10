@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - chosen_metrics_and_merging
 
 jobs:
   test:
@@ -29,7 +28,7 @@ jobs:
         id: eval
         with:
           name: "Benchmark"
-          folder_with_bench_data: ./benchmark_data
+          folder_with_bench_data: ./bench_data
           file_with_bench_data: data.json
           bench_to_compare: "TinyFaaS Bench 2.0"
           folder_with_current_benchmark_results: resultsFolder
