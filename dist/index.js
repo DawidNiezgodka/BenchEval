@@ -31255,16 +31255,16 @@ module.exports.getBoolInput = function (inputName) {
 module.exports.validateInputAndFetchConfig = function () {
   // Part 1: General info + extracting json with current bench data
   const benchName = core.getInput('name')
-  const currentBenchResFileOrFolder = core.getInput('folder_with_current_benchmark_results')
-  if (currentBenchResFileOrFolder === '') {
+  const folderWithCurrentBenchmarkResults = core.getInput('folder_with_current_benchmark_results')
+  if (folderWithCurrentBenchmarkResults === '') {
     throw new Error(
         `folder_with_current_benchmark_results must not be empty.`
     );
   }
-  module.exports.isValidPath(currentBenchResFileOrFolder);
+  module.exports.isValidPath(folderWithCurrentBenchmarkResults);
   // print content of currentBenchResFileOrFolder
-  core.debug(`Content of currentBenchResFileOrFolder: ", ${fs.readdirSync(currentBenchResFileOrFolder)}`);
-  let hasMultipleFiles = module.exports.hasMoreThanOneFile(currentBenchResFileOrFolder);
+  core.debug(`Content of currentBenchResFileOrFolder: ", ${fs.readdirSync(folderWithCurrentBenchmarkResults)}`);
+  let hasMultipleFiles = module.exports.hasMoreThanOneFile(folderWithCurrentBenchmarkResults);
   let parsedData;
   let subsetParsedData;
   let itemCount;
@@ -31272,10 +31272,10 @@ module.exports.validateInputAndFetchConfig = function () {
   const metricsToEvaluate = core.getInput('metrics_to_evaluate')
 
   if (hasMultipleFiles) {
-      const fileWhereMergedResultsWillBeSaved = currentBenchResFileOrFolder + '/merged_results.json';
+      const fileWhereMergedResultsWillBeSaved = folderWithCurrentBenchmarkResults + '/merged_results.json';
       const mergingStrategies = core.getInput('result_files_merge_strategy_for_each_metric');
       const mergingStrategiesParsed = mergingStrategies.split(',').map(s => s.trim());
-      module.exports.mergeResults(currentBenchResFileOrFolder, mergingStrategiesParsed,
+      module.exports.mergeResults(folderWithCurrentBenchmarkResults, mergingStrategiesParsed,
           fileWhereMergedResultsWillBeSaved,metricsToEvaluate);
       rawData = fs.readFileSync(fileWhereMergedResultsWillBeSaved);
       parsedData = JSON.parse(rawData);
@@ -31283,7 +31283,7 @@ module.exports.validateInputAndFetchConfig = function () {
       itemCount = module.exports.determineJsonItemCount(parsedData.results)
 
   } else {
-    const fileName = path.basename(currentBenchResFileOrFolder);
+    const fileName = path.basename(folderWithCurrentBenchmarkResults);
     rawData = fs.readFileSync(fileName)
     parsedData = JSON.parse(rawData);
     if (metricsToEvaluate) {
