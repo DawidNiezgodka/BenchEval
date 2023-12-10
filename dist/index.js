@@ -31263,15 +31263,15 @@ module.exports.validateInputAndFetchConfig = function () {
   }
   module.exports.isValidPath(currentBenchResFileOrFolder);
   // print content of currentBenchResFileOrFolder
-  console.log("Content of currentBenchResFileOrFolder: ", fs.readdirSync(currentBenchResFileOrFolder));
-  let isFolder = module.exports.checkIfResultInFolder(currentBenchResFileOrFolder);
+  core.debug(`Content of currentBenchResFileOrFolder: ", ${fs.readdirSync(currentBenchResFileOrFolder)}`);
+  let hasMultipleFiles = module.exports.hasMoreThanOneFile(currentBenchResFileOrFolder);
   let parsedData;
   let subsetParsedData;
   let itemCount;
   let rawData;
   const metricsToEvaluate = core.getInput('metrics_to_evaluate')
 
-  if (isFolder) {
+  if (hasMultipleFiles) {
       const fileWhereMergedResultsWillBeSaved = currentBenchResFileOrFolder + '/merged_results.json';
       const mergingStrategies = core.getInput('result_files_merge_strategy_for_each_metric');
       const mergingStrategiesParsed = mergingStrategies.split(',').map(s => s.trim());
@@ -31356,14 +31356,21 @@ module.exports.validateInputAndFetchConfig = function () {
   )
 }
 
-module.exports.checkIfResultInFolder = function (currentBenchResFileOrFolder) {
-    let wasMerged = false;
-    if (currentBenchResFileOrFolder.endsWith('.json')) {
-        wasMerged = false;
-    } else {
-        wasMerged = true;
+module.exports.hasMoreThanOneFile = function(dirPath) {
+  let hasMoreThanOneFile = false;
+  fs.readdir(dirPath, (err, files) => {
+    if (err) {
+      console.error('Error reading directory:', err);
+      throw new Error(`Error reading directory: ${err}`);
     }
-    return wasMerged;
+    if (files.length > 1) {
+      core.debug(`There are more than one file/directory in ${dirPath}`);
+      hasMoreThanOneFile = true;
+    } else {
+      core.debug(`There are one or no files/directories in ${dirPath}`);
+    }
+  });
+  return hasMoreThanOneFile;
 }
 
 module.exports.isValidPath = function(p) {
