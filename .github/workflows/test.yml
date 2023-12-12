@@ -27,10 +27,10 @@ jobs:
         uses: ./
         id: eval
         with:
-          name: "Benchmark"
+          bench_group_name: "Benchmark"
           folder_with_bench_data: ./bench_data
           file_with_bench_data: data.json
-          bench_to_compare: "TinyFaaS Bench 2.0"
+          bench_group_to_compare: "TinyFaaS Bench 2.0"
           folder_with_current_benchmark_results: resultsFolder
           result_files_merge_strategy_for_each_metric: average, sum
           metrics_to_evaluate: avg latency, throughput
@@ -41,7 +41,7 @@ jobs:
           github_token: ${{ secrets.GH_TOKEN }}
 
       - name: Commit files
-        working-directory: ./benchmark_data
+        working-directory: ./bench_data
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"

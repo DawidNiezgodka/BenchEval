@@ -31,7 +31,7 @@ module.exports.getBoolInput = function (inputName) {
 
 module.exports.validateInputAndFetchConfig = function () {
   // Part 1: General info + extracting json with current bench data
-  const benchName = core.getInput('name')
+  const benchGroupName = core.getInput('bench_group_name')
   const folderWithCurrentBenchmarkResults = core.getInput('folder_with_current_benchmark_results')
   if (folderWithCurrentBenchmarkResults === '') {
     throw new Error(
@@ -97,15 +97,15 @@ module.exports.validateInputAndFetchConfig = function () {
     )
   }
 
-  let benchToCompare = core.getInput('bench_to_compare')
-  if (benchToCompare === '' || benchToCompare === null) {
-    benchToCompare = benchName
+  let benchGroupToCompare = core.getInput('bench_group_to_compare')
+  if (benchGroupToCompare === '' || benchGroupToCompare === null) {
+    benchGroupToCompare = benchGroupName
   }
 
   const folderWithBenchData = core.getInput('folder_with_bench_data')
   const fileWithBenchData = core.getInput('file_with_bench_data')
   const evalConfig = module.exports.validateAndFetchEvaluationConfig(
-      itemCount, benchToCompare, folderWithBenchData, fileWithBenchData);
+      itemCount, benchGroupToCompare, folderWithBenchData, fileWithBenchData);
 
   // No need for extra validaiton
   const githubToken = core.getInput('github_token')
@@ -121,11 +121,11 @@ module.exports.validateInputAndFetchConfig = function () {
 
 
   return new Config(
-      benchName,
+      benchGroupName,
       parsedData,
       subsetParsedData,
       failingCondition,
-      benchToCompare,
+      benchGroupToCompare,
       evalConfig,
       folderWithBenchData,
       fileWithBenchData,
