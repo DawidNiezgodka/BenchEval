@@ -30577,8 +30577,9 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
 
   lines.push(`The chosen evaluation method is trend detection with deltas.`)
   lines.push(`For each metric, we have the following condition: 
-    The current value should not change more than X% (Max. ch in the table below) from the value measured for the previous benchmark, the benchmark closest to a week ago,
-  <b>and</b> the benchmark from the last stable commit to the main branch (pointed to by the input trend_det_successful_release_branch).`)
+  The current value should not change more than X% (Max. ch in the table below) from the value measured for the previous benchmark,
+   the benchmark closest to a week ago, <b>and</b> the benchmark from the last stable commit to the main branch
+   (pointed to by the input <i>trend_det_successful_release_branch</i>).`)
 
   const benchDataText = module.exports.createBenchDataText(
       currentBenchmark
