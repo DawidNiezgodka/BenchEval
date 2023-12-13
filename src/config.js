@@ -98,16 +98,16 @@ module.exports.validateInputAndFetchConfig = function () {
     )
   }
 
-  let benchGroupToCompare = core.getInput('bench_group_to_compare')
-  if (benchGroupToCompare === '' || benchGroupToCompare === null) {
-    benchGroupToCompare = benchmarkGroupName
+  let benchmarkGroupToCompare = core.getInput('bench_group_to_compare')
+  if (benchmarkGroupToCompare === '' || benchmarkGroupToCompare === null) {
+    benchmarkGroupToCompare = benchmarkGroupName
   }
-  core.debug(`Benchmark group to compare: ${benchGroupToCompare}`)
+  core.debug(`Benchmark group to compare: ${benchmarkGroupToCompare}`)
 
   const folderWithBenchData = core.getInput('folder_with_bench_data')
   const fileWithBenchData = core.getInput('file_with_bench_data')
   const evalConfig = module.exports.validateAndFetchEvaluationConfig(
-      itemCount, benchGroupToCompare, folderWithBenchData, fileWithBenchData);
+      itemCount, benchmarkGroupToCompare, folderWithBenchData, fileWithBenchData);
 
   // No need for extra validaiton
   const githubToken = core.getInput('github_token')
@@ -127,7 +127,7 @@ module.exports.validateInputAndFetchConfig = function () {
       parsedData,
       subsetParsedData,
       failingCondition,
-      benchGroupToCompare,
+      benchmarkGroupToCompare,
       evalConfig,
       folderWithBenchData,
       fileWithBenchData,

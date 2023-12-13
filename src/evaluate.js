@@ -31,6 +31,8 @@ module.exports.evaluateCurrentBenchmark = function (
         evaluationResult = module.exports.trendDetectionMovingAve(currentBenchmark, completeConfig);
         break;
     case 'trend_detection_deltas':
+      core.debug('Benchmark group to compare (evaluate 35): ' + completeConfig.benchmarkGroupToCompare)
+        core.debug('bech eval config: ' + JSON.stringify(completeConfig.evaluationConfig))
         evaluationResult = module.exports.trendDetectionDeltas(currentBenchmark, completeConfig);
         break;
     default:
