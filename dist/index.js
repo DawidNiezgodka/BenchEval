@@ -32434,6 +32434,7 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
   core.debug('--- start trendDetectionDeltas ---')
   core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData));
 
+  core.debug('Benchmark group to compare: ' + config.evaluationConfig.benchmarkGroupToCompare)
   const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchmarkGroupToCompare,
         config.folderWithBenchData, config.fileWithBenchData, 1, false);
   core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
