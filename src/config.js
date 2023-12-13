@@ -306,7 +306,7 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
       break
     case 'trend_detection_deltas':
       module.exports.validateTrendThreshold(currentResultLength);
-      module.exports.checkForWeekOldBenchmark(benchmarkData, benchToCompare);
+      //module.exports.checkForWeekOldBenchmark(benchmarkData, benchToCompare);
       module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare,1);
       break
     default:
@@ -486,7 +486,7 @@ module.exports.validateJumpDetectionConfig = function (currentResultLength) {
 
 module.exports.validateTrendThreshold = function (currentResultLength) {
   const trendThresholds = core.getInput('trend_thresholds')
-
+  core.info("Trend thresholds: " + trendThresholds);
   if (trendThresholds == null) {
     throw new Error(
         'Both movingAveWindowSize and trendThresholds must be provided for trend detection with moving average.'
@@ -508,7 +508,7 @@ module.exports.validateTrendThreshold = function (currentResultLength) {
 }
 
 module.exports.validateTrendDetectionMovingAveConfig = function (currentResultLength) {
-  validateTrendThreshold(currentResultLength);
+  module.exports.validateTrendThreshold(currentResultLength);
 
   // window size part
   const movingAveWindowSize = core.getInput('moving_ave_window_size')
@@ -581,31 +581,34 @@ module.exports.validateTrendDetectionDeltasConfig = function () {
 
 module.exports.checkForWeekOldBenchmark = function(data, benchmarkKey) {
 
-
   const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
-  const DAY_IN_MS = 24 * 60 * 60 * 1000;
   const now = Date.now();
-
 
   if (!data.entries.hasOwnProperty(benchmarkKey)) {
     throw new Error(`No such benchmark key: '${benchmarkKey}' exists.`);
   }
 
   let benchmarks = data.entries[benchmarkKey];
-  // print number of benchmarks
+  if (benchmarks.length === 0) {
+    throw new Error(`No benchmarks under '${benchmarkKey}'.`);
+  }
 
+  let closestBenchmark = null;
+  let smallestDifference = Number.MAX_SAFE_INTEGER;
 
-  let weekOldBenchmarkExists = benchmarks.some(benchmark => {
-
-
+  benchmarks.forEach(benchmark => {
     let benchmarkAge = now - benchmark.date;
-    return benchmarkAge >= (ONE_WEEK_IN_MS - DAY_IN_MS) && benchmarkAge <= (ONE_WEEK_IN_MS + DAY_IN_MS);
+    let difference = Math.abs(benchmarkAge - ONE_WEEK_IN_MS);
+    if (difference < smallestDifference) {
+      smallestDifference = difference;
+      closestBenchmark = benchmark;
+    }
   });
 
-  if (!weekOldBenchmarkExists) {
-    throw new Error(`No benchmark under '${benchmarkKey}' is approximately one week old.`);
+  if (!closestBenchmark) {
+    throw new Error(`No benchmark under '${benchmarkKey}' is close to one week old.`);
   } else {
-    console.log(`A benchmark under '${benchmarkKey}' is approximately one week old.`);
+    console.log(`Found a benchmark under '${benchmarkKey}' that is closest to one week old.`);
   }
 }
 

@@ -217,7 +217,8 @@ module.exports.getSortedBenchmarkData = function (folderWithBenchData, fileNameW
   }
 }
 
-module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchData, fileNameWithBenchData) {
+module.exports.getBenchFromWeekAgo = function (
+    benchToCompare, folderWithBenchData, fileNameWithBenchData) {
 
   core.debug('--- start getBenchFromWeekAgo ---')
   const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
@@ -251,6 +252,43 @@ module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchDa
     return convertBenchDataToCompleteBenchmarkInstance(closestBenchmark, benchToCompare);
   }
 }
+
+module.exports.getClosestToOneWeekAgo = function(benchToCompare, folderWithBenchData, fileNameWithBenchData) {
+
+  let data = module.exports.getCompleteBenchData(
+      folderWithBenchData, fileNameWithBenchData
+  );
+  const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+
+  if (!data.entries.hasOwnProperty(benchToCompare)) {
+    throw new Error(`No such benchmark key: '${benchToCompare}' exists.`);
+  }
+
+  let benchmarks = data.entries[benchToCompare];
+  if (benchmarks.length === 0) {
+    throw new Error(`No benchmarks under '${benchToCompare}'.`);
+  }
+
+  let closestBenchmark = null;
+  let smallestDifference = Number.MAX_SAFE_INTEGER;
+
+  benchmarks.forEach(benchmark => {
+    let benchmarkAge = now - benchmark.date;
+    let difference = Math.abs(benchmarkAge - ONE_WEEK_IN_MS);
+    if (difference < smallestDifference) {
+      smallestDifference = difference;
+      closestBenchmark = benchmark;
+    }
+  });
+
+  if (!closestBenchmark) {
+    throw new Error(`No benchmark under '${benchToCompare}' is close to one week old.`);
+  } else {
+    console.log(`Found a benchmark under '${benchToCompare}' that is closest to one week old.`);
+  }
+}
+
 
 module.exports.getBenchmarkOfStableBranch = function (benchToCompare, folderWithBenchData,
                                                       fileNameWithBenchData, latestBenchSha) {

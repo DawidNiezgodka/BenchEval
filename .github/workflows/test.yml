@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - test_tdd
 
 jobs:
   test:
@@ -30,13 +31,11 @@ jobs:
           bench_group_name: "Benchmark"
           folder_with_bench_data: ./bench_data
           file_with_bench_data: data.json
-          bench_group_to_compare: "TinyFaaS Bench 2.0"
           folder_with_current_benchmark_results: resultsFolder
           result_files_merge_strategy_for_each_metric: average, sum
           metrics_to_evaluate: avg latency, throughput
-          evaluation_method: threshold_range
-          threshold_lower: 300,300
-          threshold_upper: 1000,1000
+          evaluation_method: trend_detection_deltas
+          trend_thresholds: 5, 5
           save_curr_bench_res: true
           github_token: ${{ secrets.GH_TOKEN }}
 

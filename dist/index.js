@@ -30302,7 +30302,8 @@ module.exports.getSortedBenchmarkData = function (folderWithBenchData, fileNameW
   }
 }
 
-module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchData, fileNameWithBenchData) {
+module.exports.getBenchFromWeekAgo = function (
+    benchToCompare, folderWithBenchData, fileNameWithBenchData) {
 
   core.debug('--- start getBenchFromWeekAgo ---')
   const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
@@ -30336,6 +30337,43 @@ module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchDa
     return convertBenchDataToCompleteBenchmarkInstance(closestBenchmark, benchToCompare);
   }
 }
+
+module.exports.getClosestToOneWeekAgo = function(benchToCompare, folderWithBenchData, fileNameWithBenchData) {
+
+  let data = module.exports.getCompleteBenchData(
+      folderWithBenchData, fileNameWithBenchData
+  );
+  const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+
+  if (!data.entries.hasOwnProperty(benchToCompare)) {
+    throw new Error(`No such benchmark key: '${benchToCompare}' exists.`);
+  }
+
+  let benchmarks = data.entries[benchToCompare];
+  if (benchmarks.length === 0) {
+    throw new Error(`No benchmarks under '${benchToCompare}'.`);
+  }
+
+  let closestBenchmark = null;
+  let smallestDifference = Number.MAX_SAFE_INTEGER;
+
+  benchmarks.forEach(benchmark => {
+    let benchmarkAge = now - benchmark.date;
+    let difference = Math.abs(benchmarkAge - ONE_WEEK_IN_MS);
+    if (difference < smallestDifference) {
+      smallestDifference = difference;
+      closestBenchmark = benchmark;
+    }
+  });
+
+  if (!closestBenchmark) {
+    throw new Error(`No benchmark under '${benchToCompare}' is close to one week old.`);
+  } else {
+    console.log(`Found a benchmark under '${benchToCompare}' that is closest to one week old.`);
+  }
+}
+
 
 module.exports.getBenchmarkOfStableBranch = function (benchToCompare, folderWithBenchData,
                                                       fileNameWithBenchData, latestBenchSha) {
@@ -31109,11 +31147,108 @@ module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod = function (ev
     case 'trend_detection_moving_ave':
       return ""
     case 'trend_detection_deltas':
-      return ""
+      return "You are trying to identify software performance degradation by comparing current performance against three benchmarks:" +
+          " the immediate previous run, a run closest to one week ago, and the last stable release." +
+          " Each comparison checks for changes exceeding a specified percentage, enabling the detection of both sudden and gradual performance declines"
     default:
       return "Unsupported evaluation method."
 
   }}
+
+module.exports.createWorkflowSummaryForTrendDetDeltas = function (evaluationResult, completeConfig) {
+  const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+
+  const headers = [
+    {
+      data: 'Metric',
+      header: true,
+    },
+    {
+      data: `Current: "${currentBenchmark.commitInfo.id.substring(0, 7)}"`,
+      header: true,
+    },
+    {
+      data: "Prev",
+      header: true,
+    },
+    {
+      data: '~Week ago',
+      header: true,
+    },
+    {
+      data: 'Last stable',
+      header: true,
+    },
+    {
+      data: 'Each should be',
+      header: true,
+    }
+
+  ];
+
+  const rows = [];
+  const evaluationResults = evaluationResult.results.result
+  const evaluationParameters = evaluationResult.evalParameters
+  const evaluationConfiguration = completeConfig.evaluationConfig
+  for (let i = 0; i < evaluationResults.length; i++) {
+
+    const resultExplanation = evaluationParameters.resultExplanations[i];
+    const resultStatus = evaluationResults[i];
+    const metricName = evaluationParameters.metricNames[i];
+    const metricUnit = evaluationParameters.metricUnits[i];
+    const metricValues = evaluationParameters.metricToDifferentBenchValues.get(metricName);
+
+    if (!metricValues) {
+      continue;
+    }
+
+    let currBenchValue = metricValues?.current ?? 'N/A';
+    let prevBenchValue = metricValues?.previous ?? 'N/A';
+    let weekAgoBenchValue = metricValues?.week_ago ?? 'N/A';
+    let lastStableReleaseBenchValue = metricValues?.last_stable_release ?? 'N/A';
+
+    const x = evaluationConfiguration.trendThresholds[i];
+    let line;
+    let comparisonResult;
+
+    const metricNameAndUnit = metricName + " [" + metricUnit + "]";
+
+    let graphicalRepresentationOfRes;
+    if (resultStatus === 'failed' || resultStatus === 'passed') {
+      graphicalRepresentationOfRes = resultStatus === 'passed' ? '🟢' : '🔴'
+    } else {
+      graphicalRepresentationOfRes= '🔘';
+    }
+
+    rows.push([
+      {
+        data: metricName,
+      },
+      {
+        data: currBenchValue,
+      },
+      {
+        data: prevBenchValue,
+      },
+      {
+        data: weekAgoBenchValue,
+      },
+      {
+        data: lastStableReleaseBenchValue,
+      },
+      {
+        data: x,
+      },
+      {
+        data: graphicalRepresentationOfRes
+      },
+
+    ])
+  }
+  let summaryMessage = module.exports.createSummaryMessage(evaluationResult);
+  const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults);
+}
 
 module.exports.createSummaryMessage = function(evaluationResult) {
   const results = evaluationResult.results.result;
@@ -31529,7 +31664,7 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
       break
     case 'trend_detection_deltas':
       module.exports.validateTrendThreshold(currentResultLength);
-      module.exports.checkForWeekOldBenchmark(benchmarkData, benchToCompare);
+      //module.exports.checkForWeekOldBenchmark(benchmarkData, benchToCompare);
       module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare,1);
       break
     default:
@@ -31709,7 +31844,7 @@ module.exports.validateJumpDetectionConfig = function (currentResultLength) {
 
 module.exports.validateTrendThreshold = function (currentResultLength) {
   const trendThresholds = core.getInput('trend_thresholds')
-
+  core.info("Trend thresholds: " + trendThresholds);
   if (trendThresholds == null) {
     throw new Error(
         'Both movingAveWindowSize and trendThresholds must be provided for trend detection with moving average.'
@@ -31731,7 +31866,7 @@ module.exports.validateTrendThreshold = function (currentResultLength) {
 }
 
 module.exports.validateTrendDetectionMovingAveConfig = function (currentResultLength) {
-  validateTrendThreshold(currentResultLength);
+  module.exports.validateTrendThreshold(currentResultLength);
 
   // window size part
   const movingAveWindowSize = core.getInput('moving_ave_window_size')
@@ -31804,31 +31939,34 @@ module.exports.validateTrendDetectionDeltasConfig = function () {
 
 module.exports.checkForWeekOldBenchmark = function(data, benchmarkKey) {
 
-
   const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
-  const DAY_IN_MS = 24 * 60 * 60 * 1000;
   const now = Date.now();
-
 
   if (!data.entries.hasOwnProperty(benchmarkKey)) {
     throw new Error(`No such benchmark key: '${benchmarkKey}' exists.`);
   }
 
   let benchmarks = data.entries[benchmarkKey];
-  // print number of benchmarks
+  if (benchmarks.length === 0) {
+    throw new Error(`No benchmarks under '${benchmarkKey}'.`);
+  }
 
+  let closestBenchmark = null;
+  let smallestDifference = Number.MAX_SAFE_INTEGER;
 
-  let weekOldBenchmarkExists = benchmarks.some(benchmark => {
-
-
+  benchmarks.forEach(benchmark => {
     let benchmarkAge = now - benchmark.date;
-    return benchmarkAge >= (ONE_WEEK_IN_MS - DAY_IN_MS) && benchmarkAge <= (ONE_WEEK_IN_MS + DAY_IN_MS);
+    let difference = Math.abs(benchmarkAge - ONE_WEEK_IN_MS);
+    if (difference < smallestDifference) {
+      smallestDifference = difference;
+      closestBenchmark = benchmark;
+    }
   });
 
-  if (!weekOldBenchmarkExists) {
-    throw new Error(`No benchmark under '${benchmarkKey}' is approximately one week old.`);
+  if (!closestBenchmark) {
+    throw new Error(`No benchmark under '${benchmarkKey}' is close to one week old.`);
   } else {
-    console.log(`A benchmark under '${benchmarkKey}' is approximately one week old.`);
+    console.log(`Found a benchmark under '${benchmarkKey}' that is closest to one week old.`);
   }
 }
 
@@ -32290,20 +32428,20 @@ module.exports.addResultToBenchmarkObject = function (
 
 module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
-  //core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData));
+  core.info('Current benchmark data: ' + JSON.stringify(currentBenchmarkData));
 
   const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchToCompare,
         config.folderWithBenchData, config.fileWithBenchData, 1, false);
-  ////core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
+  core.info('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
 
   const benchFromWeekAgo = getBenchFromWeekAgo(config.evaluationConfig.benchToCompare,
         config.folderWithBenchData, config.fileWithBenchData);
-    ////core.debug('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
+  core.info('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
 
   const lastStableReleaseBench = getBenchmarkOfStableBranch(
         config.evaluationConfig.benchToCompare, config.folderWithBenchData,
       config.fileWithBenchData, config.latestBenchSha);
-    ////core.debug('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
+  core.info('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
 
 
   const { trendThresholds: X } = config.evaluationConfig;
@@ -32319,14 +32457,12 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
   };
 
   const evaluateChange = (oldValue, newValue, threshold) => {
-    // calculate percentage change for the following values
-
     const percentageChange = calculatePercentageChange(oldValue, newValue);
     return Math.abs(percentageChange) <= threshold;
   };
 
   currentBenchmarkData.simpleMetricResults.forEach((currentResult, index) => {
-    //core.debug('Current metric: ' + JSON.stringify(currentResult));
+    core.info('Current metric: ' + JSON.stringify(currentResult));
     const currentName = currentResult.name;
     const currentValue = currentResult.value;
     const currentUnit = currentResult.unit;
@@ -32440,7 +32576,8 @@ const {
 const { createCurrBench} = __nccwpck_require__(501)
 
 const { createComment, createWorkflowSummaryForCompWithPrev, createWorkflowSummaryThreshold,
-  summaryForMethodNotSupported, createWorkflowSummaryForThresholdRange} = __nccwpck_require__(3732)
+  summaryForMethodNotSupported, createWorkflowSummaryForThresholdRange,
+  createWorkflowSummaryForTrendDetDeltas} = __nccwpck_require__(3732)
 
 const {
   addCompleteBenchmarkToFile,
@@ -32519,6 +32656,8 @@ async function run() {
         createWorkflowSummaryThreshold(evaluationResult, completeConfig);
       } else if (evaluationConfig.evaluationMethod === 'threshold_range') {
         createWorkflowSummaryForThresholdRange(evaluationResult, completeConfig)
+      } else if (evaluationConfig.evaluationMethod === 'trend_detection_deltas') {
+        createWorkflowSummaryForTrendDetDeltas(evaluationResult, completeConfig);
       }
 
       else {

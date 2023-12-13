@@ -351,20 +351,20 @@ module.exports.addResultToBenchmarkObject = function (
 
 module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
-  //core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData));
+  core.info('Current benchmark data: ' + JSON.stringify(currentBenchmarkData));
 
   const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchToCompare,
         config.folderWithBenchData, config.fileWithBenchData, 1, false);
-  ////core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
+  core.info('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
 
   const benchFromWeekAgo = getBenchFromWeekAgo(config.evaluationConfig.benchToCompare,
         config.folderWithBenchData, config.fileWithBenchData);
-    ////core.debug('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
+  core.info('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
 
   const lastStableReleaseBench = getBenchmarkOfStableBranch(
         config.evaluationConfig.benchToCompare, config.folderWithBenchData,
       config.fileWithBenchData, config.latestBenchSha);
-    ////core.debug('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
+  core.info('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
 
 
   const { trendThresholds: X } = config.evaluationConfig;
@@ -380,14 +380,12 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
   };
 
   const evaluateChange = (oldValue, newValue, threshold) => {
-    // calculate percentage change for the following values
-
     const percentageChange = calculatePercentageChange(oldValue, newValue);
     return Math.abs(percentageChange) <= threshold;
   };
 
   currentBenchmarkData.simpleMetricResults.forEach((currentResult, index) => {
-    //core.debug('Current metric: ' + JSON.stringify(currentResult));
+    core.info('Current metric: ' + JSON.stringify(currentResult));
     const currentName = currentResult.name;
     const currentValue = currentResult.value;
     const currentUnit = currentResult.unit;

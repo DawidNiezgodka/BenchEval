@@ -15,7 +15,8 @@ const {
 const { createCurrBench} = require('./bench')
 
 const { createComment, createWorkflowSummaryForCompWithPrev, createWorkflowSummaryThreshold,
-  summaryForMethodNotSupported, createWorkflowSummaryForThresholdRange} = require('./comment')
+  summaryForMethodNotSupported, createWorkflowSummaryForThresholdRange,
+  createWorkflowSummaryForTrendDetDeltas} = require('./comment')
 
 const {
   addCompleteBenchmarkToFile,
@@ -94,6 +95,8 @@ async function run() {
         createWorkflowSummaryThreshold(evaluationResult, completeConfig);
       } else if (evaluationConfig.evaluationMethod === 'threshold_range') {
         createWorkflowSummaryForThresholdRange(evaluationResult, completeConfig)
+      } else if (evaluationConfig.evaluationMethod === 'trend_detection_deltas') {
+        createWorkflowSummaryForTrendDetDeltas(evaluationResult, completeConfig);
       }
 
       else {
