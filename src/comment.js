@@ -178,7 +178,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   lines.push(benchDataText)
 
   lines.push(
-      `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Week ago: ${weekAgoBench.commitInfo.id} | Last stable: ${lastStableReleaseBench.commitInfo.id} | Thr | Res |`
+      `| Metric name | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Week: ${weekAgoBench.commitInfo.id} | Stable: ${lastStableReleaseBench.commitInfo.id} | % | Res |`
   )
   lines.push('|-|-|-|-|-|-|-|')
 
@@ -775,7 +775,7 @@ module.exports.createWorkflowSummaryForTrendDetDeltas = function (evaluationResu
       header: true,
     },
     {
-      data: `Current: "${currentBenchmark.commitInfo.id.substring(0, 7)}"`,
+      data: `Curr: "${currentBenchmark.commitInfo.id.substring(0, 7)}"`,
       header: true,
     },
     {
@@ -783,11 +783,11 @@ module.exports.createWorkflowSummaryForTrendDetDeltas = function (evaluationResu
       header: true,
     },
     {
-      data: `~Week ago: "${weekAgoBench.commitInfo.id.substring(0, 7)}"`,
+      data: `~Week: "${weekAgoBench.commitInfo.id.substring(0, 7)}"`,
       header: true,
     },
     {
-      data: `Last stable: "${lastStableReleaseBench.commitInfo.id.substring(0, 7)}"`,
+      data: `Stable: "${lastStableReleaseBench.commitInfo.id.substring(0, 7)}"`,
       header: true,
     },
     {
