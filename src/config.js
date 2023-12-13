@@ -361,6 +361,10 @@ module.exports.createEvaluationConfig = function (...inputNames) {
           return inputValue
         }
         if (inputName === 'benchmarkGroupToCompare') {
+          core.debug(`Processing ${inputName}. THe value is ${inputValue}`)
+          if (inputValue === '') {
+            core.debug(`The value is empty. Returning ${core.getInput('bench_group_name')}`)
+          }
           return inputValue === '' ? core.getInput('bench_group_name') : inputValue
         }
         return inputValue.includes(',')
