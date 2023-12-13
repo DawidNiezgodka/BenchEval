@@ -50,12 +50,12 @@ module.exports.createBodyForComparisonWithPrev = function (
 ) {
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
-  const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
+  const lines = [`# ${currentBenchmark.benchmarkGroupName}`, '', '']
 
-  const currentBenchName = currentBenchmark.benchmarkName
-  const previousBenchName = previousBenchmark.benchmarkName
+  const currentBenchmarkGroupName = currentBenchmark.benchmarkGroupName
+  const previousBenchmarkGroupName = previousBenchmark.benchmarkGroupName
 
-  if (currentBenchName !== previousBenchName) {
+  if (currentBenchmarkGroupName !== previousBenchmarkGroupName) {
     lines.push(
         "Please note that you're comparing benchmarks with different names!"
     )
@@ -152,7 +152,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
   const weekAgoBench = evaluationResult.referenceBenchmarks.weekAgo;
   const lastStableReleaseBench = evaluationResult.referenceBenchmarks.lastStableRelease;
-  const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
+  const lines = [`# ${currentBenchmark.benchmarkGroupName}`, '', '']
 
   lines.push('', '', '', '', '', '','')
   lines.push('## Results')
@@ -251,14 +251,14 @@ module.exports.createBenchDataTextForCompWithPrev = function (
       : null
 
   let benchDataLines = []
-  if (currentBenchmark.benchmarkName === previousBenchmark.benchmarkName) {
+  if (currentBenchmark.benchmarkGroupName === previousBenchmark.benchmarkGroupName) {
     benchDataLines = [
       `|   Current Benchmark   |   Previous Benchmark   |`,
       '|-----------------------|------------------------|'
     ]
   } else {
     benchDataLines = [
-      `|   Current ${currentBenchmark.benchmarkName}   |   Last ${previousBenchmark.benchmarkName}   |`,
+      `|   Current ${currentBenchmark.benchmarkGroupName}   |   Last ${previousBenchmark.benchmarkGroupName}   |`,
       '|-----------------------|------------------------|'
     ]
   }
@@ -400,7 +400,7 @@ module.exports.createBodyForComparisonWithThresholdRange = function (
 evaluationResult, completeConfig
 ) {
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
-  const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
+  const lines = [`# ${currentBenchmark.benchmarkGroupName}`, '', '']
 
   const benchDataText = module.exports.createBenchDataText(currentBenchmark);
 

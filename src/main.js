@@ -45,7 +45,7 @@ async function run() {
     if (completeConfig.evaluationConfig.evaluationMethod === 'trend_detection_deltas') {
       const branchName = core.getInput('trend_det_successful_release_branch');
       latestBenchSha = await getLastCommitSha(branchName, completeBenchData,
-          completeConfig.benchName);
+          completeConfig.benchmarkGroupName);
       core.debug(`Latest bench sha: ${latestBenchSha}`);
       completeConfig.latestBenchSha = latestBenchSha;
     }

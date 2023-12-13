@@ -31,7 +31,7 @@ module.exports.getBoolInput = function (inputName) {
 
 module.exports.validateInputAndFetchConfig = function () {
   // Part 1: General info + extracting json with current bench data
-  const benchGroupName = core.getInput('bench_group_name')
+  const benchmarkGroupName = core.getInput('bench_group_name')
   const folderWithCurrentBenchmarkResults = core.getInput('folder_with_current_benchmark_results')
   if (folderWithCurrentBenchmarkResults === '') {
     throw new Error(
@@ -99,7 +99,7 @@ module.exports.validateInputAndFetchConfig = function () {
 
   let benchGroupToCompare = core.getInput('bench_group_to_compare')
   if (benchGroupToCompare === '' || benchGroupToCompare === null) {
-    benchGroupToCompare = benchGroupName
+    benchGroupToCompare = benchmarkGroupName
   }
 
   const folderWithBenchData = core.getInput('folder_with_bench_data')
@@ -121,7 +121,7 @@ module.exports.validateInputAndFetchConfig = function () {
 
 
   return new Config(
-      benchGroupName,
+      benchmarkGroupName,
       parsedData,
       subsetParsedData,
       failingCondition,
@@ -220,7 +220,7 @@ module.exports.camelToSnake = function (string) {
       .toLowerCase()
 }
 
-module.exports.validateAndFetchEvaluationConfig = function (currentResultLength, benchToCompare,
+module.exports.validateAndFetchEvaluationConfig = function (currentResultLength, benchmarkGroupToCompare,
                                                             folderWithBenchData, fileWithBenchData) {
   // Evaluation method
   const evaluationMethod = core.getInput('evaluation_method', { required: true })
@@ -260,12 +260,12 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
     case 'previous':
       console.log('Validating previous evaluation configuration.')
       module.exports.validateOperatorsAndMargins(currentResultLength)
-      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare, 1);
+      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchmarkGroupToCompare, 1);
       break
     case 'previous_successful':
       console.log('Validating previous successful evaluation configuration.')
       module.exports.validateOperatorsAndMargins(currentResultLength)
-      module.exports.checkIfPreviousSuccessfulExists(benchmarkData, benchToCompare);
+      module.exports.checkIfPreviousSuccessfulExists(benchmarkData, benchmarkGroupToCompare);
       break
     case 'threshold_range':
       console.log('Validating threshold range evaluation configuration.')
@@ -273,7 +273,7 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
       break
     case 'jump_detection':
       console.log('Validating jump detection evaluation configuration.')
-      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare, 1);
+      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchmarkGroupToCompare, 1);
       module.exports.validateJumpDetectionConfig(currentResultLength)
       break
     case 'trend_detection_moving_ave':
@@ -281,7 +281,7 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
       module.exports.validateTrendDetectionMovingAveConfig(currentResultLength)
       const movingAveWindowSize = core.getInput('moving_ave_window_size')
         try {
-          module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare,
+          module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchmarkGroupToCompare,
               movingAveWindowSize);
         } catch (error) {
           // Depending on the value of the trend_det_no_sufficient_data_strategry input,
@@ -290,7 +290,7 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
             if (noSufficientDataStrategy === 'fail') {
                 throw error;
             } else if (noSufficientDataStrategy === 'use_available') {
-                const numberOfBenchsForName = benchmarkData.entries[benchToCompare].length;
+                const numberOfBenchsForName = benchmarkData.entries[benchmarkGroupToCompare].length;
                 const stringOfNumberOfBenchs= numberOfBenchsForName.toString();
                 core.info(`Not enough data for trend detection with moving average. Using available data.`)
                 process.env[`INPUT_MOVING_AVE_WINDOW_SIZE`] = stringOfNumberOfBenchs;
@@ -306,8 +306,8 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
       break
     case 'trend_detection_deltas':
       module.exports.validateTrendThreshold(currentResultLength);
-      //module.exports.checkForWeekOldBenchmark(benchmarkData, benchToCompare);
-      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare,1);
+      //module.exports.checkForWeekOldBenchmark(benchmarkData, benchmarkGroupToCompare);
+      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchmarkGroupToCompare,1);
       break
     default:
       throw new Error(
@@ -317,7 +317,7 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
 
   return module.exports.createEvaluationConfig(
       'evaluationMethod',
-      'benchToCompare',
+      'benchmarkGroupToCompare',
       'thresholdValues',
       'comparisonOperators',
       'comparisonMargins',
@@ -333,7 +333,7 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
 module.exports.createEvaluationConfig = function (...inputNames) {
   const validInputs = [
     "evaluationMethod",
-    "benchToCompare",
+    "benchmarkGroupToCompare",
     "thresholdValues",
     "comparisonOperators",
     "comparisonMargins",
@@ -354,7 +354,7 @@ module.exports.createEvaluationConfig = function (...inputNames) {
         if (inputName === 'comparisonOperators') {
             return inputValue.split(',').map(operator => operator.trim())
         }
-        if (inputName === 'evaluationMethod' || inputName === 'benchToCompare'
+        if (inputName === 'evaluationMethod' || inputName === 'benchmarkGroupToCompare'
         || inputName === 'trendDetNoSufficientDataStrategy') {
           return inputValue
         }
@@ -522,18 +522,18 @@ module.exports.validateTrendDetectionMovingAveConfig = function (currentResultLe
 
 module.exports.checkIfNthPreviousBenchmarkExists = function (
     benchmarkData,
-    benchmarkName,
+    benchmarkGroupName,
     numberOfBenchmarks
 ) {
   console.log(
-        `Checking if benchmark "${benchmarkName}" has ${numberOfBenchmarks} previous entries.`
+        `Checking if benchmark "${benchmarkGroupName}" has ${numberOfBenchmarks} previous entries.`
     )
 
-  if (!benchmarkData.entries.hasOwnProperty(benchmarkName)) {
-    throw new Error(`No benchmarks found with the name "${benchmarkName}"`)
+  if (!benchmarkData.entries.hasOwnProperty(benchmarkGroupName)) {
+    throw new Error(`No benchmarks found with the name "${benchmarkGroupName}"`)
   }
 
-  const benchmarks = benchmarkData.entries[benchmarkName]
+  const benchmarks = benchmarkData.entries[benchmarkGroupName]
 
   benchmarks.sort((a, b) => b.date - a.date)
 

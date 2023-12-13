@@ -39,7 +39,7 @@ module.exports.getCommit = function () {
 const { Octokit } = require('@octokit/action')
 const { context } = require('@actions/github')
 
-module.exports.getLastCommitSha = async (branchName, benchmarkData, benchmarkName)=> {
+module.exports.getLastCommitSha = async (branchName, benchmarkData, benchmarkGroupName)=> {
   console.log("Bench data from getlastcomitsha", benchmarkData);
   // get length of benchmark data
 
@@ -53,15 +53,15 @@ module.exports.getLastCommitSha = async (branchName, benchmarkData, benchmarkNam
   // list sha of the last 10 commits to branchName
   core.debug('Commits: ' + JSON.stringify(response.data.map(commit => commit.sha)));
 
-  return module.exports.findLatestSuccessfulBenchmark(benchmarkData, benchmarkName,
+  return module.exports.findLatestSuccessfulBenchmark(benchmarkData, benchmarkGroupName,
       response.data.map(commit => commit.sha));
 }
 
-module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkName, commitIds) {
-  const benchmarks = benchmarkData.entries[benchmarkName];
+module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkGroupName, commitIds) {
+  const benchmarks = benchmarkData.entries[benchmarkGroupName];
 
   core.debug('Benchmark data length: ' + (benchmarks ? benchmarks.length : 'undefined'));
-  core.debug('Benchmark name: ' + benchmarkName);
+  core.debug('Benchmark name: ' + benchmarkGroupName);
   core.debug('Commit ids: ' + JSON.stringify(commitIds));
 
   if (!benchmarks || !Array.isArray(commitIds)) {

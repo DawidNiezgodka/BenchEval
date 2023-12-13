@@ -104,7 +104,7 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluatio
 };
 
 module.exports.compareWithPrevious = function (currentBenchmarkData, completeBenchData, completeConfig, successful) {
-  const previousBenchmarkData = getLatestBenchmark(completeConfig.benchToCompare,
+  const previousBenchmarkData = getLatestBenchmark(completeConfig.benchmarkGroupToCompare,
       completeConfig.folderWithBenchData, completeConfig.fileWithBenchData, 1, successful);
   // First, find the previous benchmark => we will get obj not json
   //core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
@@ -224,7 +224,7 @@ module.exports.evaluateWithThresholdRanges = function (currentBenchmarkData, con
 
 module.exports.evaluateWithJumpDetection = function (currentBenchmarkData, config) {
 
-  const previousBenchmarkData = getLatestBenchmark(config.benchToCompare,
+  const previousBenchmarkData = getLatestBenchmark(config.benchmarkGroupToCompare,
       config.folderWithBenchData, config.fileWithBenchData, 1, false);
 
   const { jumpDetectionThresholds } = config.evaluationConfig;
@@ -280,7 +280,7 @@ module.exports.trendDetectionMovingAve = function (currentBenchmarkData, complet
   const { trendThresholds: t, movingAveWindowSize: b } = completeConfig.evaluationConfig;
 
   // First get the previous b benchmarks
-  const previousBenchmarkDataArray = getNLatestBenchmarks(completeConfig.evaluationConfig.benchToCompare,
+  const previousBenchmarkDataArray = getNLatestBenchmarks(completeConfig.evaluationConfig.benchmarkGroupToCompare,
         completeConfig.folderWithBenchData, completeConfig.fileWithBenchData, b, false);
   //core.debug('Retrieved the following number of benchmarks: ' + previousBenchmarkDataArray.length);
 
@@ -353,16 +353,16 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
   core.info('Current benchmark data: ' + JSON.stringify(currentBenchmarkData));
 
-  const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchToCompare,
+  const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchmarkGroupToCompare,
         config.folderWithBenchData, config.fileWithBenchData, 1, false);
   core.info('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
 
-  const benchFromWeekAgo = getBenchFromWeekAgo(config.evaluationConfig.benchToCompare,
+  const benchFromWeekAgo = getBenchFromWeekAgo(config.evaluationConfig.benchmarkGroupToCompare,
         config.folderWithBenchData, config.fileWithBenchData);
   core.info('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
 
   const lastStableReleaseBench = getBenchmarkOfStableBranch(
-        config.evaluationConfig.benchToCompare, config.folderWithBenchData,
+        config.evaluationConfig.benchmarkGroupToCompare, config.folderWithBenchData,
       config.fileWithBenchData, config.latestBenchSha);
   core.info('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
 

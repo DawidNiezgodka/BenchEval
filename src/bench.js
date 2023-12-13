@@ -24,7 +24,7 @@ module.exports.createCurrBench = function (config) {
   )
   const commit = getCommit()
   const completeBenchmark = new CompleteBenchmark(
-    config.benchName,
+    config.benchmarkGroupName,
     benchInfo,
     metricResults,
     commit
