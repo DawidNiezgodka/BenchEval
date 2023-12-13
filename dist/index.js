@@ -32617,6 +32617,8 @@ async function run() {
       completeConfig.latestBenchSha = latestBenchSha;
     }
 
+    core.debug("---- main (53) -----")
+    core.debug(`complete config: ${JSON.stringify(completeConfig.benchmarkGroupToCompare)}`)
     const evaluationResult = evaluateCurrentBenchmark(
         completeBenchmarkObject,
         completeBenchData,
