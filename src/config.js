@@ -102,7 +102,7 @@ module.exports.validateInputAndFetchConfig = function () {
   if (benchmarkGroupToCompare === '' || benchmarkGroupToCompare === null) {
     benchmarkGroupToCompare = benchmarkGroupName
   }
-  core.debug(`Benchmark group to compare: ${benchmarkGroupToCompare}`)
+  core.debug(`Benchmark group to compare (config, 105): ${benchmarkGroupToCompare}`)
 
   const folderWithBenchData = core.getInput('folder_with_bench_data')
   const fileWithBenchData = core.getInput('file_with_bench_data')
@@ -351,14 +351,17 @@ module.exports.createEvaluationConfig = function (...inputNames) {
     if (inputNames.includes(inputName)) {
       const snakeCaseInputName = module.exports.camelToSnake(inputName)
       const inputValue = core.getInput(snakeCaseInputName)
+
       console.log(`Input value for ${snakeCaseInputName}: ${inputValue}`)
       if (inputValue) {
         if (inputName === 'comparisonOperators') {
             return inputValue.split(',').map(operator => operator.trim())
         }
-        if (inputName === 'evaluationMethod' || inputName === 'benchmarkGroupToCompare'
-        || inputName === 'trendDetNoSufficientDataStrategy') {
+        if (inputName === 'evaluationMethod' || inputName === 'trendDetNoSufficientDataStrategy') {
           return inputValue
+        }
+        if (inputName === 'benchmarkGroupToCompare') {
+          return inputValue === '' ? core.getInput('bench_group_name') : inputValue
         }
         return inputValue.includes(',')
             ? inputValue.split(',').map(Number)
