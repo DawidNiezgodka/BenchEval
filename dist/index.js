@@ -30545,6 +30545,16 @@ module.exports.addInfoAboutBenchRes = function(lines, completeConfig, evaluation
   return benchmarkPassed;
 }
 
+module.exports.addExtraExplanation = function(lines, metricExplanationMap) {
+  lines.push('', '', '', '', '', '','')
+  lines.push(`Extra explanation for each metric.`);
+  lines.push(`| Metric name | Explanation |`);
+    lines.push('|-|-|');
+    for (const [metricName, explanation] of metricExplanationMap.entries()) {
+        lines.push(`| \`${metricName}\` | ${explanation} |`);
+    }
+}
+
 module.exports.alertUsersIfBenchFailed = function (benchmarkPassed, completeConfig, lines) {
   if (!benchmarkPassed) {
     let usersToBeAlerted = completeConfig.alertUsersIfBenchFailed;
@@ -30566,7 +30576,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   lines.push('', '', '', '', '', '','')
 
   lines.push(`The chosen evaluation method is trend detection with deltas.`)
-  lines.push(`Each metric shall be "threshold" % better than the previous benchmark, the benchmark from a week ago,
+  lines.push(`Each metric should not change more than % than the previous benchmark, the benchmark closest to a week ago,
   and the benchmark from the last stable commit to main branch.`)
 
   const benchDataText = module.exports.createBenchDataText(
@@ -30582,14 +30592,14 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   const evaluationResults = evaluationResult.results.result
   const evaluationParameters = evaluationResult.evalParameters
   const evaluationConfiguration = completeConfig.evaluationConfig
-
+  let metricExplanationMap = new Map();
   for (let i = 0; i < evaluationResults.length; i++) {
     const resultExplanation = evaluationParameters.resultExplanations[i];
     const resultStatus = evaluationResults[i];
     const metricName = evaluationParameters.metricNames[i];
     const metricUnit = evaluationParameters.metricUnits[i];
     const metricValues = evaluationParameters.metricToDifferentBenchValues.get(metricName);
-
+    metricExplanationMap.set(metricName, resultExplanation);
     if (!metricValues) {
       continue;
     }
@@ -30614,6 +30624,9 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
 
     lines.push(line);
   }
+
+  module.exports.addExtraExplanation(lines, metricExplanationMap)
+
   const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
   module.exports.alertUsersIfBenchFailed(benchmarkPassed, completeConfig, lines);
 
@@ -31159,6 +31172,9 @@ module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod = function (ev
 
 module.exports.createWorkflowSummaryForTrendDetDeltas = function (evaluationResult, completeConfig) {
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+  const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
+  const weekAgoBench = evaluationResult.referenceBenchmarks.weekAgo;
+  const lastStableReleaseBench = evaluationResult.referenceBenchmarks.lastStableRelease;
 
   const headers = [
     {
@@ -31170,19 +31186,23 @@ module.exports.createWorkflowSummaryForTrendDetDeltas = function (evaluationResu
       header: true,
     },
     {
-      data: "Prev",
+      data: `Prev: "${previousBenchmark.commitInfo.id.substring(0, 7)}"`,
       header: true,
     },
     {
-      data: '~Week ago',
+      data: `~Week ago: "${weekAgoBench.commitInfo.id.substring(0, 7)}"`,
       header: true,
     },
     {
-      data: 'Last stable',
+      data: `Last stable: "${lastStableReleaseBench.commitInfo.id.substring(0, 7)}"`,
       header: true,
     },
     {
-      data: 'Each should be',
+      data: 'Max. change',
+      header: true,
+    },
+    {
+      data: 'Result',
       header: true,
     }
 
