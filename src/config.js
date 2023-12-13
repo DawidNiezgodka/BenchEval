@@ -98,7 +98,7 @@ module.exports.validateInputAndFetchConfig = function () {
     )
   }
 
-  let benchmarkGroupToCompare = core.getInput('bench_group_to_compare')
+  let benchmarkGroupToCompare = core.getInput('benchmark_group_to_compare')
   if (benchmarkGroupToCompare === '' || benchmarkGroupToCompare === null) {
     benchmarkGroupToCompare = benchmarkGroupName
   }
