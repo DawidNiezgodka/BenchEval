@@ -31711,20 +31711,21 @@ module.exports.createEvaluationConfig = function (...inputNames) {
       const snakeCaseInputName = module.exports.camelToSnake(inputName)
       const inputValue = core.getInput(snakeCaseInputName)
 
-      console.log(`Input value for ${snakeCaseInputName}: ${inputValue}`)
+      // if the value for inputName === benchmarkGroupToCompare is null or does not exist
+      // return the value for inputName === benchmarkGroupName
+      if (inputName === 'benchmarkGroupToCompare') {
+        core.debug(`Processing ${inputName}. THe value is ${inputValue}`)
+        if (inputValue === '') {
+          core.debug(`The value is empty. Returning ${core.getInput('bench_group_name')}`)
+        }
+        return inputValue === '' ? core.getInput('bench_group_name') : inputValue
+      }
       if (inputValue) {
         if (inputName === 'comparisonOperators') {
             return inputValue.split(',').map(operator => operator.trim())
         }
-        if (inputName === 'evaluationMethod' || inputName === 'trendDetNoSufficientDataStrategy') {
+        if (inputName === 'evaluationMethod' || inputName === 'trendDetNoSufficientDataStrategy' || inputName === 'benchmarkGroupToCompare') {
           return inputValue
-        }
-        if (inputName === 'benchmarkGroupToCompare') {
-          core.debug(`Processing ${inputName}. THe value is ${inputValue}`)
-          if (inputValue === '') {
-            core.debug(`The value is empty. Returning ${core.getInput('bench_group_name')}`)
-          }
-          return inputValue === '' ? core.getInput('bench_group_name') : inputValue
         }
         return inputValue.includes(',')
             ? inputValue.split(',').map(Number)
