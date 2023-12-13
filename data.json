@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1702487765013,
+    "lastUpdate": 1702487772016,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -7050,6 +7050,89 @@
                     "url": "https://github.com/DawidNiezgodka/BenchEval/pull/13/commits/d013003b25d310fcbad04796769d25f33b98682b"
                 },
                 "date": 1702487765013,
+                "executionTime": "20m 31s",
+                "parametrization": {
+                    "protocol": "http:",
+                    "func": "/sieve",
+                    "threads": 256,
+                    "ops": 500
+                },
+                "otherInfo": "edge-server: e2-medium",
+                "metrics": [
+                    {
+                        "name": "avg latency",
+                        "value": "2193.23",
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "throughput",
+                        "value": "103.96",
+                        "unit": "ops/s"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "trend_detection_deltas",
+                        "benchmarkGroupToCompare": "Benchmark",
+                        "thresholdValues": null,
+                        "comparisonOperators": null,
+                        "comparisonMargins": null,
+                        "thresholdUpper": null,
+                        "thresholdLower": null,
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": [
+                            5,
+                            5
+                        ],
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "trend_detection_deltas",
+                        "metricNames": [
+                            "avg latency",
+                            "throughput"
+                        ],
+                        "metricUnits": [
+                            "ms",
+                            "ops/s"
+                        ],
+                        "resultExplanations": [
+                            "benchmark failed for the metric avg latency, but there was undefined data for the following metric(s): last_stable_release",
+                            "benchmark failed for the metric throughput, but there was undefined data for the following metric(s): last_stable_release"
+                        ],
+                        "metricToDifferentBenchValues": {},
+                        "is": [],
+                        "shouldBe": [],
+                        "than": []
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "failed",
+                            "failed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "22837704+DawidNiezgodka@users.noreply.github.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "noreply@github.com",
+                        "name": "GitHub",
+                        "username": "web-flow"
+                    },
+                    "id": "8c907523aa60927a89ed2274f04842475689b861",
+                    "message": "Merge pull request #13 from DawidNiezgodka/test_tdd\n\nsome improvent + complete info for trend det deltas",
+                    "timestamp": "2023-12-13T18:15:57+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/8c907523aa60927a89ed2274f04842475689b861"
+                },
+                "date": 1702487772016,
                 "executionTime": "20m 31s",
                 "parametrization": {
                     "protocol": "http:",
