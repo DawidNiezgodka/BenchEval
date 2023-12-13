@@ -61,11 +61,11 @@ module.exports.addCompleteBenchmarkToFile = async (
 
     }
 
-    core.debug('-- addCompleteBenchmarkToFile -- Benchmark name: ' + benchmarkInstance.benchmarkName)
-    if (!jsonData.entries[benchmarkInstance.benchmarkName]) {
-      jsonData.entries[benchmarkInstance.benchmarkName] = []
+    core.debug('-- addCompleteBenchmarkToFile -- Benchmark name: ' + benchmarkInstance.benchmarkGroupName)
+    if (!jsonData.entries[benchmarkInstance.benchmarkGroupName]) {
+      jsonData.entries[benchmarkInstance.benchmarkGroupName] = []
     }
-    jsonData.entries[benchmarkInstance.benchmarkName].push(newBenchmarkJSON)
+    jsonData.entries[benchmarkInstance.benchmarkGroupName].push(newBenchmarkJSON)
 
     await fs.writeFile(pathToPreviousDataFile, JSON.stringify(jsonData, null, 4), 'utf8')
 
@@ -77,7 +77,7 @@ module.exports.addCompleteBenchmarkToFile = async (
 }
 
 module.exports.getLatestBenchmark = function (
-  benchmarkName,
+  benchmarkGroupName,
   folderWithBenchData,
   fileNameWithBenchData,
   n,
@@ -87,12 +87,12 @@ module.exports.getLatestBenchmark = function (
   core.debug('--- start getLatestBenchmark ---')
 
   const sortedBenchmarkData = module.exports.getSortedBenchmarkData(
-      folderWithBenchData, fileNameWithBenchData, benchmarkName, n, successful
+      folderWithBenchData, fileNameWithBenchData, benchmarkGroupName, n, successful
   )
 
     const nthLatestBenchmarkData = sortedBenchmarkData[n - 1]
     core.debug(`nthLatestBenchmarkData.metrics ${JSON.stringify(nthLatestBenchmarkData)}`)
-    return convertBenchDataToCompleteBenchmarkInstance(nthLatestBenchmarkData, benchmarkName)
+    return convertBenchDataToCompleteBenchmarkInstance(nthLatestBenchmarkData, benchmarkGroupName)
 
 }
 
@@ -125,14 +125,14 @@ module.exports.getCompleteBenchData = function (
     }
 }
 
-function convertBenchDataToCompleteBenchmarkInstance(data, benchmarkName) {
+function convertBenchDataToCompleteBenchmarkInstance(data, benchmarkGroupName) {
   const exeTime = data.executionTime;
   const parametrization = data.parametrization;
   const otherInfo = data.otherInfo;
   const benchmarkInfo = new BenchmarkInfo(exeTime, parametrization, otherInfo);
   const benchSuccessful = data.benchSuccessful;
 
-  core.debug('-- convertBenchDataToCompleteBenchmarkInstance -- Benchmark name: ' + benchmarkName)
+  core.debug('-- convertBenchDataToCompleteBenchmarkInstance -- Benchmark name: ' + benchmarkGroupName)
   const simpleMetricResults = data.metrics.map(
       metric => new SimpleMetricResult(metric.name, metric.value, metric.unit)
   );
@@ -148,7 +148,7 @@ function convertBenchDataToCompleteBenchmarkInstance(data, benchmarkName) {
 
   core.debug('--- end convertBenchDataToCompleteBenchmarkInstance ---')
   return new CompleteBenchmark(
-      benchmarkName,
+      benchmarkGroupName,
       benchmarkInfo,
       simpleMetricResults,
       commitInfo,
@@ -157,7 +157,7 @@ function convertBenchDataToCompleteBenchmarkInstance(data, benchmarkName) {
 }
 
 module.exports.getNLatestBenchmarks = function (
-    benchmarkName,
+    benchmarkGroupName,
     folderWithBenchData,
     fileNameWithBenchData,
     n,
@@ -166,11 +166,11 @@ module.exports.getNLatestBenchmarks = function (
   core.debug('--- start getNLatestBenchmarks ---')
   try {
     const sortedBenchmarkData = module.exports.getSortedBenchmarkData(
-        folderWithBenchData, fileNameWithBenchData, benchmarkName, n, successful
+        folderWithBenchData, fileNameWithBenchData, benchmarkGroupName, n, successful
     )
 
     const nthLatest = sortedBenchmarkData.slice(0, n).map(data => {
-      return convertBenchDataToCompleteBenchmarkInstance(data, benchmarkName);
+      return convertBenchDataToCompleteBenchmarkInstance(data, benchmarkGroupName);
     });
     core.debug(`nthLatest ${JSON.stringify(nthLatest)}`)
     core.debug('--- end getNLatestBenchmarks ---')
@@ -181,22 +181,24 @@ module.exports.getNLatestBenchmarks = function (
 }
 
 module.exports.getSortedBenchmarkData = function (folderWithBenchData, fileNameWithBenchData,
-                                                  benchmarkName, n, successful = false) {
+                                                  benchmarkGroupName, n, successful = false) {
 
   core.debug('--- start getSortedBenchmarkData ---')
   try {
     const benchmarkData = module.exports.getCompleteBenchData(
         folderWithBenchData, fileNameWithBenchData
     );
-    if (!benchmarkData.entries.hasOwnProperty(benchmarkName)) {
+    core.debug("Benchmark name; " + benchmarkGroupName)
+    core.debug('benchmarkData: ' + JSON.stringify(benchmarkData))
+    if (!benchmarkData.entries.hasOwnProperty(benchmarkGroupName)) {
       console.error(
           'No data available for the given benchmark name:',
-          benchmarkName
+          benchmarkGroupName
       );
       return null;
     }
 
-    let sortedBenchmarkData = benchmarkData.entries[benchmarkName].sort(
+    let sortedBenchmarkData = benchmarkData.entries[benchmarkGroupName].sort(
         (a, b) => b.date - a.date
     );
 
@@ -217,7 +219,8 @@ module.exports.getSortedBenchmarkData = function (folderWithBenchData, fileNameW
   }
 }
 
-module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchData, fileNameWithBenchData) {
+module.exports.getBenchFromWeekAgo = function (
+    benchmarkGroupToCompare, folderWithBenchData, fileNameWithBenchData) {
 
   core.debug('--- start getBenchFromWeekAgo ---')
   const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
@@ -227,7 +230,7 @@ module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchDa
       folderWithBenchData, fileNameWithBenchData
   );
 
-  let benchmarks = data.entries[benchToCompare];
+  let benchmarks = data.entries[benchmarkGroupToCompare];
   // Print the amount of benchmarks
 
   let closestBenchmark = null;
@@ -244,31 +247,68 @@ module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchDa
   });
 
   if (closestBenchmark === null) {
-    throw new Error(`No benchmark under '${benchToCompare}' is close to one week old.`);
+    throw new Error(`No benchmark under '${benchmarkGroupToCompare}' is close to one week old.`);
   } else {
-    core.debug(`The closest benchmark to one week old under '${benchToCompare}' is: ${closestBenchmark}`);
+    core.debug(`The closest benchmark to one week old under '${benchmarkGroupToCompare}' is: ${closestBenchmark}`);
     core.debug('--- end getBenchFromWeekAgo (before calling convertBenchData... ---')
-    return convertBenchDataToCompleteBenchmarkInstance(closestBenchmark, benchToCompare);
+    return convertBenchDataToCompleteBenchmarkInstance(closestBenchmark, benchmarkGroupToCompare);
   }
 }
 
-module.exports.getBenchmarkOfStableBranch = function (benchToCompare, folderWithBenchData,
+module.exports.getClosestToOneWeekAgo = function(benchmarkGroupToCompare, folderWithBenchData, fileNameWithBenchData) {
+
+  let data = module.exports.getCompleteBenchData(
+      folderWithBenchData, fileNameWithBenchData
+  );
+  const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+
+  if (!data.entries.hasOwnProperty(benchmarkGroupToCompare)) {
+    throw new Error(`No such benchmark key: '${benchmarkGroupToCompare}' exists.`);
+  }
+
+  let benchmarks = data.entries[benchmarkGroupToCompare];
+  if (benchmarks.length === 0) {
+    throw new Error(`No benchmarks under '${benchmarkGroupToCompare}'.`);
+  }
+
+  let closestBenchmark = null;
+  let smallestDifference = Number.MAX_SAFE_INTEGER;
+
+  benchmarks.forEach(benchmark => {
+    let benchmarkAge = now - benchmark.date;
+    let difference = Math.abs(benchmarkAge - ONE_WEEK_IN_MS);
+    if (difference < smallestDifference) {
+      smallestDifference = difference;
+      closestBenchmark = benchmark;
+    }
+  });
+
+  if (!closestBenchmark) {
+    throw new Error(`No benchmark under '${benchmarkGroupToCompare}' is close to one week old.`);
+  } else {
+    console.log(`Found a benchmark under '${benchmarkGroupToCompare}' that is closest to one week old.`);
+  }
+}
+
+
+module.exports.getBenchmarkOfStableBranch = function (benchmarkGroupToCompare, folderWithBenchData,
                                                       fileNameWithBenchData, latestBenchSha) {
 
   core.debug('--- start getBenchmarkOfStableBranch ---')
   let data = module.exports.getCompleteBenchData(
         folderWithBenchData, fileNameWithBenchData
     );
-  let benchmarks = data.entries[benchToCompare];
+  let benchmarks = data.entries[benchmarkGroupToCompare];
   // find benchmark with commit sha == latestBenchSha
   let benchmark = benchmarks.find(benchmark => benchmark.commit.id === latestBenchSha);
   core.debug(`Benchmark of stable branch: ${JSON.stringify(benchmark)}`);
 
     if (benchmark === undefined) {
-        throw new Error(`No benchmark under '${benchToCompare}' with commit sha ${latestBenchSha} found.`);
+        throw new Error(`No benchmark under '${benchmarkGroupToCompare}' with commit sha ${latestBenchSha} found.`);
     } else {
-        core.debug(`The benchmark of the stable branch under '${benchToCompare}' is: ${benchmark}`);
-        return convertBenchDataToCompleteBenchmarkInstance(benchmark, benchToCompare);
+        core.debug(`The benchmark of the stable branch under '${benchmarkGroupToCompare}' is: ${benchmark}`);
+        return convertBenchDataToCompleteBenchmarkInstance(benchmark, benchmarkGroupToCompare);
     }
 }
 

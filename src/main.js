@@ -15,7 +15,8 @@ const {
 const { createCurrBench} = require('./bench')
 
 const { createComment, createWorkflowSummaryForCompWithPrev, createWorkflowSummaryThreshold,
-  summaryForMethodNotSupported, createWorkflowSummaryForThresholdRange} = require('./comment')
+  summaryForMethodNotSupported, createWorkflowSummaryForThresholdRange,
+  createWorkflowSummaryForTrendDetDeltas} = require('./comment')
 
 const {
   addCompleteBenchmarkToFile,
@@ -44,11 +45,13 @@ async function run() {
     if (completeConfig.evaluationConfig.evaluationMethod === 'trend_detection_deltas') {
       const branchName = core.getInput('trend_det_successful_release_branch');
       latestBenchSha = await getLastCommitSha(branchName, completeBenchData,
-          completeConfig.benchName);
+          completeConfig.benchmarkGroupName);
       core.debug(`Latest bench sha: ${latestBenchSha}`);
       completeConfig.latestBenchSha = latestBenchSha;
     }
 
+    core.debug("---- main (53) -----")
+    core.debug(`complete config: ${JSON.stringify(completeConfig.benchmarkGroupToCompare)}`)
     const evaluationResult = evaluateCurrentBenchmark(
         completeBenchmarkObject,
         completeBenchData,
@@ -94,6 +97,8 @@ async function run() {
         createWorkflowSummaryThreshold(evaluationResult, completeConfig);
       } else if (evaluationConfig.evaluationMethod === 'threshold_range') {
         createWorkflowSummaryForThresholdRange(evaluationResult, completeConfig)
+      } else if (evaluationConfig.evaluationMethod === 'trend_detection_deltas') {
+        createWorkflowSummaryForTrendDetDeltas(evaluationResult, completeConfig);
       }
 
       else {

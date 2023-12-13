@@ -31,6 +31,8 @@ module.exports.evaluateCurrentBenchmark = function (
         evaluationResult = module.exports.trendDetectionMovingAve(currentBenchmark, completeConfig);
         break;
     case 'trend_detection_deltas':
+      core.debug('Benchmark group to compare (evaluate 35): ' + completeConfig.benchmarkGroupToCompare)
+        core.debug('bech eval config: ' + JSON.stringify(completeConfig.evaluationConfig))
         evaluationResult = module.exports.trendDetectionDeltas(currentBenchmark, completeConfig);
         break;
     default:
@@ -104,7 +106,7 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluatio
 };
 
 module.exports.compareWithPrevious = function (currentBenchmarkData, completeBenchData, completeConfig, successful) {
-  const previousBenchmarkData = getLatestBenchmark(completeConfig.benchToCompare,
+  const previousBenchmarkData = getLatestBenchmark(completeConfig.benchmarkGroupToCompare,
       completeConfig.folderWithBenchData, completeConfig.fileWithBenchData, 1, successful);
   // First, find the previous benchmark => we will get obj not json
   //core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
@@ -224,7 +226,7 @@ module.exports.evaluateWithThresholdRanges = function (currentBenchmarkData, con
 
 module.exports.evaluateWithJumpDetection = function (currentBenchmarkData, config) {
 
-  const previousBenchmarkData = getLatestBenchmark(config.benchToCompare,
+  const previousBenchmarkData = getLatestBenchmark(config.benchmarkGroupToCompare,
       config.folderWithBenchData, config.fileWithBenchData, 1, false);
 
   const { jumpDetectionThresholds } = config.evaluationConfig;
@@ -280,7 +282,7 @@ module.exports.trendDetectionMovingAve = function (currentBenchmarkData, complet
   const { trendThresholds: t, movingAveWindowSize: b } = completeConfig.evaluationConfig;
 
   // First get the previous b benchmarks
-  const previousBenchmarkDataArray = getNLatestBenchmarks(completeConfig.evaluationConfig.benchToCompare,
+  const previousBenchmarkDataArray = getNLatestBenchmarks(completeConfig.evaluationConfig.benchmarkGroupToCompare,
         completeConfig.folderWithBenchData, completeConfig.fileWithBenchData, b, false);
   //core.debug('Retrieved the following number of benchmarks: ' + previousBenchmarkDataArray.length);
 
@@ -351,20 +353,22 @@ module.exports.addResultToBenchmarkObject = function (
 
 module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
-  //core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData));
+  core.debug('--- start trendDetectionDeltas ---')
+  core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData));
 
-  const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchToCompare,
+  core.debug('Benchmark group to compare: ' + config.evaluationConfig.benchmarkGroupToCompare)
+  const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchmarkGroupToCompare,
         config.folderWithBenchData, config.fileWithBenchData, 1, false);
-  ////core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
+  core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
 
-  const benchFromWeekAgo = getBenchFromWeekAgo(config.evaluationConfig.benchToCompare,
+  const benchFromWeekAgo = getBenchFromWeekAgo(config.evaluationConfig.benchmarkGroupToCompare,
         config.folderWithBenchData, config.fileWithBenchData);
-    ////core.debug('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
+  core.debug('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
 
   const lastStableReleaseBench = getBenchmarkOfStableBranch(
-        config.evaluationConfig.benchToCompare, config.folderWithBenchData,
+        config.evaluationConfig.benchmarkGroupToCompare, config.folderWithBenchData,
       config.fileWithBenchData, config.latestBenchSha);
-    ////core.debug('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
+  core.debug('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
 
 
   const { trendThresholds: X } = config.evaluationConfig;
@@ -380,14 +384,12 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
   };
 
   const evaluateChange = (oldValue, newValue, threshold) => {
-    // calculate percentage change for the following values
-
     const percentageChange = calculatePercentageChange(oldValue, newValue);
     return Math.abs(percentageChange) <= threshold;
   };
 
   currentBenchmarkData.simpleMetricResults.forEach((currentResult, index) => {
-    //core.debug('Current metric: ' + JSON.stringify(currentResult));
+    core.info('Current metric: ' + JSON.stringify(currentResult));
     const currentName = currentResult.name;
     const currentValue = currentResult.value;
     const currentUnit = currentResult.unit;
@@ -433,6 +435,7 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
   });
 
+  core.debug('--- end trendDetectionDeltas ---')
   return module.exports.createEvaluationObject({
     "evaluation_method": "trend_detection_deltas",
     "metric_names": metricNames,

@@ -30067,7 +30067,7 @@ module.exports.createCurrBench = function (config) {
   )
   const commit = getCommit()
   const completeBenchmark = new CompleteBenchmark(
-    config.benchName,
+    config.benchmarkGroupName,
     benchInfo,
     metricResults,
     commit
@@ -30146,11 +30146,11 @@ module.exports.addCompleteBenchmarkToFile = async (
 
     }
 
-    core.debug('-- addCompleteBenchmarkToFile -- Benchmark name: ' + benchmarkInstance.benchmarkName)
-    if (!jsonData.entries[benchmarkInstance.benchmarkName]) {
-      jsonData.entries[benchmarkInstance.benchmarkName] = []
+    core.debug('-- addCompleteBenchmarkToFile -- Benchmark name: ' + benchmarkInstance.benchmarkGroupName)
+    if (!jsonData.entries[benchmarkInstance.benchmarkGroupName]) {
+      jsonData.entries[benchmarkInstance.benchmarkGroupName] = []
     }
-    jsonData.entries[benchmarkInstance.benchmarkName].push(newBenchmarkJSON)
+    jsonData.entries[benchmarkInstance.benchmarkGroupName].push(newBenchmarkJSON)
 
     await fs.writeFile(pathToPreviousDataFile, JSON.stringify(jsonData, null, 4), 'utf8')
 
@@ -30162,7 +30162,7 @@ module.exports.addCompleteBenchmarkToFile = async (
 }
 
 module.exports.getLatestBenchmark = function (
-  benchmarkName,
+  benchmarkGroupName,
   folderWithBenchData,
   fileNameWithBenchData,
   n,
@@ -30172,12 +30172,12 @@ module.exports.getLatestBenchmark = function (
   core.debug('--- start getLatestBenchmark ---')
 
   const sortedBenchmarkData = module.exports.getSortedBenchmarkData(
-      folderWithBenchData, fileNameWithBenchData, benchmarkName, n, successful
+      folderWithBenchData, fileNameWithBenchData, benchmarkGroupName, n, successful
   )
 
     const nthLatestBenchmarkData = sortedBenchmarkData[n - 1]
     core.debug(`nthLatestBenchmarkData.metrics ${JSON.stringify(nthLatestBenchmarkData)}`)
-    return convertBenchDataToCompleteBenchmarkInstance(nthLatestBenchmarkData, benchmarkName)
+    return convertBenchDataToCompleteBenchmarkInstance(nthLatestBenchmarkData, benchmarkGroupName)
 
 }
 
@@ -30210,14 +30210,14 @@ module.exports.getCompleteBenchData = function (
     }
 }
 
-function convertBenchDataToCompleteBenchmarkInstance(data, benchmarkName) {
+function convertBenchDataToCompleteBenchmarkInstance(data, benchmarkGroupName) {
   const exeTime = data.executionTime;
   const parametrization = data.parametrization;
   const otherInfo = data.otherInfo;
   const benchmarkInfo = new BenchmarkInfo(exeTime, parametrization, otherInfo);
   const benchSuccessful = data.benchSuccessful;
 
-  core.debug('-- convertBenchDataToCompleteBenchmarkInstance -- Benchmark name: ' + benchmarkName)
+  core.debug('-- convertBenchDataToCompleteBenchmarkInstance -- Benchmark name: ' + benchmarkGroupName)
   const simpleMetricResults = data.metrics.map(
       metric => new SimpleMetricResult(metric.name, metric.value, metric.unit)
   );
@@ -30233,7 +30233,7 @@ function convertBenchDataToCompleteBenchmarkInstance(data, benchmarkName) {
 
   core.debug('--- end convertBenchDataToCompleteBenchmarkInstance ---')
   return new CompleteBenchmark(
-      benchmarkName,
+      benchmarkGroupName,
       benchmarkInfo,
       simpleMetricResults,
       commitInfo,
@@ -30242,7 +30242,7 @@ function convertBenchDataToCompleteBenchmarkInstance(data, benchmarkName) {
 }
 
 module.exports.getNLatestBenchmarks = function (
-    benchmarkName,
+    benchmarkGroupName,
     folderWithBenchData,
     fileNameWithBenchData,
     n,
@@ -30251,11 +30251,11 @@ module.exports.getNLatestBenchmarks = function (
   core.debug('--- start getNLatestBenchmarks ---')
   try {
     const sortedBenchmarkData = module.exports.getSortedBenchmarkData(
-        folderWithBenchData, fileNameWithBenchData, benchmarkName, n, successful
+        folderWithBenchData, fileNameWithBenchData, benchmarkGroupName, n, successful
     )
 
     const nthLatest = sortedBenchmarkData.slice(0, n).map(data => {
-      return convertBenchDataToCompleteBenchmarkInstance(data, benchmarkName);
+      return convertBenchDataToCompleteBenchmarkInstance(data, benchmarkGroupName);
     });
     core.debug(`nthLatest ${JSON.stringify(nthLatest)}`)
     core.debug('--- end getNLatestBenchmarks ---')
@@ -30266,22 +30266,24 @@ module.exports.getNLatestBenchmarks = function (
 }
 
 module.exports.getSortedBenchmarkData = function (folderWithBenchData, fileNameWithBenchData,
-                                                  benchmarkName, n, successful = false) {
+                                                  benchmarkGroupName, n, successful = false) {
 
   core.debug('--- start getSortedBenchmarkData ---')
   try {
     const benchmarkData = module.exports.getCompleteBenchData(
         folderWithBenchData, fileNameWithBenchData
     );
-    if (!benchmarkData.entries.hasOwnProperty(benchmarkName)) {
+    core.debug("Benchmark name; " + benchmarkGroupName)
+    core.debug('benchmarkData: ' + JSON.stringify(benchmarkData))
+    if (!benchmarkData.entries.hasOwnProperty(benchmarkGroupName)) {
       console.error(
           'No data available for the given benchmark name:',
-          benchmarkName
+          benchmarkGroupName
       );
       return null;
     }
 
-    let sortedBenchmarkData = benchmarkData.entries[benchmarkName].sort(
+    let sortedBenchmarkData = benchmarkData.entries[benchmarkGroupName].sort(
         (a, b) => b.date - a.date
     );
 
@@ -30302,7 +30304,8 @@ module.exports.getSortedBenchmarkData = function (folderWithBenchData, fileNameW
   }
 }
 
-module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchData, fileNameWithBenchData) {
+module.exports.getBenchFromWeekAgo = function (
+    benchmarkGroupToCompare, folderWithBenchData, fileNameWithBenchData) {
 
   core.debug('--- start getBenchFromWeekAgo ---')
   const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
@@ -30312,7 +30315,7 @@ module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchDa
       folderWithBenchData, fileNameWithBenchData
   );
 
-  let benchmarks = data.entries[benchToCompare];
+  let benchmarks = data.entries[benchmarkGroupToCompare];
   // Print the amount of benchmarks
 
   let closestBenchmark = null;
@@ -30329,31 +30332,68 @@ module.exports.getBenchFromWeekAgo = function (benchToCompare, folderWithBenchDa
   });
 
   if (closestBenchmark === null) {
-    throw new Error(`No benchmark under '${benchToCompare}' is close to one week old.`);
+    throw new Error(`No benchmark under '${benchmarkGroupToCompare}' is close to one week old.`);
   } else {
-    core.debug(`The closest benchmark to one week old under '${benchToCompare}' is: ${closestBenchmark}`);
+    core.debug(`The closest benchmark to one week old under '${benchmarkGroupToCompare}' is: ${closestBenchmark}`);
     core.debug('--- end getBenchFromWeekAgo (before calling convertBenchData... ---')
-    return convertBenchDataToCompleteBenchmarkInstance(closestBenchmark, benchToCompare);
+    return convertBenchDataToCompleteBenchmarkInstance(closestBenchmark, benchmarkGroupToCompare);
   }
 }
 
-module.exports.getBenchmarkOfStableBranch = function (benchToCompare, folderWithBenchData,
+module.exports.getClosestToOneWeekAgo = function(benchmarkGroupToCompare, folderWithBenchData, fileNameWithBenchData) {
+
+  let data = module.exports.getCompleteBenchData(
+      folderWithBenchData, fileNameWithBenchData
+  );
+  const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+
+  if (!data.entries.hasOwnProperty(benchmarkGroupToCompare)) {
+    throw new Error(`No such benchmark key: '${benchmarkGroupToCompare}' exists.`);
+  }
+
+  let benchmarks = data.entries[benchmarkGroupToCompare];
+  if (benchmarks.length === 0) {
+    throw new Error(`No benchmarks under '${benchmarkGroupToCompare}'.`);
+  }
+
+  let closestBenchmark = null;
+  let smallestDifference = Number.MAX_SAFE_INTEGER;
+
+  benchmarks.forEach(benchmark => {
+    let benchmarkAge = now - benchmark.date;
+    let difference = Math.abs(benchmarkAge - ONE_WEEK_IN_MS);
+    if (difference < smallestDifference) {
+      smallestDifference = difference;
+      closestBenchmark = benchmark;
+    }
+  });
+
+  if (!closestBenchmark) {
+    throw new Error(`No benchmark under '${benchmarkGroupToCompare}' is close to one week old.`);
+  } else {
+    console.log(`Found a benchmark under '${benchmarkGroupToCompare}' that is closest to one week old.`);
+  }
+}
+
+
+module.exports.getBenchmarkOfStableBranch = function (benchmarkGroupToCompare, folderWithBenchData,
                                                       fileNameWithBenchData, latestBenchSha) {
 
   core.debug('--- start getBenchmarkOfStableBranch ---')
   let data = module.exports.getCompleteBenchData(
         folderWithBenchData, fileNameWithBenchData
     );
-  let benchmarks = data.entries[benchToCompare];
+  let benchmarks = data.entries[benchmarkGroupToCompare];
   // find benchmark with commit sha == latestBenchSha
   let benchmark = benchmarks.find(benchmark => benchmark.commit.id === latestBenchSha);
   core.debug(`Benchmark of stable branch: ${JSON.stringify(benchmark)}`);
 
     if (benchmark === undefined) {
-        throw new Error(`No benchmark under '${benchToCompare}' with commit sha ${latestBenchSha} found.`);
+        throw new Error(`No benchmark under '${benchmarkGroupToCompare}' with commit sha ${latestBenchSha} found.`);
     } else {
-        core.debug(`The benchmark of the stable branch under '${benchToCompare}' is: ${benchmark}`);
-        return convertBenchDataToCompleteBenchmarkInstance(benchmark, benchToCompare);
+        core.debug(`The benchmark of the stable branch under '${benchmarkGroupToCompare}' is: ${benchmark}`);
+        return convertBenchDataToCompleteBenchmarkInstance(benchmark, benchmarkGroupToCompare);
     }
 }
 
@@ -30417,12 +30457,12 @@ module.exports.createBodyForComparisonWithPrev = function (
 ) {
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
-  const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
+  const lines = [`# ${currentBenchmark.benchmarkGroupName}`, '', '']
 
-  const currentBenchName = currentBenchmark.benchmarkName
-  const previousBenchName = previousBenchmark.benchmarkName
+  const currentBenchmarkGroupName = currentBenchmark.benchmarkGroupName
+  const previousBenchmarkGroupName = previousBenchmark.benchmarkGroupName
 
-  if (currentBenchName !== previousBenchName) {
+  if (currentBenchmarkGroupName !== previousBenchmarkGroupName) {
     lines.push(
         "Please note that you're comparing benchmarks with different names!"
     )
@@ -30505,6 +30545,16 @@ module.exports.addInfoAboutBenchRes = function(lines, completeConfig, evaluation
   return benchmarkPassed;
 }
 
+module.exports.addExtraExplanation = function(lines, metricExplanationMap) {
+  lines.push('', '', '', '', '', '','')
+  lines.push(`Extra explanation for each metric.`);
+  lines.push(`| Metric name | Explanation |`);
+    lines.push('|-|-|');
+    for (const [metricName, explanation] of metricExplanationMap.entries()) {
+        lines.push(`| \`${metricName}\` | ${explanation} |`);
+    }
+}
+
 module.exports.alertUsersIfBenchFailed = function (benchmarkPassed, completeConfig, lines) {
   if (!benchmarkPassed) {
     let usersToBeAlerted = completeConfig.alertUsersIfBenchFailed;
@@ -30519,14 +30569,14 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
   const weekAgoBench = evaluationResult.referenceBenchmarks.weekAgo;
   const lastStableReleaseBench = evaluationResult.referenceBenchmarks.lastStableRelease;
-  const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
+  const lines = [`# ${currentBenchmark.benchmarkGroupName}`, '', '']
 
   lines.push('', '', '', '', '', '','')
   lines.push('## Results')
   lines.push('', '', '', '', '', '','')
 
   lines.push(`The chosen evaluation method is trend detection with deltas.`)
-  lines.push(`Each metric shall be "threshold" % better than the previous benchmark, the benchmark from a week ago,
+  lines.push(`Each metric should not change more than % than the previous benchmark, the benchmark closest to a week ago,
   and the benchmark from the last stable commit to main branch.`)
 
   const benchDataText = module.exports.createBenchDataText(
@@ -30535,21 +30585,21 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   lines.push(benchDataText)
 
   lines.push(
-      `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Week ago: ${weekAgoBench.commitInfo.id} | Last stable: ${lastStableReleaseBench.commitInfo.id} | Thr | Res |`
+      `| Metric name | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Week: ${weekAgoBench.commitInfo.id} | Stable: ${lastStableReleaseBench.commitInfo.id} | % | Res |`
   )
   lines.push('|-|-|-|-|-|-|-|')
 
   const evaluationResults = evaluationResult.results.result
   const evaluationParameters = evaluationResult.evalParameters
   const evaluationConfiguration = completeConfig.evaluationConfig
-
+  let metricExplanationMap = new Map();
   for (let i = 0; i < evaluationResults.length; i++) {
     const resultExplanation = evaluationParameters.resultExplanations[i];
     const resultStatus = evaluationResults[i];
     const metricName = evaluationParameters.metricNames[i];
     const metricUnit = evaluationParameters.metricUnits[i];
     const metricValues = evaluationParameters.metricToDifferentBenchValues.get(metricName);
-
+    metricExplanationMap.set(metricName, resultExplanation);
     if (!metricValues) {
       continue;
     }
@@ -30574,6 +30624,9 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
 
     lines.push(line);
   }
+
+  module.exports.addExtraExplanation(lines, metricExplanationMap)
+
   const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
   module.exports.alertUsersIfBenchFailed(benchmarkPassed, completeConfig, lines);
 
@@ -30618,14 +30671,14 @@ module.exports.createBenchDataTextForCompWithPrev = function (
       : null
 
   let benchDataLines = []
-  if (currentBenchmark.benchmarkName === previousBenchmark.benchmarkName) {
+  if (currentBenchmark.benchmarkGroupName === previousBenchmark.benchmarkGroupName) {
     benchDataLines = [
       `|   Current Benchmark   |   Previous Benchmark   |`,
       '|-----------------------|------------------------|'
     ]
   } else {
     benchDataLines = [
-      `|   Current ${currentBenchmark.benchmarkName}   |   Last ${previousBenchmark.benchmarkName}   |`,
+      `|   Current ${currentBenchmark.benchmarkGroupName}   |   Last ${previousBenchmark.benchmarkGroupName}   |`,
       '|-----------------------|------------------------|'
     ]
   }
@@ -30767,7 +30820,7 @@ module.exports.createBodyForComparisonWithThresholdRange = function (
 evaluationResult, completeConfig
 ) {
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
-  const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
+  const lines = [`# ${currentBenchmark.benchmarkGroupName}`, '', '']
 
   const benchDataText = module.exports.createBenchDataText(currentBenchmark);
 
@@ -31109,11 +31162,115 @@ module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod = function (ev
     case 'trend_detection_moving_ave':
       return ""
     case 'trend_detection_deltas':
-      return ""
+      return "You are trying to identify software performance degradation by comparing current performance against three benchmarks:" +
+          " the immediate previous run, a run closest to one week ago, and the last stable release." +
+          " Each comparison checks for changes exceeding a specified percentage, enabling the detection of both sudden and gradual performance declines"
     default:
       return "Unsupported evaluation method."
 
   }}
+
+module.exports.createWorkflowSummaryForTrendDetDeltas = function (evaluationResult, completeConfig) {
+  const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+  const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
+  const weekAgoBench = evaluationResult.referenceBenchmarks.weekAgo;
+  const lastStableReleaseBench = evaluationResult.referenceBenchmarks.lastStableRelease;
+
+  const headers = [
+    {
+      data: 'Metric',
+      header: true,
+    },
+    {
+      data: `Curr: "${currentBenchmark.commitInfo.id.substring(0, 7)}"`,
+      header: true,
+    },
+    {
+      data: `Prev: "${previousBenchmark.commitInfo.id.substring(0, 7)}"`,
+      header: true,
+    },
+    {
+      data: `~Week: "${weekAgoBench.commitInfo.id.substring(0, 7)}"`,
+      header: true,
+    },
+    {
+      data: `Stable: "${lastStableReleaseBench.commitInfo.id.substring(0, 7)}"`,
+      header: true,
+    },
+    {
+      data: 'Max. change',
+      header: true,
+    },
+    {
+      data: 'Result',
+      header: true,
+    }
+
+  ];
+
+  const rows = [];
+  const evaluationResults = evaluationResult.results.result
+  const evaluationParameters = evaluationResult.evalParameters
+  const evaluationConfiguration = completeConfig.evaluationConfig
+  for (let i = 0; i < evaluationResults.length; i++) {
+
+    const resultExplanation = evaluationParameters.resultExplanations[i];
+    const resultStatus = evaluationResults[i];
+    const metricName = evaluationParameters.metricNames[i];
+    const metricUnit = evaluationParameters.metricUnits[i];
+    const metricValues = evaluationParameters.metricToDifferentBenchValues.get(metricName);
+
+    if (!metricValues) {
+      continue;
+    }
+
+    let currBenchValue = metricValues?.current ?? 'N/A';
+    let prevBenchValue = metricValues?.previous ?? 'N/A';
+    let weekAgoBenchValue = metricValues?.week_ago ?? 'N/A';
+    let lastStableReleaseBenchValue = metricValues?.last_stable_release ?? 'N/A';
+
+    const x = evaluationConfiguration.trendThresholds[i];
+    let line;
+    let comparisonResult;
+
+    const metricNameAndUnit = metricName + " [" + metricUnit + "]";
+
+    let graphicalRepresentationOfRes;
+    if (resultStatus === 'failed' || resultStatus === 'passed') {
+      graphicalRepresentationOfRes = resultStatus === 'passed' ? '🟢' : '🔴'
+    } else {
+      graphicalRepresentationOfRes= '🔘';
+    }
+
+    rows.push([
+      {
+        data: metricName,
+      },
+      {
+        data: currBenchValue,
+      },
+      {
+        data: prevBenchValue,
+      },
+      {
+        data: weekAgoBenchValue,
+      },
+      {
+        data: lastStableReleaseBenchValue,
+      },
+      {
+        data: x,
+      },
+      {
+        data: graphicalRepresentationOfRes
+      },
+
+    ])
+  }
+  let summaryMessage = module.exports.createSummaryMessage(evaluationResult);
+  const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults);
+}
 
 module.exports.createSummaryMessage = function(evaluationResult) {
   const results = evaluationResult.results.result;
@@ -31176,30 +31333,29 @@ module.exports.getCommit = function () {
 const { Octokit } = __nccwpck_require__(9597)
 const { context } = __nccwpck_require__(3134)
 
-module.exports.getLastCommitSha = async (branchName, benchmarkData, benchmarkName)=> {
-  console.log("Bench data from getlastcomitsha", benchmarkData);
-  // get length of benchmark data
+module.exports.getLastCommitSha = async (branchName, benchmarkData, benchmarkGroupName)=> {
+  core.debug("---- start getLastCommitSha ----");
 
   const octokit = new Octokit()
   const response = await octokit.rest.repos.listCommits({
     owner: context.repo.owner,
     repo: context.repo.repo,
     sha: branchName,
-    per_page: 10
+    per_page: 100
   })
-  // list sha of the last 10 commits to branchName
-  core.debug('Commits: ' + JSON.stringify(response.data.map(commit => commit.sha)));
 
-  return module.exports.findLatestSuccessfulBenchmark(benchmarkData, benchmarkName,
+  //core.debug('Commits: ' + JSON.stringify(response.data.map(commit => commit.sha)));
+
+  return module.exports.findLatestSuccessfulBenchmark(benchmarkData, benchmarkGroupName,
       response.data.map(commit => commit.sha));
 }
 
-module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkName, commitIds) {
-  const benchmarks = benchmarkData.entries[benchmarkName];
+module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkGroupName, commitIds) {
+  const benchmarks = benchmarkData.entries[benchmarkGroupName];
 
   core.debug('Benchmark data length: ' + (benchmarks ? benchmarks.length : 'undefined'));
-  core.debug('Benchmark name: ' + benchmarkName);
-  core.debug('Commit ids: ' + JSON.stringify(commitIds));
+  core.debug('Benchmark name: ' + benchmarkGroupName);
+  //core.debug('Commit ids: ' + JSON.stringify(commitIds));
 
   if (!benchmarks || !Array.isArray(commitIds)) {
     return null;
@@ -31254,7 +31410,8 @@ module.exports.getBoolInput = function (inputName) {
 
 module.exports.validateInputAndFetchConfig = function () {
   // Part 1: General info + extracting json with current bench data
-  const benchGroupName = core.getInput('bench_group_name')
+  const benchmarkGroupName = core.getInput('bench_group_name')
+  core.debug(`Benchmark group name: ${benchmarkGroupName}`)
   const folderWithCurrentBenchmarkResults = core.getInput('folder_with_current_benchmark_results')
   if (folderWithCurrentBenchmarkResults === '') {
     throw new Error(
@@ -31320,15 +31477,16 @@ module.exports.validateInputAndFetchConfig = function () {
     )
   }
 
-  let benchGroupToCompare = core.getInput('bench_group_to_compare')
-  if (benchGroupToCompare === '' || benchGroupToCompare === null) {
-    benchGroupToCompare = benchGroupName
+  let benchmarkGroupToCompare = core.getInput('benchmark_group_to_compare')
+  if (benchmarkGroupToCompare === '' || benchmarkGroupToCompare === null) {
+    benchmarkGroupToCompare = benchmarkGroupName
   }
+  core.debug(`Benchmark group to compare (config, 105): ${benchmarkGroupToCompare}`)
 
   const folderWithBenchData = core.getInput('folder_with_bench_data')
   const fileWithBenchData = core.getInput('file_with_bench_data')
   const evalConfig = module.exports.validateAndFetchEvaluationConfig(
-      itemCount, benchGroupToCompare, folderWithBenchData, fileWithBenchData);
+      itemCount, benchmarkGroupToCompare, folderWithBenchData, fileWithBenchData);
 
   // No need for extra validaiton
   const githubToken = core.getInput('github_token')
@@ -31344,11 +31502,11 @@ module.exports.validateInputAndFetchConfig = function () {
 
 
   return new Config(
-      benchGroupName,
+      benchmarkGroupName,
       parsedData,
       subsetParsedData,
       failingCondition,
-      benchGroupToCompare,
+      benchmarkGroupToCompare,
       evalConfig,
       folderWithBenchData,
       fileWithBenchData,
@@ -31443,7 +31601,7 @@ module.exports.camelToSnake = function (string) {
       .toLowerCase()
 }
 
-module.exports.validateAndFetchEvaluationConfig = function (currentResultLength, benchToCompare,
+module.exports.validateAndFetchEvaluationConfig = function (currentResultLength, benchmarkGroupToCompare,
                                                             folderWithBenchData, fileWithBenchData) {
   // Evaluation method
   const evaluationMethod = core.getInput('evaluation_method', { required: true })
@@ -31483,12 +31641,12 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
     case 'previous':
       console.log('Validating previous evaluation configuration.')
       module.exports.validateOperatorsAndMargins(currentResultLength)
-      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare, 1);
+      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchmarkGroupToCompare, 1);
       break
     case 'previous_successful':
       console.log('Validating previous successful evaluation configuration.')
       module.exports.validateOperatorsAndMargins(currentResultLength)
-      module.exports.checkIfPreviousSuccessfulExists(benchmarkData, benchToCompare);
+      module.exports.checkIfPreviousSuccessfulExists(benchmarkData, benchmarkGroupToCompare);
       break
     case 'threshold_range':
       console.log('Validating threshold range evaluation configuration.')
@@ -31496,7 +31654,7 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
       break
     case 'jump_detection':
       console.log('Validating jump detection evaluation configuration.')
-      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare, 1);
+      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchmarkGroupToCompare, 1);
       module.exports.validateJumpDetectionConfig(currentResultLength)
       break
     case 'trend_detection_moving_ave':
@@ -31504,7 +31662,7 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
       module.exports.validateTrendDetectionMovingAveConfig(currentResultLength)
       const movingAveWindowSize = core.getInput('moving_ave_window_size')
         try {
-          module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare,
+          module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchmarkGroupToCompare,
               movingAveWindowSize);
         } catch (error) {
           // Depending on the value of the trend_det_no_sufficient_data_strategry input,
@@ -31513,7 +31671,7 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
             if (noSufficientDataStrategy === 'fail') {
                 throw error;
             } else if (noSufficientDataStrategy === 'use_available') {
-                const numberOfBenchsForName = benchmarkData.entries[benchToCompare].length;
+                const numberOfBenchsForName = benchmarkData.entries[benchmarkGroupToCompare].length;
                 const stringOfNumberOfBenchs= numberOfBenchsForName.toString();
                 core.info(`Not enough data for trend detection with moving average. Using available data.`)
                 process.env[`INPUT_MOVING_AVE_WINDOW_SIZE`] = stringOfNumberOfBenchs;
@@ -31529,8 +31687,8 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
       break
     case 'trend_detection_deltas':
       module.exports.validateTrendThreshold(currentResultLength);
-      module.exports.checkForWeekOldBenchmark(benchmarkData, benchToCompare);
-      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchToCompare,1);
+      //module.exports.checkForWeekOldBenchmark(benchmarkData, benchmarkGroupToCompare);
+      module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchmarkGroupToCompare,1);
       break
     default:
       throw new Error(
@@ -31540,7 +31698,7 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
 
   return module.exports.createEvaluationConfig(
       'evaluationMethod',
-      'benchToCompare',
+      'benchmarkGroupToCompare',
       'thresholdValues',
       'comparisonOperators',
       'comparisonMargins',
@@ -31556,7 +31714,7 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
 module.exports.createEvaluationConfig = function (...inputNames) {
   const validInputs = [
     "evaluationMethod",
-    "benchToCompare",
+    "benchmarkGroupToCompare",
     "thresholdValues",
     "comparisonOperators",
     "comparisonMargins",
@@ -31572,13 +31730,21 @@ module.exports.createEvaluationConfig = function (...inputNames) {
     if (inputNames.includes(inputName)) {
       const snakeCaseInputName = module.exports.camelToSnake(inputName)
       const inputValue = core.getInput(snakeCaseInputName)
-      console.log(`Input value for ${snakeCaseInputName}: ${inputValue}`)
+
+      // if the value for inputName === benchmarkGroupToCompare is null or does not exist
+      // return the value for inputName === benchmarkGroupName
+      if (inputName === 'benchmarkGroupToCompare') {
+        core.debug(`Processing ${inputName}. THe value is ${inputValue}`)
+        if (inputValue === '') {
+          core.debug(`The value is empty. Returning ${core.getInput('bench_group_name')}`)
+        }
+        return inputValue === '' ? core.getInput('bench_group_name') : inputValue
+      }
       if (inputValue) {
         if (inputName === 'comparisonOperators') {
             return inputValue.split(',').map(operator => operator.trim())
         }
-        if (inputName === 'evaluationMethod' || inputName === 'benchToCompare'
-        || inputName === 'trendDetNoSufficientDataStrategy') {
+        if (inputName === 'evaluationMethod' || inputName === 'trendDetNoSufficientDataStrategy' || inputName === 'benchmarkGroupToCompare') {
           return inputValue
         }
         return inputValue.includes(',')
@@ -31709,7 +31875,7 @@ module.exports.validateJumpDetectionConfig = function (currentResultLength) {
 
 module.exports.validateTrendThreshold = function (currentResultLength) {
   const trendThresholds = core.getInput('trend_thresholds')
-
+  core.info("Trend thresholds: " + trendThresholds);
   if (trendThresholds == null) {
     throw new Error(
         'Both movingAveWindowSize and trendThresholds must be provided for trend detection with moving average.'
@@ -31731,7 +31897,7 @@ module.exports.validateTrendThreshold = function (currentResultLength) {
 }
 
 module.exports.validateTrendDetectionMovingAveConfig = function (currentResultLength) {
-  validateTrendThreshold(currentResultLength);
+  module.exports.validateTrendThreshold(currentResultLength);
 
   // window size part
   const movingAveWindowSize = core.getInput('moving_ave_window_size')
@@ -31745,18 +31911,18 @@ module.exports.validateTrendDetectionMovingAveConfig = function (currentResultLe
 
 module.exports.checkIfNthPreviousBenchmarkExists = function (
     benchmarkData,
-    benchmarkName,
+    benchmarkGroupName,
     numberOfBenchmarks
 ) {
   console.log(
-        `Checking if benchmark "${benchmarkName}" has ${numberOfBenchmarks} previous entries.`
+        `Checking if benchmark "${benchmarkGroupName}" has ${numberOfBenchmarks} previous entries.`
     )
 
-  if (!benchmarkData.entries.hasOwnProperty(benchmarkName)) {
-    throw new Error(`No benchmarks found with the name "${benchmarkName}"`)
+  if (!benchmarkData.entries.hasOwnProperty(benchmarkGroupName)) {
+    throw new Error(`No benchmarks found with the name "${benchmarkGroupName}"`)
   }
 
-  const benchmarks = benchmarkData.entries[benchmarkName]
+  const benchmarks = benchmarkData.entries[benchmarkGroupName]
 
   benchmarks.sort((a, b) => b.date - a.date)
 
@@ -31804,31 +31970,34 @@ module.exports.validateTrendDetectionDeltasConfig = function () {
 
 module.exports.checkForWeekOldBenchmark = function(data, benchmarkKey) {
 
-
   const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
-  const DAY_IN_MS = 24 * 60 * 60 * 1000;
   const now = Date.now();
-
 
   if (!data.entries.hasOwnProperty(benchmarkKey)) {
     throw new Error(`No such benchmark key: '${benchmarkKey}' exists.`);
   }
 
   let benchmarks = data.entries[benchmarkKey];
-  // print number of benchmarks
+  if (benchmarks.length === 0) {
+    throw new Error(`No benchmarks under '${benchmarkKey}'.`);
+  }
 
+  let closestBenchmark = null;
+  let smallestDifference = Number.MAX_SAFE_INTEGER;
 
-  let weekOldBenchmarkExists = benchmarks.some(benchmark => {
-
-
+  benchmarks.forEach(benchmark => {
     let benchmarkAge = now - benchmark.date;
-    return benchmarkAge >= (ONE_WEEK_IN_MS - DAY_IN_MS) && benchmarkAge <= (ONE_WEEK_IN_MS + DAY_IN_MS);
+    let difference = Math.abs(benchmarkAge - ONE_WEEK_IN_MS);
+    if (difference < smallestDifference) {
+      smallestDifference = difference;
+      closestBenchmark = benchmark;
+    }
   });
 
-  if (!weekOldBenchmarkExists) {
-    throw new Error(`No benchmark under '${benchmarkKey}' is approximately one week old.`);
+  if (!closestBenchmark) {
+    throw new Error(`No benchmark under '${benchmarkKey}' is close to one week old.`);
   } else {
-    console.log(`A benchmark under '${benchmarkKey}' is approximately one week old.`);
+    console.log(`Found a benchmark under '${benchmarkKey}' that is closest to one week old.`);
   }
 }
 
@@ -31970,6 +32139,8 @@ module.exports.evaluateCurrentBenchmark = function (
         evaluationResult = module.exports.trendDetectionMovingAve(currentBenchmark, completeConfig);
         break;
     case 'trend_detection_deltas':
+      core.debug('Benchmark group to compare (evaluate 35): ' + completeConfig.benchmarkGroupToCompare)
+        core.debug('bech eval config: ' + JSON.stringify(completeConfig.evaluationConfig))
         evaluationResult = module.exports.trendDetectionDeltas(currentBenchmark, completeConfig);
         break;
     default:
@@ -32043,7 +32214,7 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluatio
 };
 
 module.exports.compareWithPrevious = function (currentBenchmarkData, completeBenchData, completeConfig, successful) {
-  const previousBenchmarkData = getLatestBenchmark(completeConfig.benchToCompare,
+  const previousBenchmarkData = getLatestBenchmark(completeConfig.benchmarkGroupToCompare,
       completeConfig.folderWithBenchData, completeConfig.fileWithBenchData, 1, successful);
   // First, find the previous benchmark => we will get obj not json
   //core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
@@ -32163,7 +32334,7 @@ module.exports.evaluateWithThresholdRanges = function (currentBenchmarkData, con
 
 module.exports.evaluateWithJumpDetection = function (currentBenchmarkData, config) {
 
-  const previousBenchmarkData = getLatestBenchmark(config.benchToCompare,
+  const previousBenchmarkData = getLatestBenchmark(config.benchmarkGroupToCompare,
       config.folderWithBenchData, config.fileWithBenchData, 1, false);
 
   const { jumpDetectionThresholds } = config.evaluationConfig;
@@ -32219,7 +32390,7 @@ module.exports.trendDetectionMovingAve = function (currentBenchmarkData, complet
   const { trendThresholds: t, movingAveWindowSize: b } = completeConfig.evaluationConfig;
 
   // First get the previous b benchmarks
-  const previousBenchmarkDataArray = getNLatestBenchmarks(completeConfig.evaluationConfig.benchToCompare,
+  const previousBenchmarkDataArray = getNLatestBenchmarks(completeConfig.evaluationConfig.benchmarkGroupToCompare,
         completeConfig.folderWithBenchData, completeConfig.fileWithBenchData, b, false);
   //core.debug('Retrieved the following number of benchmarks: ' + previousBenchmarkDataArray.length);
 
@@ -32290,20 +32461,22 @@ module.exports.addResultToBenchmarkObject = function (
 
 module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
-  //core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData));
+  core.debug('--- start trendDetectionDeltas ---')
+  core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData));
 
-  const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchToCompare,
+  core.debug('Benchmark group to compare: ' + config.evaluationConfig.benchmarkGroupToCompare)
+  const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchmarkGroupToCompare,
         config.folderWithBenchData, config.fileWithBenchData, 1, false);
-  ////core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
+  core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
 
-  const benchFromWeekAgo = getBenchFromWeekAgo(config.evaluationConfig.benchToCompare,
+  const benchFromWeekAgo = getBenchFromWeekAgo(config.evaluationConfig.benchmarkGroupToCompare,
         config.folderWithBenchData, config.fileWithBenchData);
-    ////core.debug('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
+  core.debug('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
 
   const lastStableReleaseBench = getBenchmarkOfStableBranch(
-        config.evaluationConfig.benchToCompare, config.folderWithBenchData,
+        config.evaluationConfig.benchmarkGroupToCompare, config.folderWithBenchData,
       config.fileWithBenchData, config.latestBenchSha);
-    ////core.debug('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
+  core.debug('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
 
 
   const { trendThresholds: X } = config.evaluationConfig;
@@ -32319,14 +32492,12 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
   };
 
   const evaluateChange = (oldValue, newValue, threshold) => {
-    // calculate percentage change for the following values
-
     const percentageChange = calculatePercentageChange(oldValue, newValue);
     return Math.abs(percentageChange) <= threshold;
   };
 
   currentBenchmarkData.simpleMetricResults.forEach((currentResult, index) => {
-    //core.debug('Current metric: ' + JSON.stringify(currentResult));
+    core.info('Current metric: ' + JSON.stringify(currentResult));
     const currentName = currentResult.name;
     const currentValue = currentResult.value;
     const currentUnit = currentResult.unit;
@@ -32372,6 +32543,7 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
   });
 
+  core.debug('--- end trendDetectionDeltas ---')
   return module.exports.createEvaluationObject({
     "evaluation_method": "trend_detection_deltas",
     "metric_names": metricNames,
@@ -32440,7 +32612,8 @@ const {
 const { createCurrBench} = __nccwpck_require__(501)
 
 const { createComment, createWorkflowSummaryForCompWithPrev, createWorkflowSummaryThreshold,
-  summaryForMethodNotSupported, createWorkflowSummaryForThresholdRange} = __nccwpck_require__(3732)
+  summaryForMethodNotSupported, createWorkflowSummaryForThresholdRange,
+  createWorkflowSummaryForTrendDetDeltas} = __nccwpck_require__(3732)
 
 const {
   addCompleteBenchmarkToFile,
@@ -32469,11 +32642,13 @@ async function run() {
     if (completeConfig.evaluationConfig.evaluationMethod === 'trend_detection_deltas') {
       const branchName = core.getInput('trend_det_successful_release_branch');
       latestBenchSha = await getLastCommitSha(branchName, completeBenchData,
-          completeConfig.benchName);
+          completeConfig.benchmarkGroupName);
       core.debug(`Latest bench sha: ${latestBenchSha}`);
       completeConfig.latestBenchSha = latestBenchSha;
     }
 
+    core.debug("---- main (53) -----")
+    core.debug(`complete config: ${JSON.stringify(completeConfig.benchmarkGroupToCompare)}`)
     const evaluationResult = evaluateCurrentBenchmark(
         completeBenchmarkObject,
         completeBenchData,
@@ -32519,6 +32694,8 @@ async function run() {
         createWorkflowSummaryThreshold(evaluationResult, completeConfig);
       } else if (evaluationConfig.evaluationMethod === 'threshold_range') {
         createWorkflowSummaryForThresholdRange(evaluationResult, completeConfig)
+      } else if (evaluationConfig.evaluationMethod === 'trend_detection_deltas') {
+        createWorkflowSummaryForTrendDetDeltas(evaluationResult, completeConfig);
       }
 
       else {
@@ -32545,13 +32722,13 @@ module.exports = {
 
 class CompleteBenchmark {
   constructor(
-    benchmarkName,
+    benchmarkGroupName,
     benchmarkInfo,
     simpleMetricResults,
     commitInfo,
     benchSuccessful
   ) {
-    this.benchmarkName = benchmarkName
+    this.benchmarkGroupName = benchmarkGroupName
     this.benchmarkInfo = benchmarkInfo
     this.simpleMetricResults = simpleMetricResults
     this.commitInfo = commitInfo
@@ -32588,13 +32765,13 @@ class Commit {
 
 class Config {
   constructor(
-    benchName,
+    benchmarkGroupName,
     currBenchResJson,
     subsetOfBenchRes,
 
     failingCondition,
 
-    benchToCompare,
+    benchmarkGroupToCompare,
 
     evaluationConfig,
 
@@ -32607,11 +32784,11 @@ class Config {
     alertUsersIfBenchFailed,
     linkToTemplatedGhPageWithResults
   ) {
-      this.benchName = benchName
+      this.benchmarkGroupName = benchmarkGroupName
       this.currBenchResJson = currBenchResJson
       this.subsetOfBenchRes = subsetOfBenchRes
       this.failingCondition = failingCondition
-      this.benchToCompare = benchToCompare
+      this.benchmarkGroupToCompare = benchmarkGroupToCompare
       this.evaluationConfig = evaluationConfig
       this.folderWithBenchData = folderWithBenchData
       this.fileWithBenchData = fileWithBenchData
@@ -32628,7 +32805,7 @@ class EvaluationConfig {
 
     constructor(
         evaluationMethod,
-        benchToCompare,
+        benchmarkGroupToCompare,
         thresholdValues,
         comparisonOperators,
         comparisonMargins,
@@ -32640,7 +32817,7 @@ class EvaluationConfig {
         trendDetNoSufficientDataStrategy
     ) {
         this.evaluationMethod = evaluationMethod
-        this.benchToCompare = benchToCompare
+        this.benchmarkGroupToCompare = benchmarkGroupToCompare
         this.thresholdValues = thresholdValues
         this.comparisonOperators = comparisonOperators
         this.comparisonMargins = comparisonMargins

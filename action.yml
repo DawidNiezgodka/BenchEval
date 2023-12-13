@@ -22,7 +22,7 @@ inputs:
     required: true
 
   bench_group_name:
-    description: 'The name of a specific benchmark. This name will be used to identify the benchmark ...'
+    description: 'The name of a specific benchmark group. This name will be used to identify the benchmark ...'
     required: false
     default: 'Benchmark'
   result_files_merge_strategy_for_each_metric:
@@ -66,7 +66,7 @@ inputs:
       The possible values are 'previous', 'previous_successful', 'threshold', 'jump_detection', 'trend_detection_moving_ave',
       'trend_detection_deltas'
     required: true
-  bench_group_to_compare:
+  benchmark_group_to_compare:
     description: |
       The name of the benchmark to compare to.
       This input is only used when the reference is set to 'previous' or 'previous_successful.'

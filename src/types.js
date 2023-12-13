@@ -1,12 +1,12 @@
 class CompleteBenchmark {
   constructor(
-    benchmarkName,
+    benchmarkGroupName,
     benchmarkInfo,
     simpleMetricResults,
     commitInfo,
     benchSuccessful
   ) {
-    this.benchmarkName = benchmarkName
+    this.benchmarkGroupName = benchmarkGroupName
     this.benchmarkInfo = benchmarkInfo
     this.simpleMetricResults = simpleMetricResults
     this.commitInfo = commitInfo
@@ -43,13 +43,13 @@ class Commit {
 
 class Config {
   constructor(
-    benchName,
+    benchmarkGroupName,
     currBenchResJson,
     subsetOfBenchRes,
 
     failingCondition,
 
-    benchToCompare,
+    benchmarkGroupToCompare,
 
     evaluationConfig,
 
@@ -62,11 +62,11 @@ class Config {
     alertUsersIfBenchFailed,
     linkToTemplatedGhPageWithResults
   ) {
-      this.benchName = benchName
+      this.benchmarkGroupName = benchmarkGroupName
       this.currBenchResJson = currBenchResJson
       this.subsetOfBenchRes = subsetOfBenchRes
       this.failingCondition = failingCondition
-      this.benchToCompare = benchToCompare
+      this.benchmarkGroupToCompare = benchmarkGroupToCompare
       this.evaluationConfig = evaluationConfig
       this.folderWithBenchData = folderWithBenchData
       this.fileWithBenchData = fileWithBenchData
@@ -83,7 +83,7 @@ class EvaluationConfig {
 
     constructor(
         evaluationMethod,
-        benchToCompare,
+        benchmarkGroupToCompare,
         thresholdValues,
         comparisonOperators,
         comparisonMargins,
@@ -95,7 +95,7 @@ class EvaluationConfig {
         trendDetNoSufficientDataStrategy
     ) {
         this.evaluationMethod = evaluationMethod
-        this.benchToCompare = benchToCompare
+        this.benchmarkGroupToCompare = benchmarkGroupToCompare
         this.thresholdValues = thresholdValues
         this.comparisonOperators = comparisonOperators
         this.comparisonMargins = comparisonMargins

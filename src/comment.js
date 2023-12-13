@@ -50,12 +50,12 @@ module.exports.createBodyForComparisonWithPrev = function (
 ) {
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
-  const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
+  const lines = [`# ${currentBenchmark.benchmarkGroupName}`, '', '']
 
-  const currentBenchName = currentBenchmark.benchmarkName
-  const previousBenchName = previousBenchmark.benchmarkName
+  const currentBenchmarkGroupName = currentBenchmark.benchmarkGroupName
+  const previousBenchmarkGroupName = previousBenchmark.benchmarkGroupName
 
-  if (currentBenchName !== previousBenchName) {
+  if (currentBenchmarkGroupName !== previousBenchmarkGroupName) {
     lines.push(
         "Please note that you're comparing benchmarks with different names!"
     )
@@ -138,6 +138,16 @@ module.exports.addInfoAboutBenchRes = function(lines, completeConfig, evaluation
   return benchmarkPassed;
 }
 
+module.exports.addExtraExplanation = function(lines, metricExplanationMap) {
+  lines.push('', '', '', '', '', '','')
+  lines.push(`Extra explanation for each metric.`);
+  lines.push(`| Metric name | Explanation |`);
+    lines.push('|-|-|');
+    for (const [metricName, explanation] of metricExplanationMap.entries()) {
+        lines.push(`| \`${metricName}\` | ${explanation} |`);
+    }
+}
+
 module.exports.alertUsersIfBenchFailed = function (benchmarkPassed, completeConfig, lines) {
   if (!benchmarkPassed) {
     let usersToBeAlerted = completeConfig.alertUsersIfBenchFailed;
@@ -152,14 +162,14 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
   const weekAgoBench = evaluationResult.referenceBenchmarks.weekAgo;
   const lastStableReleaseBench = evaluationResult.referenceBenchmarks.lastStableRelease;
-  const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
+  const lines = [`# ${currentBenchmark.benchmarkGroupName}`, '', '']
 
   lines.push('', '', '', '', '', '','')
   lines.push('## Results')
   lines.push('', '', '', '', '', '','')
 
   lines.push(`The chosen evaluation method is trend detection with deltas.`)
-  lines.push(`Each metric shall be "threshold" % better than the previous benchmark, the benchmark from a week ago,
+  lines.push(`Each metric should not change more than % than the previous benchmark, the benchmark closest to a week ago,
   and the benchmark from the last stable commit to main branch.`)
 
   const benchDataText = module.exports.createBenchDataText(
@@ -168,21 +178,21 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   lines.push(benchDataText)
 
   lines.push(
-      `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Week ago: ${weekAgoBench.commitInfo.id} | Last stable: ${lastStableReleaseBench.commitInfo.id} | Thr | Res |`
+      `| Metric name | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Week: ${weekAgoBench.commitInfo.id} | Stable: ${lastStableReleaseBench.commitInfo.id} | % | Res |`
   )
   lines.push('|-|-|-|-|-|-|-|')
 
   const evaluationResults = evaluationResult.results.result
   const evaluationParameters = evaluationResult.evalParameters
   const evaluationConfiguration = completeConfig.evaluationConfig
-
+  let metricExplanationMap = new Map();
   for (let i = 0; i < evaluationResults.length; i++) {
     const resultExplanation = evaluationParameters.resultExplanations[i];
     const resultStatus = evaluationResults[i];
     const metricName = evaluationParameters.metricNames[i];
     const metricUnit = evaluationParameters.metricUnits[i];
     const metricValues = evaluationParameters.metricToDifferentBenchValues.get(metricName);
-
+    metricExplanationMap.set(metricName, resultExplanation);
     if (!metricValues) {
       continue;
     }
@@ -207,6 +217,9 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
 
     lines.push(line);
   }
+
+  module.exports.addExtraExplanation(lines, metricExplanationMap)
+
   const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
   module.exports.alertUsersIfBenchFailed(benchmarkPassed, completeConfig, lines);
 
@@ -251,14 +264,14 @@ module.exports.createBenchDataTextForCompWithPrev = function (
       : null
 
   let benchDataLines = []
-  if (currentBenchmark.benchmarkName === previousBenchmark.benchmarkName) {
+  if (currentBenchmark.benchmarkGroupName === previousBenchmark.benchmarkGroupName) {
     benchDataLines = [
       `|   Current Benchmark   |   Previous Benchmark   |`,
       '|-----------------------|------------------------|'
     ]
   } else {
     benchDataLines = [
-      `|   Current ${currentBenchmark.benchmarkName}   |   Last ${previousBenchmark.benchmarkName}   |`,
+      `|   Current ${currentBenchmark.benchmarkGroupName}   |   Last ${previousBenchmark.benchmarkGroupName}   |`,
       '|-----------------------|------------------------|'
     ]
   }
@@ -400,7 +413,7 @@ module.exports.createBodyForComparisonWithThresholdRange = function (
 evaluationResult, completeConfig
 ) {
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
-  const lines = [`# ${currentBenchmark.benchmarkName}`, '', '']
+  const lines = [`# ${currentBenchmark.benchmarkGroupName}`, '', '']
 
   const benchDataText = module.exports.createBenchDataText(currentBenchmark);
 
@@ -742,11 +755,115 @@ module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod = function (ev
     case 'trend_detection_moving_ave':
       return ""
     case 'trend_detection_deltas':
-      return ""
+      return "You are trying to identify software performance degradation by comparing current performance against three benchmarks:" +
+          " the immediate previous run, a run closest to one week ago, and the last stable release." +
+          " Each comparison checks for changes exceeding a specified percentage, enabling the detection of both sudden and gradual performance declines"
     default:
       return "Unsupported evaluation method."
 
   }}
+
+module.exports.createWorkflowSummaryForTrendDetDeltas = function (evaluationResult, completeConfig) {
+  const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+  const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
+  const weekAgoBench = evaluationResult.referenceBenchmarks.weekAgo;
+  const lastStableReleaseBench = evaluationResult.referenceBenchmarks.lastStableRelease;
+
+  const headers = [
+    {
+      data: 'Metric',
+      header: true,
+    },
+    {
+      data: `Curr: "${currentBenchmark.commitInfo.id.substring(0, 7)}"`,
+      header: true,
+    },
+    {
+      data: `Prev: "${previousBenchmark.commitInfo.id.substring(0, 7)}"`,
+      header: true,
+    },
+    {
+      data: `~Week: "${weekAgoBench.commitInfo.id.substring(0, 7)}"`,
+      header: true,
+    },
+    {
+      data: `Stable: "${lastStableReleaseBench.commitInfo.id.substring(0, 7)}"`,
+      header: true,
+    },
+    {
+      data: 'Max. change',
+      header: true,
+    },
+    {
+      data: 'Result',
+      header: true,
+    }
+
+  ];
+
+  const rows = [];
+  const evaluationResults = evaluationResult.results.result
+  const evaluationParameters = evaluationResult.evalParameters
+  const evaluationConfiguration = completeConfig.evaluationConfig
+  for (let i = 0; i < evaluationResults.length; i++) {
+
+    const resultExplanation = evaluationParameters.resultExplanations[i];
+    const resultStatus = evaluationResults[i];
+    const metricName = evaluationParameters.metricNames[i];
+    const metricUnit = evaluationParameters.metricUnits[i];
+    const metricValues = evaluationParameters.metricToDifferentBenchValues.get(metricName);
+
+    if (!metricValues) {
+      continue;
+    }
+
+    let currBenchValue = metricValues?.current ?? 'N/A';
+    let prevBenchValue = metricValues?.previous ?? 'N/A';
+    let weekAgoBenchValue = metricValues?.week_ago ?? 'N/A';
+    let lastStableReleaseBenchValue = metricValues?.last_stable_release ?? 'N/A';
+
+    const x = evaluationConfiguration.trendThresholds[i];
+    let line;
+    let comparisonResult;
+
+    const metricNameAndUnit = metricName + " [" + metricUnit + "]";
+
+    let graphicalRepresentationOfRes;
+    if (resultStatus === 'failed' || resultStatus === 'passed') {
+      graphicalRepresentationOfRes = resultStatus === 'passed' ? '🟢' : '🔴'
+    } else {
+      graphicalRepresentationOfRes= '🔘';
+    }
+
+    rows.push([
+      {
+        data: metricName,
+      },
+      {
+        data: currBenchValue,
+      },
+      {
+        data: prevBenchValue,
+      },
+      {
+        data: weekAgoBenchValue,
+      },
+      {
+        data: lastStableReleaseBenchValue,
+      },
+      {
+        data: x,
+      },
+      {
+        data: graphicalRepresentationOfRes
+      },
+
+    ])
+  }
+  let summaryMessage = module.exports.createSummaryMessage(evaluationResult);
+  const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults);
+}
 
 module.exports.createSummaryMessage = function(evaluationResult) {
   const results = evaluationResult.results.result;
