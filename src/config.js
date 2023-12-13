@@ -32,6 +32,7 @@ module.exports.getBoolInput = function (inputName) {
 module.exports.validateInputAndFetchConfig = function () {
   // Part 1: General info + extracting json with current bench data
   const benchmarkGroupName = core.getInput('bench_group_name')
+  core.debug(`Benchmark group name: ${benchmarkGroupName}`)
   const folderWithCurrentBenchmarkResults = core.getInput('folder_with_current_benchmark_results')
   if (folderWithCurrentBenchmarkResults === '') {
     throw new Error(
@@ -101,6 +102,7 @@ module.exports.validateInputAndFetchConfig = function () {
   if (benchGroupToCompare === '' || benchGroupToCompare === null) {
     benchGroupToCompare = benchmarkGroupName
   }
+  core.debug(`Benchmark group to compare: ${benchGroupToCompare}`)
 
   const folderWithBenchData = core.getInput('folder_with_bench_data')
   const fileWithBenchData = core.getInput('file_with_bench_data')

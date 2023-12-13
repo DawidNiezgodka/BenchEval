@@ -31314,18 +31314,17 @@ const { Octokit } = __nccwpck_require__(9597)
 const { context } = __nccwpck_require__(3134)
 
 module.exports.getLastCommitSha = async (branchName, benchmarkData, benchmarkGroupName)=> {
-  console.log("Bench data from getlastcomitsha", benchmarkData);
-  // get length of benchmark data
+  core.debug("---- start getLastCommitSha ----");
 
   const octokit = new Octokit()
   const response = await octokit.rest.repos.listCommits({
     owner: context.repo.owner,
     repo: context.repo.repo,
     sha: branchName,
-    per_page: 10
+    per_page: 100
   })
-  // list sha of the last 10 commits to branchName
-  core.debug('Commits: ' + JSON.stringify(response.data.map(commit => commit.sha)));
+
+  //core.debug('Commits: ' + JSON.stringify(response.data.map(commit => commit.sha)));
 
   return module.exports.findLatestSuccessfulBenchmark(benchmarkData, benchmarkGroupName,
       response.data.map(commit => commit.sha));
@@ -31336,7 +31335,7 @@ module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkG
 
   core.debug('Benchmark data length: ' + (benchmarks ? benchmarks.length : 'undefined'));
   core.debug('Benchmark name: ' + benchmarkGroupName);
-  core.debug('Commit ids: ' + JSON.stringify(commitIds));
+  //core.debug('Commit ids: ' + JSON.stringify(commitIds));
 
   if (!benchmarks || !Array.isArray(commitIds)) {
     return null;
@@ -31392,6 +31391,7 @@ module.exports.getBoolInput = function (inputName) {
 module.exports.validateInputAndFetchConfig = function () {
   // Part 1: General info + extracting json with current bench data
   const benchmarkGroupName = core.getInput('bench_group_name')
+  core.debug(`Benchmark group name: ${benchmarkGroupName}`)
   const folderWithCurrentBenchmarkResults = core.getInput('folder_with_current_benchmark_results')
   if (folderWithCurrentBenchmarkResults === '') {
     throw new Error(
@@ -31461,6 +31461,7 @@ module.exports.validateInputAndFetchConfig = function () {
   if (benchGroupToCompare === '' || benchGroupToCompare === null) {
     benchGroupToCompare = benchmarkGroupName
   }
+  core.debug(`Benchmark group to compare: ${benchGroupToCompare}`)
 
   const folderWithBenchData = core.getInput('folder_with_bench_data')
   const fileWithBenchData = core.getInput('file_with_bench_data')
@@ -32430,20 +32431,21 @@ module.exports.addResultToBenchmarkObject = function (
 
 module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
-  core.info('Current benchmark data: ' + JSON.stringify(currentBenchmarkData));
+  core.debug('--- start trendDetectionDeltas ---')
+  core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData));
 
   const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchmarkGroupToCompare,
         config.folderWithBenchData, config.fileWithBenchData, 1, false);
-  core.info('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
+  core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
 
   const benchFromWeekAgo = getBenchFromWeekAgo(config.evaluationConfig.benchmarkGroupToCompare,
         config.folderWithBenchData, config.fileWithBenchData);
-  core.info('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
+  core.debug('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
 
   const lastStableReleaseBench = getBenchmarkOfStableBranch(
         config.evaluationConfig.benchmarkGroupToCompare, config.folderWithBenchData,
       config.fileWithBenchData, config.latestBenchSha);
-  core.info('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
+  core.debug('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
 
 
   const { trendThresholds: X } = config.evaluationConfig;
@@ -32510,6 +32512,7 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
   });
 
+  core.debug('--- end trendDetectionDeltas ---')
   return module.exports.createEvaluationObject({
     "evaluation_method": "trend_detection_deltas",
     "metric_names": metricNames,

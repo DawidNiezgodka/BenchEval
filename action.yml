@@ -22,7 +22,7 @@ inputs:
     required: true
 
   bench_group_name:
-    description: 'The name of a specific benchmark. This name will be used to identify the benchmark ...'
+    description: 'The name of a specific benchmark group. This name will be used to identify the benchmark ...'
     required: false
     default: 'Benchmark'
   result_files_merge_strategy_for_each_metric:
