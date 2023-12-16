@@ -710,21 +710,11 @@ module.exports.summaryForMethodNotSupported = function (evaluationResult, linkTo
 /// Helpers
 //////////
 module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMessage, linkToGraph) {
+
   core.summary
       .addHeading(`Benchmark summary`, 2)
-
-      .addRaw("This is a short benchmark summary.")
       .addBreak()
-      .addRaw("Depending on workflow settings, you might expect an additional code comment with detailed information" +
-          " or a notification about the benchmark results", true)
-      .addBreak()
-      .addRaw("You might also want to check the graph below" +
-          " (if you added the .html template to the branch where results are stored)")
-      .addBreak();
-  if (linkToGraph) {
-    core.summary.addLink("Graph with benchmark results", linkToGraph);
-  }
-  core.summary
+      .addRaw(summaryMessage)
       .addSeparator()
       .addHeading(`The chosen evaluation method: ${evaluationMethod}`, 4)
       .addRaw(module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod(evaluationMethod))
@@ -733,8 +723,17 @@ module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMe
       .addTable([headers, ...rows])
       .addSeparator()
       .addBreak()
-      .addRaw(summaryMessage)
+      .addRaw("Depending on workflow settings, you might expect an additional code comment with detailed information" +
+          " or a notification about the benchmark results", true)
       .addBreak()
+      .addRaw("You might also want to check the graph below" +
+          " (if you added the .html template to the branch where results are stored)")
+      .addBreak();
+
+  if (linkToGraph) {
+    core.summary.addLink("Graph with benchmark results", linkToGraph);
+  }
+      core.summary
       .write();
 }
 
