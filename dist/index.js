@@ -30569,7 +30569,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
   const weekAgoBench = evaluationResult.referenceBenchmarks.weekAgo;
   const lastStableReleaseBench = evaluationResult.referenceBenchmarks.lastStableRelease;
-  const lines = [`# ${currentBenchmark.benchmarkGroupName}`, '', '']
+  const lines = [`# ${currentBenchmark.benchmarkGroupName}`, '', '', '', '', '','']
 
   lines.push('', '', '', '', '', '','')
   lines.push('## Results')
@@ -30587,7 +30587,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   lines.push(
       `| Metric | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Week: ${weekAgoBench.commitInfo.id} | Stable: ${lastStableReleaseBench.commitInfo.id} | Max. ch |   Res     | `
   )
-  lines.push('|-|-|-|-|-|-|---|')
+  lines.push('|-|-|-|-|-|-|-|')
 
   const evaluationResults = evaluationResult.results.result
   const evaluationParameters = evaluationResult.evalParameters
