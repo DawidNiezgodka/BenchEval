@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1702756770970,
+    "lastUpdate": 1702757027030,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -8674,6 +8674,77 @@
                     "url": "https://github.com/DawidNiezgodka/BenchEval/commit/a0310b8589de82729c0e53602f9a9709b26267a9"
                 },
                 "date": 1702756770970,
+                "executionTime": "20m 31s",
+                "parametrization": {
+                    "protocol": "http:",
+                    "func": "/sieve",
+                    "threads": 256,
+                    "ops": 500
+                },
+                "otherInfo": "edge-server: e2-medium",
+                "metrics": [
+                    {
+                        "name": "avg latency",
+                        "value": "2193.23",
+                        "unit": "ms"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "trend_detection_deltas",
+                        "benchmarkGroupToCompare": "Benchmark",
+                        "thresholdValues": null,
+                        "comparisonOperators": null,
+                        "comparisonMargins": null,
+                        "thresholdUpper": null,
+                        "thresholdLower": null,
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": 5,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "trend_detection_deltas",
+                        "metricNames": [
+                            "avg latency"
+                        ],
+                        "metricUnits": [
+                            "ms"
+                        ],
+                        "resultExplanations": [
+                            "benchmark failed for the metric avg latency, but there was undefined data for the following metric(s): last_stable_release"
+                        ],
+                        "metricToDifferentBenchValues": {},
+                        "is": [],
+                        "shouldBe": [],
+                        "than": []
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "failed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "19d328ed687c0dc768355a03a11cc3954c69471b",
+                    "message": "log 4 debug",
+                    "timestamp": "2023-12-16T21:03:32+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/19d328ed687c0dc768355a03a11cc3954c69471b"
+                },
+                "date": 1702757027030,
                 "executionTime": "20m 31s",
                 "parametrization": {
                     "protocol": "http:",
