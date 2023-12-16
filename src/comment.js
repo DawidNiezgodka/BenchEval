@@ -162,15 +162,15 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
   const weekAgoBench = evaluationResult.referenceBenchmarks.weekAgo;
   const lastStableReleaseBench = evaluationResult.referenceBenchmarks.lastStableRelease;
-  const lines = [`# ${currentBenchmark.benchmarkGroupName}`, '', '']
+  const lines = [`# ${currentBenchmark.benchmarkGroupName}`]
 
-  lines.push('', '', '', '', '', '','')
+  lines.push('')
   lines.push('## Results')
-  lines.push('', '', '', '', '', '','')
+  lines.push('')
 
   lines.push(`The chosen evaluation method is trend detection with deltas.`)
-  lines.push(`For each metric, we have the following condition: 
-  The current value should not change more than X% (Max. ch in the table below) from the value measured for the previous benchmark, the benchmark closest to a week ago, <b>and</b> the benchmark from the last stable commit to the main branch (pointed to by the input <i>trend_det_successful_release_branch</i>).`)
+  lines.push(`For each metric, there is the following condition: 
+        The current value should not change more than X% (Max. ch in the table below) from the value measured for the previous benchmark, the benchmark closest to a week ago, <b>and</b> the benchmark from the last stable commit to the main branch (pointed to by the input <i>trend_det_successful_release_branch</i>).`)
 
   const benchDataText = module.exports.createBenchDataText(
       currentBenchmark
@@ -178,7 +178,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   lines.push(benchDataText)
 
   lines.push(
-      `| Metric name | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Week: ${weekAgoBench.commitInfo.id} | Stable: ${lastStableReleaseBench.commitInfo.id} | Max. ch | Res |`
+      `| Metric | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Week: ${weekAgoBench.commitInfo.id} | Stable: ${lastStableReleaseBench.commitInfo.id} | Max. ch | Re | `
   )
   lines.push('|-|-|-|-|-|-|-|')
 
@@ -218,6 +218,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
     lines.push(line);
   }
 
+  lines.join('\n')
   module.exports.addExtraExplanation(lines, metricExplanationMap)
 
   const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
@@ -226,7 +227,6 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
 
   return lines.join('\n')
 }
-
 module.exports.createBenchDataText = function (currentBenchmark) {
   const benchInfo = currentBenchmark.benchmarkInfo
   core.debug(
@@ -710,59 +710,55 @@ module.exports.summaryForMethodNotSupported = function (evaluationResult, linkTo
 /// Helpers
 //////////
 module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMessage, linkToGraph) {
+
+  const methodSpecificDescription = module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod(evaluationMethod);
+  const methodDescriptionFullText = `<b>Method description:</b> ${methodSpecificDescription}`;
   core.summary
       .addHeading(`Benchmark summary`, 2)
-
-      .addRaw("This is a short benchmark summary.")
-      .addBreak()
-      .addRaw("Depending on workflow settings, you might expect an additional code comment with detailed information" +
-          " or a notification about the benchmark results", true)
-      .addBreak()
-      .addRaw("You might also want to check the graph below" +
-          " (if you added the .html template to the branch where results are stored)")
-      .addBreak();
-  if (linkToGraph) {
-    core.summary.addLink("Graph with benchmark results", linkToGraph);
-  }
-  core.summary
+      .addRaw(summaryMessage)
       .addSeparator()
       .addHeading(`The chosen evaluation method: ${evaluationMethod}`, 4)
-      .addRaw(module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod(evaluationMethod))
+      .addRaw(methodDescriptionFullText)
       .addBreak()
       .addBreak()
       .addTable([headers, ...rows])
       .addSeparator()
       .addBreak()
-      .addRaw(summaryMessage)
+      .addRaw("A code comment with detailed information or a notification about the benchmark results may have been generated, depending on workflow settings.", true)
       .addBreak()
+      .addRaw("Consider checking the graph below if the .html template has been added to the branch where results are stored")
+      .addBreak();
+
+  if (linkToGraph) {
+    core.summary.addLink("Graph with benchmark results", linkToGraph);
+  }
+  core.summary
       .write();
 }
-
 
 
 module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod = function (evaluationMethod) {
   switch (evaluationMethod) {
     case 'threshold':
-      return "You are comparing the current benchmark in relation to a single value (smaller, bigger) or a symmetric range (tolerance) of a given value."
+      return "The method compares the current benchmark in relation to a single value (smaller, bigger) or a symmetric range (tolerance) of a given value."
     case 'previous':
-      return "You are comparing the current benchmark in relation to the previous benchmark. This method does not consider whether the previous benchmark was successful or not."
+      return "The method compares the current benchmark in relation to the previous benchmark. This method does not consider whether the previous benchmark was successful or not."
     case 'previous_successful':
-      return "You are comparing the current benchmark in relation to the previous successful benchmark. This method considers only the previous successful benchmark."
+      return "The method compares the current benchmark in relation to the previous successful benchmark. This method considers only the previous successful benchmark."
     case 'threshold_range':
-      return "You are comparing the current benchmark in relation to a range of a given values (given by lower and upper bounds)."
+      return "The method compares the current benchmark in relation to a range of a given values (given by lower and upper bounds)."
     case 'jump_detection':
       return ""
     case 'trend_detection_moving_ave':
       return ""
     case 'trend_detection_deltas':
-      return "You are trying to identify software performance degradation by comparing current performance against three benchmarks:" +
+      return "The method tries to identify software performance degradation by comparing current performance against three benchmarks:" +
           " the immediate previous run, a run closest to one week ago, and the last stable release." +
-          " Each comparison checks for changes exceeding a specified percentage, enabling the detection of both sudden and gradual performance declines"
+          " Each comparison checks for changes exceeding a specified percentage (enables the detection of both sudden and gradual performance declines)"
     default:
       return "Unsupported evaluation method."
 
   }}
-
 module.exports.createWorkflowSummaryForTrendDetDeltas = function (evaluationResult, completeConfig) {
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
