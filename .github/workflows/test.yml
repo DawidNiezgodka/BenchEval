@@ -32,9 +32,10 @@ jobs:
           folder_with_bench_data: ./bench_data
           file_with_bench_data: data.json
           folder_with_current_benchmark_results: resultsFolder
-          metrics_to_evaluate: avg latency
-          evaluation_method: trend_detection_deltas
-          trend_thresholds: 5
+          metrics_to_evaluate: avg latency, throughput
+          evaluation_method: previous
+          comparison_margins: -1, -1
+          comparison_operators: smaller, bigger
           save_curr_bench_res: true
           github_token: ${{ secrets.GH_TOKEN }}
 

@@ -106,10 +106,12 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluatio
 };
 
 module.exports.compareWithPrevious = function (currentBenchmarkData, completeBenchData, completeConfig, successful) {
+
+
   const previousBenchmarkData = getLatestBenchmark(completeConfig.benchmarkGroupToCompare,
       completeConfig.folderWithBenchData, completeConfig.fileWithBenchData, 1, successful);
-  // First, find the previous benchmark => we will get obj not json
-  //core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
+
+  core.debug("------ compareWithPrevious [after fetching prev data] ------")
 
   const { comparisonOperators, comparisonMargins } = completeConfig.evaluationConfig;
 
@@ -131,12 +133,11 @@ module.exports.compareWithPrevious = function (currentBenchmarkData, completeBen
     let isPassed = 'no data';
 
     if (previousResult) {
-      console.log('previousResult: ' + previousResult)
       const previousValue = previousResult.value;
       const margin = comparisonMargins[index];
       const operator = comparisonOperators[index];
       const thresholdValue = previousValue;
-
+      core.debug(`Current value: ${currentValue}, previous value: ${previousValue}, margin: ${margin}, operator: ${operator}, thresholdValue: ${thresholdValue}`)
       metricNames.push(currentName);
       metricUnits.push(result.unit);
       shouldBe.push(operator);

@@ -19,9 +19,20 @@ module.exports.createCurrBench = function (config) {
     benchInfoJson.parametrization,
     benchInfoJson.otherInfo
   )
-  const metricResults = currBenchResJson.results.map(
-    item => new SimpleMetricResult(item.name, item.value, item.unit)
-  )
+  // const metricResults = currBenchResJson.results.map(
+  //   item => new SimpleMetricResult(item.name, item.value, item.unit)
+  // )
+  const metricResults = currBenchResJson.results.map(item => {
+    const numericValue = Number(item.value);
+    if (isNaN(numericValue)) {
+      console.error(`Value for ${item.name} is not a number.`);
+      return null;
+    }
+    return new SimpleMetricResult(item.name, numericValue, item.unit);
+  }).filter(result => result !== null);
+
+
+
   const commit = getCommit()
   const completeBenchmark = new CompleteBenchmark(
     config.benchmarkGroupName,
