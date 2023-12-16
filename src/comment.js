@@ -169,7 +169,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   lines.push('', '', '', '', '', '','')
 
   lines.push(`The chosen evaluation method is trend detection with deltas.`)
-  lines.push(`For each metric, we have the following condition: 
+  lines.push(`For each metric, there is the following condition: 
   The current value should not change more than X% (Max. ch in the table below) from the value measured for the previous benchmark, the benchmark closest to a week ago, <b>and</b> the benchmark from the last stable commit to the main branch (pointed to by the input <i>trend_det_successful_release_branch</i>).`)
 
   const benchDataText = module.exports.createBenchDataText(
@@ -180,7 +180,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   lines.push(
       `| Metric | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Week: ${weekAgoBench.commitInfo.id} | Stable: ${lastStableReleaseBench.commitInfo.id} | Max. ch |   Res     | `
   )
-  lines.push('|-|-|-|-|-|-|-|')
+  lines.push('|-|-|-|-|-|-|---|')
 
   const evaluationResults = evaluationResult.results.result
   const evaluationParameters = evaluationResult.evalParameters
@@ -692,7 +692,7 @@ module.exports.createWorkflowSummaryForThresholdRange = function (evaluationResu
 module.exports.summaryForMethodNotSupported = function (evaluationResult, linkToGraph) {
     core.summary
         .addHeading("Benchark summary",2)
-        .addRaw("Depending on workflow settings, you might expect code comments or notifications about" +
+        .addRaw("Depending on workflow settings, code comments might or notifications about" +
             "the benchmark result.");
         if (linkToGraph) {
           core.summary.addLink("Graph with benchmark results", linkToGraph);
@@ -724,11 +724,9 @@ module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMe
       .addTable([headers, ...rows])
       .addSeparator()
       .addBreak()
-      .addRaw("Depending on workflow settings, you might expect an additional code comment with detailed information" +
-          " or a notification about the benchmark results", true)
+      .addRaw("A code comment with detailed information or a notification about the benchmark results may have been generated, depending on workflow settings.", true)
       .addBreak()
-      .addRaw("You might also want to check the graph below" +
-          " (if you added the .html template to the branch where results are stored)")
+      .addRaw("Consider checking the graph below if the .html template has been added to the branch where results are stored")
       .addBreak();
 
   if (linkToGraph) {
