@@ -394,6 +394,9 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
     const currentValue = currentResult.value;
     const currentUnit = currentResult.unit;
     metricUnits.push(currentUnit);
+    core.info(`X is", ${X}`)
+    core.info(`X[index is", ${X[index]}`)
+
     const currentThreshold = X[index];
     const previousMetric = previousBenchmarkData.simpleMetricResults.find(r => r.name === currentName)?.value;
     const weekAgoMetric = benchFromWeekAgo.simpleMetricResults.find(r => r.name === currentName)?.value;

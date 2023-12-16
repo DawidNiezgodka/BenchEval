@@ -119,7 +119,7 @@ module.exports.createBodyForComparisonWithPrev = function (
 }
 
 module.exports.addInfoAboutBenchRes = function(lines, completeConfig, evaluationResults) {
-  lines.push('', '', '', '', '', '','')
+  lines.push(' ', ' ')
   const {failingCondition} = completeConfig;
   const benchmarkPassed =
       failingCondition === 'any' ? !evaluationResults.includes('failed') :
@@ -275,6 +275,7 @@ module.exports.createBenchDataTextForCompWithPrev = function (
     ]
   }
 
+  benchDataLines.push(' ', ' ')
   benchDataLines.push(
       `| **Execution time**: ${
           currentBenchInfo.executionTime
@@ -282,6 +283,7 @@ module.exports.createBenchDataTextForCompWithPrev = function (
           previousBenchInfo ? previousBenchInfo.executionTime : 'N/A'
       } |`
   )
+  benchDataLines.push(' ', ' ')
   benchDataLines.push('| **Parametrization**:  | **Parametrization**:   |')
 
   const currentFields = Object.keys(currentBenchInfo.parametrization)

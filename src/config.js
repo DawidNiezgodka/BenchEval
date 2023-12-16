@@ -570,59 +570,6 @@ module.exports.checkIfPreviousSuccessfulExists = function(data, benchmarkKey) {
   }
 }
 
-module.exports.validateTrendDetectionDeltasConfig = function () {
-  const trendThresholds = core.getInput('trend_thresholds')
-
-  if (trendThresholds == null) {
-    throw new Error(
-        'trendThresholds must be provided for trend detection.'
-    )
-  }
-
-  const trendThresholdsNum = Number(trendThresholds)
-  if (
-      isNaN(trendThresholdsNum) ||
-      trendThresholdsNum < 0 ||
-      trendThresholdsNum > 100
-  ) {
-    throw new Error('trendThresholds must be a number between 0 and 100.')
-  }
-}
-
-module.exports.checkForWeekOldBenchmark = function(data, benchmarkKey) {
-
-  const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
-  const now = Date.now();
-
-  if (!data.entries.hasOwnProperty(benchmarkKey)) {
-    throw new Error(`No such benchmark key: '${benchmarkKey}' exists.`);
-  }
-
-  let benchmarks = data.entries[benchmarkKey];
-  if (benchmarks.length === 0) {
-    throw new Error(`No benchmarks under '${benchmarkKey}'.`);
-  }
-
-  let closestBenchmark = null;
-  let smallestDifference = Number.MAX_SAFE_INTEGER;
-
-  benchmarks.forEach(benchmark => {
-    let benchmarkAge = now - benchmark.date;
-    let difference = Math.abs(benchmarkAge - ONE_WEEK_IN_MS);
-    if (difference < smallestDifference) {
-      smallestDifference = difference;
-      closestBenchmark = benchmark;
-    }
-  });
-
-  if (!closestBenchmark) {
-    throw new Error(`No benchmark under '${benchmarkKey}' is close to one week old.`);
-  } else {
-    console.log(`Found a benchmark under '${benchmarkKey}' that is closest to one week old.`);
-  }
-}
-
-
 module.exports.mergeResults = function(directory, strategies, outputFile, metricsToEvaluate) {
   const validStrategies = ['sum', 'average', 'min', 'max', 'median'];
 
