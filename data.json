@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1702499453428,
+    "lastUpdate": 1702742087405,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -7382,6 +7382,89 @@
                     "url": "https://github.com/DawidNiezgodka/BenchEval/commit/49c8a8b48c3aad8987da61a14f2667988f4ac94a"
                 },
                 "date": 1702499453428,
+                "executionTime": "20m 31s",
+                "parametrization": {
+                    "protocol": "http:",
+                    "func": "/sieve",
+                    "threads": 256,
+                    "ops": 500
+                },
+                "otherInfo": "edge-server: e2-medium",
+                "metrics": [
+                    {
+                        "name": "avg latency",
+                        "value": "2193.23",
+                        "unit": "ms"
+                    },
+                    {
+                        "name": "throughput",
+                        "value": "103.96",
+                        "unit": "ops/s"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "trend_detection_deltas",
+                        "benchmarkGroupToCompare": "Benchmark",
+                        "thresholdValues": null,
+                        "comparisonOperators": null,
+                        "comparisonMargins": null,
+                        "thresholdUpper": null,
+                        "thresholdLower": null,
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": [
+                            5,
+                            5
+                        ],
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "trend_detection_deltas",
+                        "metricNames": [
+                            "avg latency",
+                            "throughput"
+                        ],
+                        "metricUnits": [
+                            "ms",
+                            "ops/s"
+                        ],
+                        "resultExplanations": [
+                            "benchmark failed for the metric avg latency, but there was undefined data for the following metric(s): last_stable_release",
+                            "benchmark failed for the metric throughput, but there was undefined data for the following metric(s): last_stable_release"
+                        ],
+                        "metricToDifferentBenchValues": {},
+                        "is": [],
+                        "shouldBe": [],
+                        "than": []
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "failed",
+                            "failed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "a6ea53f776b9a291e64f223297c933e1c1ab1830",
+                    "message": "test new summary",
+                    "timestamp": "2023-12-16T16:54:29+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/a6ea53f776b9a291e64f223297c933e1c1ab1830"
+                },
+                "date": 1702742087405,
                 "executionTime": "20m 31s",
                 "parametrization": {
                     "protocol": "http:",
