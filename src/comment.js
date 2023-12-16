@@ -178,7 +178,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   lines.push(benchDataText)
 
   lines.push(
-      `| Metric | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Week: ${weekAgoBench.commitInfo.id} | Stable: ${lastStableReleaseBench.commitInfo.id} | Max. ch | Res | `
+      `| Metric | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Week: ${weekAgoBench.commitInfo.id} | Stable: ${lastStableReleaseBench.commitInfo.id} | Max. ch |   Res     | `
   )
   lines.push('|-|-|-|-|-|-|-|')
 
@@ -712,13 +712,14 @@ module.exports.summaryForMethodNotSupported = function (evaluationResult, linkTo
 module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMessage, linkToGraph) {
 
   const methodSpecificDescription = module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod(evaluationMethod);
-  const methodDescriptionFullText = `Method description: ${methodSpecificDescription}`;
+  const methodDescriptionFullText = `<b>Method description:</b> ${methodSpecificDescription}`;
   core.summary
       .addHeading(`Benchmark summary`, 2)
       .addRaw(summaryMessage)
       .addSeparator()
       .addHeading(`The chosen evaluation method: ${evaluationMethod}`, 4)
       .addRaw(methodDescriptionFullText)
+      .addBreak()
       .addBreak()
       .addTable([headers, ...rows])
       .addSeparator()
