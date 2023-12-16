@@ -30546,7 +30546,7 @@ module.exports.addInfoAboutBenchRes = function(lines, completeConfig, evaluation
 }
 
 module.exports.addExtraExplanation = function(lines, metricExplanationMap) {
-  lines.push('', '', '', '', '', '','')
+  lines.push('')
   lines.push(`Extra explanation for each metric.`);
   lines.push(`| Metric name | Explanation |`);
     lines.push('|-|-|');
@@ -30569,11 +30569,11 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
   const weekAgoBench = evaluationResult.referenceBenchmarks.weekAgo;
   const lastStableReleaseBench = evaluationResult.referenceBenchmarks.lastStableRelease;
-  const lines = [`# ${currentBenchmark.benchmarkGroupName}`, '', '', '', '', '','']
+  const lines = [`# ${currentBenchmark.benchmarkGroupName}`]
 
-  lines.push('', '', '', '', '', '','')
+  lines.push('')
   lines.push('## Results')
-  lines.push('', '', '', '', '', '','')
+  lines.push('')
 
   lines.push(`The chosen evaluation method is trend detection with deltas.`)
   lines.push(`For each metric, there is the following condition: 
@@ -30585,7 +30585,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   lines.push(benchDataText)
 
   lines.push(
-      `| Metric | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Week: ${weekAgoBench.commitInfo.id} | Stable: ${lastStableReleaseBench.commitInfo.id} | Max. ch |   Res     | `
+      `| Metric | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Week: ${weekAgoBench.commitInfo.id} | Stable: ${lastStableReleaseBench.commitInfo.id} | Max. ch |  Res | `
   )
   lines.push('|-|-|-|-|-|-|-|')
 
@@ -30653,7 +30653,7 @@ module.exports.createBenchDataText = function (currentBenchmark) {
     }
   }
 
-  benchDataLines.push('', '', '', '', '', '', '')
+  benchDataLines.push('')
   benchDataLines.push(`**Other Info**: ${benchInfo.otherInfo}`)
 
   return benchDataLines.join('\n')
