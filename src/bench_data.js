@@ -188,8 +188,6 @@ module.exports.getSortedBenchmarkData = function (folderWithBenchData, fileNameW
     const benchmarkData = module.exports.getCompleteBenchData(
         folderWithBenchData, fileNameWithBenchData
     );
-    core.debug("Benchmark name; " + benchmarkGroupName)
-    core.debug('benchmarkData: ' + JSON.stringify(benchmarkData))
     if (!benchmarkData.entries.hasOwnProperty(benchmarkGroupName)) {
       console.error(
           'No data available for the given benchmark name:',

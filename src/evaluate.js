@@ -354,21 +354,21 @@ module.exports.addResultToBenchmarkObject = function (
 module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
   core.debug('--- start trendDetectionDeltas ---')
-  core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData));
+  //core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData));
 
-  core.debug('Benchmark group to compare: ' + config.evaluationConfig.benchmarkGroupToCompare)
+  //core.debug('Benchmark group to compare: ' + config.evaluationConfig.benchmarkGroupToCompare)
   const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchmarkGroupToCompare,
         config.folderWithBenchData, config.fileWithBenchData, 1, false);
-  core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
+  //core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
 
   const benchFromWeekAgo = getBenchFromWeekAgo(config.evaluationConfig.benchmarkGroupToCompare,
         config.folderWithBenchData, config.fileWithBenchData);
-  core.debug('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
+  //core.debug('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
 
   const lastStableReleaseBench = getBenchmarkOfStableBranch(
         config.evaluationConfig.benchmarkGroupToCompare, config.folderWithBenchData,
       config.fileWithBenchData, config.latestBenchSha);
-  core.debug('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
+  //core.debug('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
 
 
   let { trendThresholds: X } = config.evaluationConfig;
@@ -392,12 +392,13 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
   };
 
   currentBenchmarkData.simpleMetricResults.forEach((currentResult, index) => {
-    core.info('Current metric: ' + JSON.stringify(currentResult));
     const currentName = currentResult.name;
     const currentValue = currentResult.value;
     const currentUnit = currentResult.unit;
     metricUnits.push(currentUnit);
     const currentThreshold = X[index];
+    core.info(`X is: ${X}`)
+    core.info(`X index is: ${X[index]}`)
     const previousMetric = previousBenchmarkData.simpleMetricResults.find(r => r.name === currentName)?.value;
     const weekAgoMetric = benchFromWeekAgo.simpleMetricResults.find(r => r.name === currentName)?.value;
     const lastStableMetric = lastStableReleaseBench.simpleMetricResults.find(r => r.name === currentName)?.value;

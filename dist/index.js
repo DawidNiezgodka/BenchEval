@@ -30273,8 +30273,6 @@ module.exports.getSortedBenchmarkData = function (folderWithBenchData, fileNameW
     const benchmarkData = module.exports.getCompleteBenchData(
         folderWithBenchData, fileNameWithBenchData
     );
-    core.debug("Benchmark name; " + benchmarkGroupName)
-    core.debug('benchmarkData: ' + JSON.stringify(benchmarkData))
     if (!benchmarkData.entries.hasOwnProperty(benchmarkGroupName)) {
       console.error(
           'No data available for the given benchmark name:',
@@ -30609,10 +30607,13 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
     let weekAgoBenchValue = metricValues?.week_ago ?? 'N/A';
     let lastStableReleaseBenchValue = metricValues?.last_stable_release ?? 'N/A';
 
-    const x = evaluationConfiguration.trendThresholds[i];
+    let x;
+    if (evaluationResults.length === 1) {
+      x = evaluationConfiguration.trendThresholds;
+    } else {
+      x = evaluationConfiguration.trendThresholds[i];
+    }
     let line;
-    let comparisonResult;
-
     const metricNameAndUnit = metricName + " [" + metricUnit + "]";
 
     let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴';
@@ -31341,18 +31342,12 @@ module.exports.getLastCommitSha = async (branchName, benchmarkData, benchmarkGro
     per_page: 100
   })
 
-  //core.debug('Commits: ' + JSON.stringify(response.data.map(commit => commit.sha)));
-
   return module.exports.findLatestSuccessfulBenchmark(benchmarkData, benchmarkGroupName,
       response.data.map(commit => commit.sha));
 }
 
 module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkGroupName, commitIds) {
   const benchmarks = benchmarkData.entries[benchmarkGroupName];
-
-  core.debug('Benchmark data length: ' + (benchmarks ? benchmarks.length : 'undefined'));
-  core.debug('Benchmark name: ' + benchmarkGroupName);
-  //core.debug('Commit ids: ' + JSON.stringify(commitIds));
 
   if (!benchmarks || !Array.isArray(commitIds)) {
     return null;
@@ -31362,7 +31357,6 @@ module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkG
       benchmark.benchSuccessful && commitIds.includes(benchmark.commit.id)
   );
 
-  core.debug('Filtered benchmarks: ' + JSON.stringify(filteredBenchmarks));
   filteredBenchmarks.sort((a, b) => b.date - a.date);
 
   return filteredBenchmarks.length > 0 ? filteredBenchmarks[0].commit.id : null;
@@ -32406,21 +32400,21 @@ module.exports.addResultToBenchmarkObject = function (
 module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
 
   core.debug('--- start trendDetectionDeltas ---')
-  core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData));
+  //core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData));
 
-  core.debug('Benchmark group to compare: ' + config.evaluationConfig.benchmarkGroupToCompare)
+  //core.debug('Benchmark group to compare: ' + config.evaluationConfig.benchmarkGroupToCompare)
   const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchmarkGroupToCompare,
         config.folderWithBenchData, config.fileWithBenchData, 1, false);
-  core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
+  //core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
 
   const benchFromWeekAgo = getBenchFromWeekAgo(config.evaluationConfig.benchmarkGroupToCompare,
         config.folderWithBenchData, config.fileWithBenchData);
-  core.debug('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
+  //core.debug('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
 
   const lastStableReleaseBench = getBenchmarkOfStableBranch(
         config.evaluationConfig.benchmarkGroupToCompare, config.folderWithBenchData,
       config.fileWithBenchData, config.latestBenchSha);
-  core.debug('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
+  //core.debug('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
 
 
   let { trendThresholds: X } = config.evaluationConfig;
@@ -32444,12 +32438,13 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
   };
 
   currentBenchmarkData.simpleMetricResults.forEach((currentResult, index) => {
-    core.info('Current metric: ' + JSON.stringify(currentResult));
     const currentName = currentResult.name;
     const currentValue = currentResult.value;
     const currentUnit = currentResult.unit;
     metricUnits.push(currentUnit);
     const currentThreshold = X[index];
+    core.info(`X is: ${X}`)
+    core.info(`X index is: ${X[index]}`)
     const previousMetric = previousBenchmarkData.simpleMetricResults.find(r => r.name === currentName)?.value;
     const weekAgoMetric = benchFromWeekAgo.simpleMetricResults.find(r => r.name === currentName)?.value;
     const lastStableMetric = lastStableReleaseBench.simpleMetricResults.find(r => r.name === currentName)?.value;

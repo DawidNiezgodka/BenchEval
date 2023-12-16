@@ -50,18 +50,12 @@ module.exports.getLastCommitSha = async (branchName, benchmarkData, benchmarkGro
     per_page: 100
   })
 
-  //core.debug('Commits: ' + JSON.stringify(response.data.map(commit => commit.sha)));
-
   return module.exports.findLatestSuccessfulBenchmark(benchmarkData, benchmarkGroupName,
       response.data.map(commit => commit.sha));
 }
 
 module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkGroupName, commitIds) {
   const benchmarks = benchmarkData.entries[benchmarkGroupName];
-
-  core.debug('Benchmark data length: ' + (benchmarks ? benchmarks.length : 'undefined'));
-  core.debug('Benchmark name: ' + benchmarkGroupName);
-  //core.debug('Commit ids: ' + JSON.stringify(commitIds));
 
   if (!benchmarks || !Array.isArray(commitIds)) {
     return null;
@@ -71,7 +65,6 @@ module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkG
       benchmark.benchSuccessful && commitIds.includes(benchmark.commit.id)
   );
 
-  core.debug('Filtered benchmarks: ' + JSON.stringify(filteredBenchmarks));
   filteredBenchmarks.sort((a, b) => b.date - a.date);
 
   return filteredBenchmarks.length > 0 ? filteredBenchmarks[0].commit.id : null;

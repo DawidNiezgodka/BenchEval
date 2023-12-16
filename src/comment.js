@@ -202,10 +202,13 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
     let weekAgoBenchValue = metricValues?.week_ago ?? 'N/A';
     let lastStableReleaseBenchValue = metricValues?.last_stable_release ?? 'N/A';
 
-    const x = evaluationConfiguration.trendThresholds[i];
+    let x;
+    if (evaluationResults.length === 1) {
+      x = evaluationConfiguration.trendThresholds;
+    } else {
+      x = evaluationConfiguration.trendThresholds[i];
+    }
     let line;
-    let comparisonResult;
-
     const metricNameAndUnit = metricName + " [" + metricUnit + "]";
 
     let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴';
