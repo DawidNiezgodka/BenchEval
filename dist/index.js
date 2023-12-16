@@ -32423,7 +32423,10 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
   core.debug('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
 
 
-  const { trendThresholds: X } = config.evaluationConfig;
+  let { trendThresholds: X } = config.evaluationConfig;
+  if (!Array.isArray(X)) {
+        X = [X];
+    }
 
   const metricNames = [];
   const evaluationResults = [];
@@ -32446,9 +32449,6 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
     const currentValue = currentResult.value;
     const currentUnit = currentResult.unit;
     metricUnits.push(currentUnit);
-    core.info(`X is", ${X}`)
-    core.info(`X[index is", ${X[index]}`)
-
     const currentThreshold = X[index];
     const previousMetric = previousBenchmarkData.simpleMetricResults.find(r => r.name === currentName)?.value;
     const weekAgoMetric = benchFromWeekAgo.simpleMetricResults.find(r => r.name === currentName)?.value;
