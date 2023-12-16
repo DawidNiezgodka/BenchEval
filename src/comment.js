@@ -178,7 +178,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   lines.push(benchDataText)
 
   lines.push(
-      `| Metric | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Week: ${weekAgoBench.commitInfo.id} | Stable: ${lastStableReleaseBench.commitInfo.id} | Max. ch |  Res | `
+      `| Metric | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Week: ${weekAgoBench.commitInfo.id} | Stable: ${lastStableReleaseBench.commitInfo.id} | Max. ch | Re | `
   )
   lines.push('|-|-|-|-|-|-|-|')
 
@@ -218,6 +218,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
     lines.push(line);
   }
 
+  lines.join('\n')
   module.exports.addExtraExplanation(lines, metricExplanationMap)
 
   const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
