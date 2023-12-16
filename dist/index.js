@@ -30612,10 +30612,14 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
 
     let x;
     if (evaluationResults.length === 1) {
+      core.info("Evaluation results length is 1")
       x = evaluationConfiguration.trendThresholds;
     } else {
+      core.info("Evaluation results length is not 1")
       x = evaluationConfiguration.trendThresholds[i];
     }
+    core.info("X: " + x)
+    core.info("X: " + JSON.stringify(x))
     let line;
     const metricNameAndUnit = metricName + " [" + metricUnit + "]";
 
