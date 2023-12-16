@@ -30563,6 +30563,7 @@ module.exports.alertUsersIfBenchFailed = function (benchmarkPassed, completeConf
 }
 
 module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationResult, completeConfig) {
+  core.debug('------ start createBodyForComparisonWithTrendDetDeltas ------')
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
   const weekAgoBench = evaluationResult.referenceBenchmarks.weekAgo;
@@ -30588,8 +30589,10 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   lines.push('|-|-|-|-|-|-|-|')
 
   const evaluationResults = evaluationResult.results.result
+  core.info("Evaluation results: " + JSON.stringify(evaluationResults))
   const evaluationParameters = evaluationResult.evalParameters
   const evaluationConfiguration = completeConfig.evaluationConfig
+  core.info("Evaluation cfg: " + JSON.stringify(evaluationConfiguration))
   let metricExplanationMap = new Map();
   for (let i = 0; i < evaluationResults.length; i++) {
     const resultExplanation = evaluationParameters.resultExplanations[i];
