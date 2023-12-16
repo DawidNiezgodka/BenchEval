@@ -31118,14 +31118,14 @@ module.exports.summaryForMethodNotSupported = function (evaluationResult, linkTo
 //////////
 module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMessage, linkToGraph) {
 
+  const methodSpecificDescription = module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod(evaluationMethod);
+  const methodDescriptionFullText = `Method description: ${methodSpecificDescription}`;
   core.summary
       .addHeading(`Benchmark summary`, 2)
-      .addBreak()
       .addRaw(summaryMessage)
       .addSeparator()
       .addHeading(`The chosen evaluation method: ${evaluationMethod}`, 4)
-      .addRaw(module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod(evaluationMethod))
-      .addBreak()
+      .addRaw(methodDescriptionFullText)
       .addBreak()
       .addTable([headers, ...rows])
       .addSeparator()
@@ -31149,21 +31149,21 @@ module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMe
 module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod = function (evaluationMethod) {
   switch (evaluationMethod) {
     case 'threshold':
-      return "You are comparing the current benchmark in relation to a single value (smaller, bigger) or a symmetric range (tolerance) of a given value."
+      return "The method compares the current benchmark in relation to a single value (smaller, bigger) or a symmetric range (tolerance) of a given value."
     case 'previous':
-      return "You are comparing the current benchmark in relation to the previous benchmark. This method does not consider whether the previous benchmark was successful or not."
+      return "The method compares the current benchmark in relation to the previous benchmark. This method does not consider whether the previous benchmark was successful or not."
     case 'previous_successful':
-      return "You are comparing the current benchmark in relation to the previous successful benchmark. This method considers only the previous successful benchmark."
+      return "The method compares the current benchmark in relation to the previous successful benchmark. This method considers only the previous successful benchmark."
     case 'threshold_range':
-      return "You are comparing the current benchmark in relation to a range of a given values (given by lower and upper bounds)."
+      return "The method compares the current benchmark in relation to a range of a given values (given by lower and upper bounds)."
     case 'jump_detection':
       return ""
     case 'trend_detection_moving_ave':
       return ""
     case 'trend_detection_deltas':
-      return "You are trying to identify software performance degradation by comparing current performance against three benchmarks:" +
+      return "The method tries to identify software performance degradation by comparing current performance against three benchmarks:" +
           " the immediate previous run, a run closest to one week ago, and the last stable release." +
-          " Each comparison checks for changes exceeding a specified percentage, enabling the detection of both sudden and gradual performance declines"
+          " Each comparison checks for changes exceeding a specified percentage (enables the detection of both sudden and gradual performance declines)"
     default:
       return "Unsupported evaluation method."
 
