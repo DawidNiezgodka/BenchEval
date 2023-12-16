@@ -30546,7 +30546,7 @@ module.exports.addInfoAboutBenchRes = function(lines, completeConfig, evaluation
 }
 
 module.exports.addExtraExplanation = function(lines, metricExplanationMap) {
-  lines.push('', '', '', '', '', '','')
+  lines.push('')
   lines.push(`Extra explanation for each metric.`);
   lines.push(`| Metric name | Explanation |`);
     lines.push('|-|-|');
@@ -30569,12 +30569,12 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
   const weekAgoBench = evaluationResult.referenceBenchmarks.weekAgo;
   const lastStableReleaseBench = evaluationResult.referenceBenchmarks.lastStableRelease;
-  const lines = [`# ${currentBenchmark.benchmarkGroupName}`]
 
+  const lines = []
+  lines.push('## Benchmark results')
   lines.push('')
-  lines.push('## Results')
+  lines.push(`<b>Benchmark group:</b> ${currentBenchmark.benchmarkGroupName}`)
   lines.push('')
-
   lines.push(`The chosen evaluation method is trend detection with deltas.`)
   lines.push(`For each metric, there is the following condition: 
         The current value should not change more than X% (Max. ch in the table below) from the value measured for the previous benchmark, the benchmark closest to a week ago, <b>and</b> the benchmark from the last stable commit to the main branch (pointed to by the input <i>trend_det_successful_release_branch</i>).`)
@@ -30585,7 +30585,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   lines.push(benchDataText)
 
   lines.push(
-      `| Metric | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Week: ${weekAgoBench.commitInfo.id} | Stable: ${lastStableReleaseBench.commitInfo.id} | Max. ch | Re | `
+      `| Metric | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Week: ${weekAgoBench.commitInfo.id} | Stable: ${lastStableReleaseBench.commitInfo.id} | Max. ch | Res | `
   )
   lines.push('|-|-|-|-|-|-|-|')
 
@@ -30625,7 +30625,6 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
     lines.push(line);
   }
 
-  lines.join('\n')
   module.exports.addExtraExplanation(lines, metricExplanationMap)
 
   const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
