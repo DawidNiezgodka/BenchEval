@@ -207,14 +207,10 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
 
     let x;
     if (evaluationResults.length === 1) {
-      core.info("Evaluation results length is 1")
       x = evaluationConfiguration.trendThresholds;
     } else {
-      core.info("Evaluation results length is not 1")
       x = evaluationConfiguration.trendThresholds[i];
     }
-    core.info("X: " + x)
-    core.info("X: " + JSON.stringify(x))
     let line;
     const metricNameAndUnit = metricName + " [" + metricUnit + "]";
 
@@ -238,12 +234,9 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
 }
 module.exports.createBenchDataText = function (currentBenchmark) {
   const benchInfo = currentBenchmark.benchmarkInfo
-  core.debug(
-      'From createBenchDataText: Current benchmark info: ' +
-      JSON.stringify(benchInfo)
-  )
   const benchDataLines = [
     `**Execution time**: ${benchInfo.executionTime}`,
+      ' ', ' ',
     `**Parametrization**:`
   ]
 
@@ -255,7 +248,7 @@ module.exports.createBenchDataText = function (currentBenchmark) {
     }
   }
 
-  benchDataLines.push('', '', '', '', '')
+  benchDataLines.push(' ', ' ')
   benchDataLines.push(`**Other Info**: ${benchInfo.otherInfo}`)
 
   return benchDataLines.join('\n')
@@ -495,8 +488,6 @@ module.exports.createWorkflowSummaryForCompWithPrev = function (evaluationResult
 
   ];
   const hasShouldBe = evaluationResult.evalParameters.shouldBe.length > 0;
-  const hasThan = evaluationResult.evalParameters.than.length > 0;
-
   if (hasShouldBe) {
     headers.push({ data: 'Curr should be', header: true });
   }
@@ -829,11 +820,12 @@ module.exports.createWorkflowSummaryForTrendDetDeltas = function (evaluationResu
     let weekAgoBenchValue = metricValues?.week_ago ?? 'N/A';
     let lastStableReleaseBenchValue = metricValues?.last_stable_release ?? 'N/A';
 
-    const x = evaluationConfiguration.trendThresholds[i];
-    let line;
-    let comparisonResult;
-
-    const metricNameAndUnit = metricName + " [" + metricUnit + "]";
+    let x;
+    if (evaluationResults.length === 1) {
+      x = evaluationConfiguration.trendThresholds;
+    } else {
+      x = evaluationConfiguration.trendThresholds[i];
+    }
 
     let graphicalRepresentationOfRes;
     if (resultStatus === 'failed' || resultStatus === 'passed') {
