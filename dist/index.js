@@ -30414,7 +30414,6 @@ module.exports.getBenchmarkOfStableBranch = function (benchmarkGroupToCompare, f
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const core = __nccwpck_require__(5127)
-const github = __nccwpck_require__(3134)
 
 module.exports.createComment = function (
     completeConfig,
@@ -30481,9 +30480,9 @@ module.exports.createBodyForComparisonWithPrev = function (
   )
 
   lines.push(benchDataText)
-  lines.push(' ', ' ')
+  lines.push('', '', '', '', '')
   lines.push('## Results')
-  lines.push(' ', ' ')
+  lines.push('', '', '', '', '')
 
   lines.push(
       `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Condition for current | Result |`
@@ -30554,13 +30553,13 @@ module.exports.addInfoAboutBenchRes = function(lines, completeConfig, evaluation
 }
 
 module.exports.addExtraExplanation = function(lines, metricExplanationMap) {
-  lines.push(' ', ' ')
+  lines.push('')
   lines.push(`Extra explanation for each metric.`);
   lines.push(`| Metric name | Explanation |`);
-    lines.push('|-|-|');
-    for (const [metricName, explanation] of metricExplanationMap.entries()) {
-        lines.push(`| \`${metricName}\` | ${explanation} |`);
-    }
+  lines.push('|-|-|');
+  for (const [metricName, explanation] of metricExplanationMap.entries()) {
+    lines.push(`| \`${metricName}\` | ${explanation} |`);
+  }
 }
 
 module.exports.alertUsersIfBenchFailed = function (benchmarkPassed, completeConfig, lines) {
@@ -30652,7 +30651,7 @@ module.exports.createBenchDataText = function (currentBenchmark) {
   const benchDataLines = [
       ' ', ' ',
     `**Execution time**: ${benchInfo.executionTime}`,
-      ' ', ' ',
+    ' ', ' ',
     `**Parametrization**:`
   ]
 
@@ -30666,6 +30665,7 @@ module.exports.createBenchDataText = function (currentBenchmark) {
 
   benchDataLines.push(' ', ' ')
   benchDataLines.push(`**Other Info**: ${benchInfo.otherInfo}`)
+  benchDataLines.push(' ', ' ')
 
   return benchDataLines.join('\n')
 }
@@ -30727,6 +30727,7 @@ module.exports.createBenchDataTextForCompWithPrev = function (
           previousBenchInfo ? previousBenchInfo.otherInfo : 'N/A'
       } |`
   )
+
   return benchDataLines.join('\n')
 }
 
@@ -30740,9 +30741,9 @@ module.exports.createBodyForComparisonWithThreshold = function (
   const benchDataText = module.exports.createBenchDataText(currentBenchmark);
 
   lines.push(benchDataText)
-  lines.push(' ', ' ')
+  lines.push('', '', '', '', '')
   lines.push('## Results')
-  lines.push(' ', ' ')
+  lines.push('', '', '', '', '')
 
   lines.push(
       `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Condition for current | Threshold | Result |`
@@ -30825,7 +30826,7 @@ module.exports.alertUsersIfBenchFailed = function (benchmarkPassed, completeConf
 }
 
 module.exports.createBodyForComparisonWithThresholdRange = function (
-evaluationResult, completeConfig
+    evaluationResult, completeConfig
 ) {
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   const lines = [`# ${currentBenchmark.benchmarkGroupName}`, '', '']
@@ -31040,80 +31041,80 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult, comp
 
 module.exports.createWorkflowSummaryForThresholdRange = function (evaluationResult, completeConfig) {
 
-      const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+  const currentBenchmark = evaluationResult.referenceBenchmarks.current;
 
-      const headers = [
-     {
-        data: 'Metric',
-        header: true,
-     },
-     {
-        data: `Current: "${currentBenchmark.commitInfo.id.substring(0, 7)}"`,
-        header: true,
-     },
-     {
-        data: "Current should be within",
-        header: true,
-     },
-        {
-        data: 'Result',
-        header: true,
-        }
+  const headers = [
+    {
+      data: 'Metric',
+      header: true,
+    },
+    {
+      data: `Current: "${currentBenchmark.commitInfo.id.substring(0, 7)}"`,
+      header: true,
+    },
+    {
+      data: "Current should be within",
+      header: true,
+    },
+    {
+      data: 'Result',
+      header: true,
+    }
 
-      ];
+  ];
 
-      const rows = [];
-      const evaluationResults = evaluationResult.results.result
-      const evaluationParameters = evaluationResult.evalParameters
-      for (let i = 0; i < evaluationResults.length; i++) {
+  const rows = [];
+  const evaluationResults = evaluationResult.results.result
+  const evaluationParameters = evaluationResult.evalParameters
+  for (let i = 0; i < evaluationResults.length; i++) {
 
-         const resultStatus = evaluationResults[i];
-         const metricName = evaluationParameters.metricNames[i];
-         const metricUnit = evaluationParameters.metricUnits[i];
-         const actualValue = evaluationParameters.is[i];
-         const shouldBeBetween = evaluationParameters.shouldBe[i];
-         let valueAndUnit = actualValue + ' ' + metricUnit
+    const resultStatus = evaluationResults[i];
+    const metricName = evaluationParameters.metricNames[i];
+    const metricUnit = evaluationParameters.metricUnits[i];
+    const actualValue = evaluationParameters.is[i];
+    const shouldBeBetween = evaluationParameters.shouldBe[i];
+    let valueAndUnit = actualValue + ' ' + metricUnit
 
-     let graphicalRepresentationOfRes;
-     if (resultStatus === 'failed' || resultStatus === 'passed') {
-        graphicalRepresentationOfRes = resultStatus === 'passed' ? '🟢' : '🔴'
-     } else {
-        graphicalRepresentationOfRes= '🔘';
-     }
+    let graphicalRepresentationOfRes;
+    if (resultStatus === 'failed' || resultStatus === 'passed') {
+      graphicalRepresentationOfRes = resultStatus === 'passed' ? '🟢' : '🔴'
+    } else {
+      graphicalRepresentationOfRes= '🔘';
+    }
 
-     rows.push([
-        {
-          data: metricName,
-        },
-        {
-          data: valueAndUnit,
-        },
-        {
-          data: shouldBeBetween,
-        },
-       {
-            data: graphicalRepresentationOfRes,
-       }
-
-     ])
+    rows.push([
+      {
+        data: metricName,
+      },
+      {
+        data: valueAndUnit,
+      },
+      {
+        data: shouldBeBetween,
+      },
+      {
+        data: graphicalRepresentationOfRes,
       }
+
+    ])
+  }
   let summaryMessage = module.exports.createSummaryMessage(evaluationResult);
   const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
-      module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults);
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults);
 }
 
 module.exports.summaryForMethodNotSupported = function (evaluationResult, linkToGraph) {
-    core.summary
-        .addHeading("Benchark summary",2)
-        .addRaw("Depending on workflow settings, you might expect code comments or notifications about" +
-            "the benchmark result.");
-        if (linkToGraph) {
-          core.summary.addLink("Graph with benchmark results", linkToGraph);
-          }
-        core.summary.addHeading(` ### Evaluation Method: ${evaluationMethod}`, 3)
-        .addRaw("This evaluation method is not supported yet.")
-        .addBreak()
-        .write();
+  core.summary
+      .addHeading("Benchark summary",2)
+      .addRaw("Depending on workflow settings, you might expect code comments or notifications about" +
+          "the benchmark result.");
+  if (linkToGraph) {
+    core.summary.addLink("Graph with benchmark results", linkToGraph);
+  }
+  core.summary.addHeading(` ### Evaluation Method: ${evaluationMethod}`, 3)
+      .addRaw("This evaluation method is not supported yet.")
+      .addBreak()
+      .write();
 }
 
 
@@ -31215,13 +31216,9 @@ module.exports.createWorkflowSummaryForTrendDetDeltas = function (evaluationResu
   const evaluationParameters = evaluationResult.evalParameters
   const evaluationConfiguration = completeConfig.evaluationConfig
   for (let i = 0; i < evaluationResults.length; i++) {
-
-    const resultExplanation = evaluationParameters.resultExplanations[i];
     const resultStatus = evaluationResults[i];
     const metricName = evaluationParameters.metricNames[i];
-    const metricUnit = evaluationParameters.metricUnits[i];
     const metricValues = evaluationParameters.metricToDifferentBenchValues.get(metricName);
-
     if (!metricValues) {
       continue;
     }
