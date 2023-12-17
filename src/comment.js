@@ -49,14 +49,20 @@ module.exports.createBodyForComparisonWithPrev = function (
 ) {
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
-  const lines = [`# ${currentBenchmark.benchmarkGroupName}`, '', '']
+  const lines = []
+  lines.push('## Benchmark results')
+  lines.push('')
+  lines.push(`<b>Benchmark group:</b> ${currentBenchmark.benchmarkGroupName}`)
+  lines.push('')
+  lines.push(`The chosen evaluation method is previous or previous_successful.`)
+  lines.push(`The method compares current benchmark results with the previous benchmark results.`)
 
   const currentBenchmarkGroupName = currentBenchmark.benchmarkGroupName
   const previousBenchmarkGroupName = previousBenchmark.benchmarkGroupName
 
   if (currentBenchmarkGroupName !== previousBenchmarkGroupName) {
     lines.push(
-        "Please note that you're comparing benchmarks with different names!"
+        "Note: Benchmarks from different groups are being compared."
     )
   }
   const benchDataText = module.exports.createBenchDataTextForCompWithPrev(
