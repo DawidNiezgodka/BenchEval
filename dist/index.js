@@ -30692,7 +30692,7 @@ module.exports.createBenchDataTextForCompWithPrev = function (
     ]
   }
 
-  benchDataLines.push(' ', ' ')
+
   benchDataLines.push(
       `| **Execution time**: ${
           currentBenchInfo.executionTime
@@ -30700,7 +30700,7 @@ module.exports.createBenchDataTextForCompWithPrev = function (
           previousBenchInfo ? previousBenchInfo.executionTime : 'N/A'
       } |`
   )
-  benchDataLines.push(' ', ' ')
+
   benchDataLines.push('| **Parametrization**:  | **Parametrization**:   |')
 
   const currentFields = Object.keys(currentBenchInfo.parametrization)
