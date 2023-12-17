@@ -30,7 +30,6 @@ module.exports.getBoolInput = function (inputName) {
 }
 
 module.exports.validateInputAndFetchConfig = function () {
-  // Part 1: General info + extracting json with current bench data
   const benchmarkGroupName = core.getInput('bench_group_name')
   core.debug(`Benchmark group name: ${benchmarkGroupName}`)
   const folderWithCurrentBenchmarkResults = core.getInput('folder_with_current_benchmark_results')
@@ -40,7 +39,6 @@ module.exports.validateInputAndFetchConfig = function () {
     );
   }
   module.exports.isValidPath(folderWithCurrentBenchmarkResults);
-  // print content of currentBenchResFileOrFolder
   core.debug(`Content of currentBenchResFileOrFolder: ", ${fs.readdirSync(folderWithCurrentBenchmarkResults)}`);
   let hasMultipleFiles = module.exports.hasMoreThanOneFile(folderWithCurrentBenchmarkResults);
   let parsedData;
@@ -175,7 +173,6 @@ module.exports.validateLinkToTemplatedGhPageWithResults = function () {
             throw new Error(`Link to templated gh page must contain 'github.io' but got '${linkToTemplatedGhPageWithResults}'`);
         }
     }
-    console.log(linkToTemplatedGhPageWithResults);
     return linkToTemplatedGhPageWithResults;
 }
 
@@ -191,7 +188,6 @@ module.exports.filterMetrics = function(parsedData, metricsToEvaluate) {
 
 module.exports.validateUsersToBeAlerted = function () {
   let alertUsersIfBenchFailed = core.getInput('alert_users_if_bench_failed');
-  console.log("Usaers", alertUsersIfBenchFailed);
   if (alertUsersIfBenchFailed !== '') {
     alertUsersIfBenchFailed = alertUsersIfBenchFailed.split(',').map(u => u.trim());
     for (const u of alertUsersIfBenchFailed) {
@@ -255,26 +251,21 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
   }
   switch (evaluationMethod) {
     case 'threshold':
-      console.log('Validating threshold evaluation configuration.')
       module.exports.validateOperatorsAndMargins(currentResultLength)
       module.exports.validateThresholdConfig(currentResultLength)
       break
     case 'previous':
-      console.log('Validating previous evaluation configuration.')
       module.exports.validateOperatorsAndMargins(currentResultLength)
       module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchmarkGroupToCompare, 1);
       break
     case 'previous_successful':
-      console.log('Validating previous successful evaluation configuration.')
       module.exports.validateOperatorsAndMargins(currentResultLength)
       module.exports.checkIfPreviousSuccessfulExists(benchmarkData, benchmarkGroupToCompare);
       break
     case 'threshold_range':
-      console.log('Validating threshold range evaluation configuration.')
       module.exports.validateThresholdRangeConfig(currentResultLength)
       break
     case 'jump_detection':
-      console.log('Validating jump detection evaluation configuration.')
       module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchmarkGroupToCompare, 1);
       module.exports.validateJumpDetectionConfig(currentResultLength)
       break
@@ -380,7 +371,6 @@ module.exports.createEvaluationConfig = function (...inputNames) {
 }
 
 module.exports.validateOperatorsAndMargins = function (currentResultLength) {
-  console.log('Validating operators and margins')
   const comparisonOperatorsInput = core.getInput('comparison_operators')
   const comparisonMarginsInput = core.getInput('comparison_margins')
 
@@ -419,7 +409,6 @@ module.exports.validateOperatorsAndMargins = function (currentResultLength) {
 }
 
 module.exports.validateThresholdConfig = function (currentResultLength) {
-  console.log('Validating threshold config')
   const thresholdValuesInput = core.getInput('threshold_values')
   const thresholdValues = thresholdValuesInput
       .split(',')
@@ -496,7 +485,6 @@ module.exports.validateJumpDetectionConfig = function (currentResultLength) {
 
 module.exports.validateTrendThreshold = function (currentResultLength) {
   const trendThresholds = core.getInput('trend_thresholds')
-  core.info("Trend thresholds: " + trendThresholds);
   if (trendThresholds == null) {
     throw new Error(
         'Both movingAveWindowSize and trendThresholds must be provided for trend detection with moving average.'
@@ -535,7 +523,7 @@ module.exports.checkIfNthPreviousBenchmarkExists = function (
     benchmarkGroupName,
     numberOfBenchmarks
 ) {
-  console.log(
+  core.debug(
         `Checking if benchmark "${benchmarkGroupName}" has ${numberOfBenchmarks} previous entries.`
     )
 
@@ -555,19 +543,16 @@ module.exports.checkIfNthPreviousBenchmarkExists = function (
 }
 
 module.exports.checkIfPreviousSuccessfulExists = function(data, benchmarkKey) {
-  console.log(`Checking if previous successful benchmark exists under '${benchmarkKey}'`)
+  core.debug(`Checking if previous successful benchmark exists under '${benchmarkKey}'`)
   if (!data.entries.hasOwnProperty(benchmarkKey)) {
     throw new Error(`No such benchmark key: '${benchmarkKey}' exists.`);
   }
 
   let benchmarks = data.entries[benchmarkKey];
   let successfulBenchmarkExists = benchmarks.some(benchmark => benchmark.benchSuccessful);
-
-  if (successfulBenchmarkExists) {
-    console.log(`A previous successful benchmark under '${benchmarkKey}' exists.`);
-  } else {
-    console.log(`No successful benchmark under '${benchmarkKey}' exists.`);
-  }
+  if (!successfulBenchmarkExists) {
+        throw new Error(`No successful benchmark exists under '${benchmarkKey}'`);
+    }
 }
 
 module.exports.mergeResults = function(directory, strategies, outputFile, metricsToEvaluate) {

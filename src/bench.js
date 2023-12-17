@@ -40,7 +40,6 @@ module.exports.createCurrBench = function (config) {
     metricResults,
     commit
   )
-  core.debug('completeBenchmark: ' + JSON.stringify(completeBenchmark))
   core.debug('--- end createCurrBench ---')
   return completeBenchmark;
 }

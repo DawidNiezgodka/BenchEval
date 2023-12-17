@@ -66,9 +66,9 @@ module.exports.createBodyForComparisonWithPrev = function (
   )
 
   lines.push(benchDataText)
-  lines.push('', '', '', '', '')
+  lines.push(' ', ' ')
   lines.push('## Results')
-  lines.push('', '', '', '', '')
+  lines.push(' ', ' ')
 
   lines.push(
       `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Condition for current | Result |`
@@ -139,7 +139,7 @@ module.exports.addInfoAboutBenchRes = function(lines, completeConfig, evaluation
 }
 
 module.exports.addExtraExplanation = function(lines, metricExplanationMap) {
-  lines.push('')
+  lines.push(' ', ' ')
   lines.push(`Extra explanation for each metric.`);
   lines.push(`| Metric name | Explanation |`);
     lines.push('|-|-|');
@@ -235,6 +235,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
 module.exports.createBenchDataText = function (currentBenchmark) {
   const benchInfo = currentBenchmark.benchmarkInfo
   const benchDataLines = [
+      ' ', ' ',
     `**Execution time**: ${benchInfo.executionTime}`,
       ' ', ' ',
     `**Parametrization**:`
@@ -258,8 +259,6 @@ module.exports.createBenchDataTextForCompWithPrev = function (
     currentBenchmark,
     previousBenchmark
 ) {
-  core.debug("Current benchmark: " + JSON.stringify(currentBenchmark))
-  core.debug("Previous benchmark: " + JSON.stringify(previousBenchmark))
   const currentBenchInfo = currentBenchmark.benchmarkInfo
   const previousBenchInfo = previousBenchmark
       ? previousBenchmark.benchmarkInfo
@@ -313,8 +312,6 @@ module.exports.createBenchDataTextForCompWithPrev = function (
           previousBenchInfo ? previousBenchInfo.otherInfo : 'N/A'
       } |`
   )
-
-  core.debug("Bench data lines: " + JSON.stringify(benchDataLines))
   return benchDataLines.join('\n')
 }
 
@@ -323,15 +320,14 @@ module.exports.createBodyForComparisonWithThreshold = function (
     evaluationResult, completeConfig
 ) {
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
-  console.log("Current benchmark from creaBodyWithThr: " + JSON.stringify(currentBenchmark))
   const bName = "Benchmark";
   const lines = [`# ${bName}`, '', '']
   const benchDataText = module.exports.createBenchDataText(currentBenchmark);
 
   lines.push(benchDataText)
-  lines.push('', '', '', '', '')
+  lines.push(' ', ' ')
   lines.push('## Results')
-  lines.push('', '', '', '', '')
+  lines.push(' ', ' ')
 
   lines.push(
       `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Condition for current | Threshold | Result |`

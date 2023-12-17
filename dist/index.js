@@ -30083,7 +30083,6 @@ module.exports.createCurrBench = function (config) {
     metricResults,
     commit
   )
-  core.debug('completeBenchmark: ' + JSON.stringify(completeBenchmark))
   core.debug('--- end createCurrBench ---')
   return completeBenchmark;
 }
@@ -30482,9 +30481,9 @@ module.exports.createBodyForComparisonWithPrev = function (
   )
 
   lines.push(benchDataText)
-  lines.push('', '', '', '', '')
+  lines.push(' ', ' ')
   lines.push('## Results')
-  lines.push('', '', '', '', '')
+  lines.push(' ', ' ')
 
   lines.push(
       `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Previous: ${previousBenchmark.commitInfo.id} | Condition for current | Result |`
@@ -30555,7 +30554,7 @@ module.exports.addInfoAboutBenchRes = function(lines, completeConfig, evaluation
 }
 
 module.exports.addExtraExplanation = function(lines, metricExplanationMap) {
-  lines.push('')
+  lines.push(' ', ' ')
   lines.push(`Extra explanation for each metric.`);
   lines.push(`| Metric name | Explanation |`);
     lines.push('|-|-|');
@@ -30651,6 +30650,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
 module.exports.createBenchDataText = function (currentBenchmark) {
   const benchInfo = currentBenchmark.benchmarkInfo
   const benchDataLines = [
+      ' ', ' ',
     `**Execution time**: ${benchInfo.executionTime}`,
       ' ', ' ',
     `**Parametrization**:`
@@ -30674,8 +30674,6 @@ module.exports.createBenchDataTextForCompWithPrev = function (
     currentBenchmark,
     previousBenchmark
 ) {
-  core.debug("Current benchmark: " + JSON.stringify(currentBenchmark))
-  core.debug("Previous benchmark: " + JSON.stringify(previousBenchmark))
   const currentBenchInfo = currentBenchmark.benchmarkInfo
   const previousBenchInfo = previousBenchmark
       ? previousBenchmark.benchmarkInfo
@@ -30729,8 +30727,6 @@ module.exports.createBenchDataTextForCompWithPrev = function (
           previousBenchInfo ? previousBenchInfo.otherInfo : 'N/A'
       } |`
   )
-
-  core.debug("Bench data lines: " + JSON.stringify(benchDataLines))
   return benchDataLines.join('\n')
 }
 
@@ -30739,15 +30735,14 @@ module.exports.createBodyForComparisonWithThreshold = function (
     evaluationResult, completeConfig
 ) {
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
-  console.log("Current benchmark from creaBodyWithThr: " + JSON.stringify(currentBenchmark))
   const bName = "Benchmark";
   const lines = [`# ${bName}`, '', '']
   const benchDataText = module.exports.createBenchDataText(currentBenchmark);
 
   lines.push(benchDataText)
-  lines.push('', '', '', '', '')
+  lines.push(' ', ' ')
   lines.push('## Results')
-  lines.push('', '', '', '', '')
+  lines.push(' ', ' ')
 
   lines.push(
       `| Metric name | Current: ${currentBenchmark.commitInfo.id} | Condition for current | Threshold | Result |`
@@ -31410,7 +31405,6 @@ module.exports.getBoolInput = function (inputName) {
 }
 
 module.exports.validateInputAndFetchConfig = function () {
-  // Part 1: General info + extracting json with current bench data
   const benchmarkGroupName = core.getInput('bench_group_name')
   core.debug(`Benchmark group name: ${benchmarkGroupName}`)
   const folderWithCurrentBenchmarkResults = core.getInput('folder_with_current_benchmark_results')
@@ -31420,7 +31414,6 @@ module.exports.validateInputAndFetchConfig = function () {
     );
   }
   module.exports.isValidPath(folderWithCurrentBenchmarkResults);
-  // print content of currentBenchResFileOrFolder
   core.debug(`Content of currentBenchResFileOrFolder: ", ${fs.readdirSync(folderWithCurrentBenchmarkResults)}`);
   let hasMultipleFiles = module.exports.hasMoreThanOneFile(folderWithCurrentBenchmarkResults);
   let parsedData;
@@ -31555,7 +31548,6 @@ module.exports.validateLinkToTemplatedGhPageWithResults = function () {
             throw new Error(`Link to templated gh page must contain 'github.io' but got '${linkToTemplatedGhPageWithResults}'`);
         }
     }
-    console.log(linkToTemplatedGhPageWithResults);
     return linkToTemplatedGhPageWithResults;
 }
 
@@ -31571,7 +31563,6 @@ module.exports.filterMetrics = function(parsedData, metricsToEvaluate) {
 
 module.exports.validateUsersToBeAlerted = function () {
   let alertUsersIfBenchFailed = core.getInput('alert_users_if_bench_failed');
-  console.log("Usaers", alertUsersIfBenchFailed);
   if (alertUsersIfBenchFailed !== '') {
     alertUsersIfBenchFailed = alertUsersIfBenchFailed.split(',').map(u => u.trim());
     for (const u of alertUsersIfBenchFailed) {
@@ -31635,26 +31626,21 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
   }
   switch (evaluationMethod) {
     case 'threshold':
-      console.log('Validating threshold evaluation configuration.')
       module.exports.validateOperatorsAndMargins(currentResultLength)
       module.exports.validateThresholdConfig(currentResultLength)
       break
     case 'previous':
-      console.log('Validating previous evaluation configuration.')
       module.exports.validateOperatorsAndMargins(currentResultLength)
       module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchmarkGroupToCompare, 1);
       break
     case 'previous_successful':
-      console.log('Validating previous successful evaluation configuration.')
       module.exports.validateOperatorsAndMargins(currentResultLength)
       module.exports.checkIfPreviousSuccessfulExists(benchmarkData, benchmarkGroupToCompare);
       break
     case 'threshold_range':
-      console.log('Validating threshold range evaluation configuration.')
       module.exports.validateThresholdRangeConfig(currentResultLength)
       break
     case 'jump_detection':
-      console.log('Validating jump detection evaluation configuration.')
       module.exports.checkIfNthPreviousBenchmarkExists(benchmarkData, benchmarkGroupToCompare, 1);
       module.exports.validateJumpDetectionConfig(currentResultLength)
       break
@@ -31760,7 +31746,6 @@ module.exports.createEvaluationConfig = function (...inputNames) {
 }
 
 module.exports.validateOperatorsAndMargins = function (currentResultLength) {
-  console.log('Validating operators and margins')
   const comparisonOperatorsInput = core.getInput('comparison_operators')
   const comparisonMarginsInput = core.getInput('comparison_margins')
 
@@ -31799,7 +31784,6 @@ module.exports.validateOperatorsAndMargins = function (currentResultLength) {
 }
 
 module.exports.validateThresholdConfig = function (currentResultLength) {
-  console.log('Validating threshold config')
   const thresholdValuesInput = core.getInput('threshold_values')
   const thresholdValues = thresholdValuesInput
       .split(',')
@@ -31876,7 +31860,6 @@ module.exports.validateJumpDetectionConfig = function (currentResultLength) {
 
 module.exports.validateTrendThreshold = function (currentResultLength) {
   const trendThresholds = core.getInput('trend_thresholds')
-  core.info("Trend thresholds: " + trendThresholds);
   if (trendThresholds == null) {
     throw new Error(
         'Both movingAveWindowSize and trendThresholds must be provided for trend detection with moving average.'
@@ -31915,7 +31898,7 @@ module.exports.checkIfNthPreviousBenchmarkExists = function (
     benchmarkGroupName,
     numberOfBenchmarks
 ) {
-  console.log(
+  core.debug(
         `Checking if benchmark "${benchmarkGroupName}" has ${numberOfBenchmarks} previous entries.`
     )
 
@@ -31935,19 +31918,16 @@ module.exports.checkIfNthPreviousBenchmarkExists = function (
 }
 
 module.exports.checkIfPreviousSuccessfulExists = function(data, benchmarkKey) {
-  console.log(`Checking if previous successful benchmark exists under '${benchmarkKey}'`)
+  core.debug(`Checking if previous successful benchmark exists under '${benchmarkKey}'`)
   if (!data.entries.hasOwnProperty(benchmarkKey)) {
     throw new Error(`No such benchmark key: '${benchmarkKey}' exists.`);
   }
 
   let benchmarks = data.entries[benchmarkKey];
   let successfulBenchmarkExists = benchmarks.some(benchmark => benchmark.benchSuccessful);
-
-  if (successfulBenchmarkExists) {
-    console.log(`A previous successful benchmark under '${benchmarkKey}' exists.`);
-  } else {
-    console.log(`No successful benchmark under '${benchmarkKey}' exists.`);
-  }
+  if (!successfulBenchmarkExists) {
+        throw new Error(`No successful benchmark exists under '${benchmarkKey}'`);
+    }
 }
 
 module.exports.mergeResults = function(directory, strategies, outputFile, metricsToEvaluate) {
@@ -32094,13 +32074,10 @@ module.exports.evaluateCurrentBenchmark = function (
     default:
       throw new Error(`Unsupported evaluation method: ${completeConfig.evaluationConfig.evaluationMethod}`);
   }
-  console.log(evaluationResult);
   return evaluationResult;
 }
 
 module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluationConfig) {
-  //core.debug('Evaluating current benchmark with threshold method')
-  //core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData))
   const { comparisonOperators, comparisonMargins, thresholdValues } = evaluationConfig;
 
   const actualValues = [];
@@ -32110,7 +32087,6 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluatio
   const thanValues = [];
   const evaluationResults = [];
 
-  console.log('currentBenchmarkData.results: ' + currentBenchmarkData.results)
   currentBenchmarkData.simpleMetricResults.forEach((result, index) => {
     const value = result.value;
     const thresholdValue = thresholdValues[index];
@@ -32490,7 +32466,6 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
       }
       resultExplanations.push(resultExplanation);
     } else {
-      console.log(`isPassedPrevious: ${isPassedPrevious}, isPassedWeekAgo: ${isPassedWeekAgo}, isPassedLastStable: ${isPassedLastStable}`);
       resultExplanations.push('N/A');
     }
 

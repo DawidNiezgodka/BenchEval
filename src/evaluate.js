@@ -38,13 +38,10 @@ module.exports.evaluateCurrentBenchmark = function (
     default:
       throw new Error(`Unsupported evaluation method: ${completeConfig.evaluationConfig.evaluationMethod}`);
   }
-  console.log(evaluationResult);
   return evaluationResult;
 }
 
 module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluationConfig) {
-  //core.debug('Evaluating current benchmark with threshold method')
-  //core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData))
   const { comparisonOperators, comparisonMargins, thresholdValues } = evaluationConfig;
 
   const actualValues = [];
@@ -54,7 +51,6 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluatio
   const thanValues = [];
   const evaluationResults = [];
 
-  console.log('currentBenchmarkData.results: ' + currentBenchmarkData.results)
   currentBenchmarkData.simpleMetricResults.forEach((result, index) => {
     const value = result.value;
     const thresholdValue = thresholdValues[index];
@@ -434,7 +430,6 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
       }
       resultExplanations.push(resultExplanation);
     } else {
-      console.log(`isPassedPrevious: ${isPassedPrevious}, isPassedWeekAgo: ${isPassedWeekAgo}, isPassedLastStable: ${isPassedLastStable}`);
       resultExplanations.push('N/A');
     }
 
