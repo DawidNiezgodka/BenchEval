@@ -30477,7 +30477,7 @@ module.exports.createBodyForComparisonWithPrev = function (
 
   if (currentBenchmarkGroupName !== previousBenchmarkGroupName) {
     lines.push(
-        "Note: Benchmarks from different groups are being compared."
+        "<b>Note</b>: Benchmarks from different groups are being compared."
     )
   }
   const benchDataText = module.exports.createBenchDataTextForCompWithPrev(
@@ -30693,7 +30693,7 @@ module.exports.createBenchDataTextForCompWithPrev = function (
     ]
   } else {
     benchDataLines = [
-      `|   Current ${currentBenchmark.benchmarkGroupName}   |   Last ${previousBenchmark.benchmarkGroupName}   |`,
+      `|   Current (group: ${currentBenchmark.benchmarkGroupName})   |   Previous (group: ${previousBenchmark.benchmarkGroupName})   |`,
       '|-----------------------|------------------------|'
     ]
   }
