@@ -55,7 +55,7 @@ module.exports.createBodyForComparisonWithPrev = function (
   lines.push(`<b>Benchmark group:</b> ${currentBenchmark.benchmarkGroupName}`)
   lines.push('')
   lines.push(`The chosen evaluation method is previous or previous_successful.`)
-  lines.push(`The method compares current benchmark results with the previous benchmark results.`)
+  lines.push(`The approach compares current benchmarks with their previous counterparts.`)
 
   const currentBenchmarkGroupName = currentBenchmark.benchmarkGroupName
   const previousBenchmarkGroupName = previousBenchmark.benchmarkGroupName
