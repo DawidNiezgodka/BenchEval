@@ -9598,36 +9598,85 @@
                         "name": "Dawid Niezgódka",
                         "username": "DawidNiezgodka"
                     },
-                    "id": "fcc88c2345a2ed13c2c3497886278dd6be85ec8d",
-                    "message": "fail on output",
-                    "timestamp": "2023-10-18T12:21:36+02:00",
-                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/fcc88c2345a2ed13c2c3497886278dd6be85ec8d"
+                    "id": "189ee15d199d7956780c8d3bd5d4691d65aaf791",
+                    "message": "improve wording for com with prev vol2",
+                    "timestamp": "2023-12-17T09:35:02+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/189ee15d199d7956780c8d3bd5d4691d65aaf791"
                 },
-                "date": 1697624514233,
-                "executionTime": "138 m",
+                "date": 1702802115144,
+                "executionTime": "20m 31s",
                 "parametrization": {
-                    "ack": "1",
-                    "read-in-ram": true
+                    "protocol": "http:",
+                    "func": "/sieve",
+                    "threads": 256,
+                    "ops": 500
                 },
-                "otherInfo": "kafka, v2.3",
+                "otherInfo": "edge-server: e2-medium",
                 "metrics": [
                     {
-                        "name": "latency",
-                        "value": 200,
+                        "name": "avg latency",
+                        "value": 140.87,
                         "unit": "ms"
                     },
                     {
-                        "name": "metric2",
-                        "value": 200,
-                        "unit": "op/s"
-                    },
-                    {
-                        "name": "metric3",
-                        "value": 200,
-                        "unit": "%"
+                        "name": "throughput",
+                        "value": 1004.11,
+                        "unit": "ops/s"
                     }
                 ],
-                "benchSuccessful": true
+                "benchSuccessful": true,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "previous",
+                        "benchmarkGroupToCompare": "Benchmark2",
+                        "thresholdValues": null,
+                        "comparisonOperators": [
+                            "smaller",
+                            "bigger"
+                        ],
+                        "comparisonMargins": [
+                            -1,
+                            -1
+                        ],
+                        "thresholdUpper": null,
+                        "thresholdLower": null,
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": null,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "previous",
+                        "metricNames": [
+                            "avg latency",
+                            "throughput"
+                        ],
+                        "metricUnits": [
+                            "ms",
+                            "ops/s"
+                        ],
+                        "resultExplanations": [],
+                        "metricToDifferentBenchValues": {},
+                        "is": [
+                            155.87,
+                            888.11
+                        ],
+                        "shouldBe": [
+                            "N/A",
+                            "N/A"
+                        ],
+                        "than": [
+                            "N/A",
+                            "N/A"
+                        ]
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "no data",
+                            "no data"
+                        ]
+                    }
+                }
             }
         ]
     }
