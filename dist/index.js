@@ -30469,8 +30469,13 @@ module.exports.createBodyForComparisonWithPrev = function (
   lines.push('')
   lines.push(`<b>Benchmark group:</b> ${currentBenchmark.benchmarkGroupName}`)
   lines.push('')
-  lines.push(`The chosen evaluation method is previous or previous_successful.`)
-  lines.push(`The approach compares current benchmarks with their previous counterparts.`)
+  const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
+  lines.push(`The chosen evaluation method is ${evaluationMethod}.`)
+  if (evaluationMethod === 'previous_successful') {
+    lines.push(`The approach compares the current benchmark with the last successful benchmark of the given group.`)
+  } else {
+    lines.push(`The approach compares the current benchmark with the previous benchmark of the given group.`)
+  }
 
   const currentBenchmarkGroupName = currentBenchmark.benchmarkGroupName
   const previousBenchmarkGroupName = previousBenchmark.benchmarkGroupName
