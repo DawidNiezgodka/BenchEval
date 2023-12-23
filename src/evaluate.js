@@ -63,7 +63,7 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluatio
     metricUnits.push(result.unit);
     let smallerBiggerText = `At least ${margin} % ${operator} than`;
     let toleranceText = `In symmetric range of ${margin} % to`;
-    operator === 'tolerance' ? shouldBe.push(smallerBiggerText) : shouldBe.push(toleranceText);
+    operator === 'tolerance' ? shouldBe.push(toleranceText) : shouldBe.push(smallerBiggerText);
     thanValues.push(thresholdValue);
 
     switch (operator) {
