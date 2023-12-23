@@ -30062,9 +30062,7 @@ module.exports.createCurrBench = function (config) {
     benchInfoJson.parametrization,
     benchInfoJson.otherInfo
   )
-  // const metricResults = currBenchResJson.results.map(
-  //   item => new SimpleMetricResult(item.name, item.value, item.unit)
-  // )
+
   const metricResults = currBenchResJson.results.map(item => {
     const numericValue = Number(item.value);
     if (isNaN(numericValue)) {
@@ -30073,8 +30071,6 @@ module.exports.createCurrBench = function (config) {
     }
     return new SimpleMetricResult(item.name, numericValue, item.unit);
   }).filter(result => result !== null);
-
-
 
   const commit = getCommit()
   const completeBenchmark = new CompleteBenchmark(
@@ -32105,8 +32101,9 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluatio
     actualValues.push(value);
     metricNames.push(result.name);
     metricUnits.push(result.unit);
-    // if operator is tolerance, put the string named: "in symmetric range to" instead of "tolerance"
-    operator === 'tolerance' ? shouldBe.push('in symmetric range to') : shouldBe.push(operator);
+    let smallerBiggerText = `At least ${margin} % ${operator} than`;
+    let toleranceText = `In symmetric range of ${margin} % to`;
+    operator === 'tolerance' ? shouldBe.push(smallerBiggerText) : shouldBe.push(toleranceText);
     thanValues.push(thresholdValue);
 
     switch (operator) {
@@ -32559,7 +32556,10 @@ const {
 async function run() {
   try {
 
+    core.info("Starting the evaluation process.");
+
     const completeConfig = validateInputAndFetchConfig()
+    core.info("Validated and prepared the configuration.");
     core.debug('Complete config: ' + JSON.stringify(completeConfig))
     core.debug("------------------------------------------------")
     const evaluationConfig = completeConfig.evaluationConfig;
@@ -32567,31 +32567,31 @@ async function run() {
     core.debug("------------------------------------------------")
     // The variable below is an object, not 1:1 json from the file!
     const completeBenchmarkObject = createCurrBench(completeConfig);
+    core.info("Created current benchmark object from the current benchmark results.");
     core.debug('Current benchmark: ' + JSON.stringify(completeBenchmarkObject))
     core.debug("------------------------------------------------")
     const completeBenchData = getCompleteBenchData(
         completeConfig.folderWithBenchData,
         completeConfig.fileWithBenchData
     );
+    core.info("Fetched the complete benchmark data.");
 
     let latestBenchSha = null;
     if (completeConfig.evaluationConfig.evaluationMethod === 'trend_detection_deltas') {
       const branchName = core.getInput('trend_det_successful_release_branch');
       latestBenchSha = await getLastCommitSha(branchName, completeBenchData,
           completeConfig.benchmarkGroupName);
-      core.debug(`Latest bench sha: ${latestBenchSha}`);
+      core.info(`Latest bench sha: ${latestBenchSha}`);
       completeConfig.latestBenchSha = latestBenchSha;
     }
 
-    core.debug("---- main (53) -----")
-    core.debug(`complete config: ${JSON.stringify(completeConfig.benchmarkGroupToCompare)}`)
     const evaluationResult = evaluateCurrentBenchmark(
         completeBenchmarkObject,
         completeBenchData,
         completeConfig
     );
 
-    core.debug('Evaluation result: ' + JSON.stringify(evaluationResult))
+    core.info('Evaluation result: ' + JSON.stringify(evaluationResult))
 
     let shouldFail = false;
     const resultArray = evaluationResult.results.result
@@ -32604,21 +32604,24 @@ async function run() {
     if (completeConfig.failingCondition === 'none') {
         shouldFail = false
     }
+    core.info(`Should the benchmark fail according to the chosen config?: ${shouldFail}`)
 
     completeBenchmarkObject.benchSuccessful = !shouldFail;
     if (completeConfig.saveCurrBenchRes) {
-      core.debug('Saving current benchmark results to file')
+      core.debug('Saving current benchmark results to file.')
       await addCompleteBenchmarkToFile(completeBenchmarkObject,
           completeConfig.folderWithBenchData, completeConfig.fileWithBenchData,
           evaluationResult.results, evaluationResult.evalParameters,
           completeConfig.evaluationConfig
       )
+      core.info('Saved current benchmark results to file.')
     }
 
     const addCommentOption = completeConfig.addComment;
 
     if (addCommentOption === 'on' || (addCommentOption === 'if_failed' && shouldFail)) {
       createComment(completeConfig, evaluationResult)
+      core.info('Created comment.')
     }
 
     const addJobSummary = completeConfig.addJobSummary;
