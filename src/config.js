@@ -39,7 +39,7 @@ module.exports.validateInputAndFetchConfig = function () {
     );
   }
   module.exports.isValidPath(folderWithCurrentBenchmarkResults);
-  core.debug(`Content of currentBenchResFileOrFolder: ", ${fs.readdirSync(folderWithCurrentBenchmarkResults)}`);
+  core.debug(`Content of currentBenchResFileOrFolder:${fs.readdirSync(folderWithCurrentBenchmarkResults)}`);
   let hasMultipleFiles = module.exports.hasMoreThanOneFile(folderWithCurrentBenchmarkResults);
   let parsedData;
   let subsetParsedData;
@@ -139,20 +139,14 @@ module.exports.validateInputAndFetchConfig = function () {
 }
 
 module.exports.hasMoreThanOneFile = function(dirPath) {
-  let hasMoreThanOneFile = false;
-  fs.readdir(dirPath, (err, files) => {
-    if (err) {
-      console.error('Error reading directory:', err);
-      throw new Error(`Error reading directory: ${err}`);
-    }
-    if (files.length > 1) {
-      core.debug(`There are more than one file/directory in ${dirPath}`);
-      hasMoreThanOneFile = true;
-    } else {
-      core.debug(`There are one or no files/directories in ${dirPath}`);
-    }
-  });
-  return hasMoreThanOneFile;
+  try {
+    const files = fs.readdirSync(dirPath);
+    core.debug(`There are ${files.length} file(s)/directory(ies) in ${dirPath}`);
+    return files.length > 1;
+  } catch (err) {
+    console.error('Error reading directory:', err);
+    throw new Error(`Error reading directory: ${err}`);
+  }
 }
 
 module.exports.isValidPath = function(p) {
