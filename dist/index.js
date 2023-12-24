@@ -30743,7 +30743,7 @@ module.exports.createBodyForComparisonWithThreshold = function (
     evaluationResult, completeConfig
 ) {
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
-  const bName = "Benchmark";
+  const bName = completeConfig.evaluationConfig.benchmarkGroupName;
   const lines = [`# ${bName}`, '', '']
   const benchDataText = module.exports.createBenchDataText(currentBenchmark);
 
