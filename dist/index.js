@@ -30985,18 +30985,21 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult, comp
     {
       data: `Current: "${currentBenchmark.commitInfo.id.substring(0, 7)}"`,
       header: true,
-    },
-    {
-      data: "Threshold",
-      header: true,
-    },
+    }
 
   ];
   const hasShouldBe = evaluationResult.evalParameters.shouldBe.length > 0;
 
   if (hasShouldBe) {
-    headers.push({ data: 'Current should be', header: true });
+    headers.push({ data: 'Should be', header: true });
   }
+
+  headers.push(
+      {
+        data: "Threshold",
+        header: true,
+      }
+  )
 
   headers.push(  {
     data: 'Result',
@@ -31027,16 +31030,14 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult, comp
       },
       {
         data: valueAndUnit,
-      },
-      {
-        data: than,
-      },
+      }
 
     ])
 
     if (hasShouldBe) {
       rows[i].push({ data: evaluationResult.evalParameters.shouldBe[i] });
     }
+    rows[i].push({ data: than });
     rows[i].push({data: graphicalRepresentationOfRes})
   }
 
