@@ -32565,12 +32565,13 @@ async function run() {
 
     const context = core.getInput('github_context');
     if (context) {
-      core.debug(`Github context: ${context}`)
-      // fail action
-        core.setFailed('Github context is not supported anymore.' +
-            ' Please update your action to the latest version.')
-
+      core.info(`run id: ${context['run_id']}`)
+      core.info(`run id: ${context.run_id}`)
+      // exit with error
+      core.setFailed('Github context is not supported anymore.' +
+          ' Please update your action to the latest version.')
     }
+
 
 
     const completeConfig = validateInputAndFetchConfig()
