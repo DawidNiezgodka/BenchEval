@@ -31955,7 +31955,10 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
     const content = fs.readFileSync(path.join(directory, file), 'utf8');
     const result = JSON.parse(content);
 
-    core.debug(`Result.results: ${JSON.stringify(result.results, null, 2)}`)
+    if (!result || Object.keys(result).length === 0) {
+      core.warning(`Skipping file: ${file} because its result part is empty or undefined`);
+      return;
+    }
 
     if (fileIndex === 0) {
       mergedData = {...result};
@@ -31979,8 +31982,6 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
       }
     }
 
-    core.debug(`Merging file: ${file}`);
-    core.debug(`Merged data: ${JSON.stringify(mergedData, null, 2)}`)
     result.results.forEach((metric) => {
       if (mergeAllMetrics || evaluatedMetrics.includes(metric.name)) {
         core.debug(`Adding metric: ${metric.name} to metricsValues map with value: ${metric.value}`);
@@ -31989,7 +31990,7 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
     });
   });
 
-  core.debug(`Metrics values: ${metricsValues}`)
+
   core.debug(`Merged data: ${JSON.stringify(mergedData, null, 2)}`)
   mergedData.results.forEach((metric, index) => {
     const strategy = mergeAllMetrics ? strategies[index] : strategies[evaluatedMetrics.indexOf(metric.name)];
