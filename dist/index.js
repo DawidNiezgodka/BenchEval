@@ -31955,6 +31955,8 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
     const content = fs.readFileSync(path.join(directory, file), 'utf8');
     const result = JSON.parse(content);
 
+    core.debug(`Result.results: ${JSON.stringify(result.results, null, 2)}`)
+
     if (fileIndex === 0) {
       mergedData = {...result};
       mergedData.results = [];
@@ -31977,6 +31979,8 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
       }
     }
 
+    core.debug(`Merging file: ${file}`);
+    core.debug(`Merged data: ${JSON.stringify(mergedData, null, 2)}`)
     result.results.forEach((metric) => {
       if (mergeAllMetrics || evaluatedMetrics.includes(metric.name)) {
         core.debug(`Adding metric: ${metric.name} to metricsValues map with value: ${metric.value}`);
