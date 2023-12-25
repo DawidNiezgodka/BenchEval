@@ -570,10 +570,11 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
   let metricsValues = new Map();
 
   files.forEach((file, fileIndex) => {
+    core.debug(`Processing file: ${file}`);
     const content = fs.readFileSync(path.join(directory, file), 'utf8');
     const result = JSON.parse(content);
 
-    if (!result || Object.keys(result).length === 0) {
+    if (!result.results || Object.keys(result.results).length === 0) {
       core.warning(`Skipping file: ${file} because its result part is empty or undefined`);
       return;
     }
