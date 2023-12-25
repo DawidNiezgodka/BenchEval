@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1703432292118,
+    "lastUpdate": 1703491479969,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -10342,6 +10342,143 @@
                             76095,
                             1177.0696104246845,
                             92095
+                        ],
+                        "shouldBe": [
+                            "In symmetric range of 10 % to",
+                            "In symmetric range of 10 % to",
+                            "In symmetric range of 10 % to",
+                            "In symmetric range of 10 % to",
+                            "In symmetric range of 10 % to"
+                        ],
+                        "than": [
+                            2500,
+                            700,
+                            50000,
+                            5000,
+                            30000
+                        ]
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "failed",
+                            "failed",
+                            "failed",
+                            "failed",
+                            "failed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "99951fb828aec0ad650105b974a4b77313c284a6",
+                    "message": "correct logic for skipping",
+                    "timestamp": "2023-12-25T09:04:26+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/99951fb828aec0ad650105b974a4b77313c284a6"
+                },
+                "date": 1703491479969,
+                "executionTime": "0m 7s",
+                "parametrization": {
+                    "storageEngine": "N/A",
+                    "logVerbosity": "N/A",
+                    "bindIp": "0.0.0.0",
+                    "port": 27017
+                },
+                "otherInfo": "YCSB Parameters: workload=workloada, recordcount=100000, threads=16, ",
+                "metrics": [
+                    {
+                        "name": "OVERALL Throughput",
+                        "value": 21810.87358452,
+                        "unit": "ops/sec"
+                    },
+                    {
+                        "name": "[READ], AverageLatency(us)",
+                        "value": 1434.7817410779016,
+                        "unit": "us"
+                    },
+                    {
+                        "name": "[READ], MaxLatency(us)",
+                        "value": 106719,
+                        "unit": "us"
+                    },
+                    {
+                        "name": "[UPDATE], AverageLatency(us)",
+                        "value": 1373.2816363881784,
+                        "unit": "us"
+                    },
+                    {
+                        "name": "[UPDATE], MaxLatency(us)",
+                        "value": 112671,
+                        "unit": "us"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "threshold",
+                        "benchmarkGroupToCompare": "MongoDB Benchmark",
+                        "thresholdValues": [
+                            2500,
+                            700,
+                            50000,
+                            5000,
+                            30000
+                        ],
+                        "comparisonOperators": [
+                            "tolerance",
+                            "tolerance",
+                            "tolerance",
+                            "tolerance",
+                            "tolerance"
+                        ],
+                        "comparisonMargins": [
+                            10,
+                            10,
+                            10,
+                            10,
+                            10
+                        ],
+                        "thresholdUpper": null,
+                        "thresholdLower": null,
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": null,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "threshold",
+                        "metricNames": [
+                            "OVERALL Throughput",
+                            "[READ], AverageLatency(us)",
+                            "[READ], MaxLatency(us)",
+                            "[UPDATE], AverageLatency(us)",
+                            "[UPDATE], MaxLatency(us)"
+                        ],
+                        "metricUnits": [
+                            "ops/sec",
+                            "us",
+                            "us",
+                            "us",
+                            "us"
+                        ],
+                        "resultExplanations": [],
+                        "metricToDifferentBenchValues": {},
+                        "is": [
+                            21810.87358452,
+                            1434.7817410779016,
+                            106719,
+                            1373.2816363881784,
+                            112671
                         ],
                         "shouldBe": [
                             "In symmetric range of 10 % to",
