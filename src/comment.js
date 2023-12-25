@@ -243,6 +243,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   return lines.join('\n')
 }
 module.exports.createBenchDataText = function (currentBenchmark) {
+  core.info('------ start createBenchDataText ------')
   const benchInfo = currentBenchmark.benchmarkInfo
   const benchDataLines = [
       ' ', ' ',
@@ -331,8 +332,9 @@ module.exports.createBenchDataTextForCompWithPrev = function (
 module.exports.createBodyForComparisonWithThreshold = function (
     evaluationResult, completeConfig
 ) {
+  core.info('------ start createBodyForComparisonWithThreshold ------')
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
-  const bName = "Benchmark";
+  const bName = completeConfig.evaluationConfig.benchmarkGroupName;
   const lines = [`# ${bName}`, '', '']
   const benchDataText = module.exports.createBenchDataText(currentBenchmark);
 

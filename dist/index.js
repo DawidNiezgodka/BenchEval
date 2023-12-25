@@ -30654,6 +30654,7 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   return lines.join('\n')
 }
 module.exports.createBenchDataText = function (currentBenchmark) {
+  core.info('------ start createBenchDataText ------')
   const benchInfo = currentBenchmark.benchmarkInfo
   const benchDataLines = [
       ' ', ' ',
@@ -30742,8 +30743,9 @@ module.exports.createBenchDataTextForCompWithPrev = function (
 module.exports.createBodyForComparisonWithThreshold = function (
     evaluationResult, completeConfig
 ) {
+  core.info('------ start createBodyForComparisonWithThreshold ------')
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
-  const bName = "Benchmark";
+  const bName = completeConfig.evaluationConfig.benchmarkGroupName;
   const lines = [`# ${bName}`, '', '']
   const benchDataText = module.exports.createBenchDataText(currentBenchmark);
 
@@ -31419,7 +31421,7 @@ module.exports.validateInputAndFetchConfig = function () {
     );
   }
   module.exports.isValidPath(folderWithCurrentBenchmarkResults);
-  core.debug(`Content of currentBenchResFileOrFolder: ", ${fs.readdirSync(folderWithCurrentBenchmarkResults)}`);
+  core.debug(`Content of currentBenchResFileOrFolder:${fs.readdirSync(folderWithCurrentBenchmarkResults)}`);
   let hasMultipleFiles = module.exports.hasMoreThanOneFile(folderWithCurrentBenchmarkResults);
   let parsedData;
   let subsetParsedData;
@@ -31519,20 +31521,14 @@ module.exports.validateInputAndFetchConfig = function () {
 }
 
 module.exports.hasMoreThanOneFile = function(dirPath) {
-  let hasMoreThanOneFile = false;
-  fs.readdir(dirPath, (err, files) => {
-    if (err) {
-      console.error('Error reading directory:', err);
-      throw new Error(`Error reading directory: ${err}`);
-    }
-    if (files.length > 1) {
-      core.debug(`There are more than one file/directory in ${dirPath}`);
-      hasMoreThanOneFile = true;
-    } else {
-      core.debug(`There are one or no files/directories in ${dirPath}`);
-    }
-  });
-  return hasMoreThanOneFile;
+  try {
+    const files = fs.readdirSync(dirPath);
+    core.debug(`There are ${files.length} file(s)/directory(ies) in ${dirPath}`);
+    return files.length > 1;
+  } catch (err) {
+    console.error('Error reading directory:', err);
+    throw new Error(`Error reading directory: ${err}`);
+  }
 }
 
 module.exports.isValidPath = function(p) {
@@ -31936,6 +31932,7 @@ module.exports.checkIfPreviousSuccessfulExists = function(data, benchmarkKey) {
 }
 
 module.exports.mergeResults = function(directory, strategies, outputFile, metricsToEvaluate) {
+  core.debug(`--- Start mergeResults ---`);
   const validStrategies = ['sum', 'average', 'min', 'max', 'median'];
 
   let evaluatedMetrics;
@@ -31955,8 +31952,14 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
   let metricsValues = new Map();
 
   files.forEach((file, fileIndex) => {
+    core.debug(`Processing file: ${file}`);
     const content = fs.readFileSync(path.join(directory, file), 'utf8');
     const result = JSON.parse(content);
+
+    if (!result.results || Object.keys(result.results).length === 0) {
+      core.warning(`Skipping file: ${file} because its result part is empty or undefined`);
+      return;
+    }
 
     if (fileIndex === 0) {
       mergedData = {...result};
@@ -31988,6 +31991,8 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
     });
   });
 
+
+  core.debug(`Merged data: ${JSON.stringify(mergedData, null, 2)}`)
   mergedData.results.forEach((metric, index) => {
     const strategy = mergeAllMetrics ? strategies[index] : strategies[evaluatedMetrics.indexOf(metric.name)];
     if (!validStrategies.includes(strategy)) {
