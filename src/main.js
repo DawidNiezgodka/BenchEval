@@ -32,6 +32,7 @@ async function run() {
       core.info(`run id: ${context['run_id']}`)
       core.info(`run id: ${context.run_id}`)
       core.info(`run id: ${context['runId']}`)
+      core.info(`run id: ${context.runId}`)
       // exit with error
       core.setFailed('Github context is not supported anymore.' +
           ' Please update your action to the latest version.')
