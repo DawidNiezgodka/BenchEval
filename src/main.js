@@ -26,7 +26,15 @@ const {
 async function run() {
   try {
 
-    core.info("Starting the evaluation process.");
+    const context = core.getInput('github_context');
+    if (context) {
+      core.debug(`Github context: ${context}`)
+      // fail action
+        core.setFailed('Github context is not supported anymore.' +
+            ' Please update your action to the latest version.')
+
+    }
+
 
     const completeConfig = validateInputAndFetchConfig()
     core.info("Validated and prepared the configuration.");
@@ -37,6 +45,7 @@ async function run() {
     core.debug("------------------------------------------------")
     // The variable below is an object, not 1:1 json from the file!
     const completeBenchmarkObject = createCurrBench(completeConfig);
+    core.debug(`Commit info: ${completeBenchmarkObject.commitInfo}`)
     core.info("Created current benchmark object from the current benchmark results.");
     core.debug('Current benchmark: ' + JSON.stringify(completeBenchmarkObject))
     core.debug("------------------------------------------------")
@@ -44,6 +53,7 @@ async function run() {
         completeConfig.folderWithBenchData,
         completeConfig.fileWithBenchData
     );
+
     core.info("Fetched the complete benchmark data.");
 
     let latestBenchSha = null;

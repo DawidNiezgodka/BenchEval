@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - mongotest
+      - runidinfo
 
 jobs:
   test:
@@ -40,6 +41,7 @@ jobs:
           result_files_merge_strategy_for_each_metric: "sum, average, average, average, average"
           save_curr_bench_res: true
           github_token: ${{ secrets.GH_TOKEN }}
+          github_context: ${{ toJson(github) }}
 
       - name: Commit files
         working-directory: ./bench_data

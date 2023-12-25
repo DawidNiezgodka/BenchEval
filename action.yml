@@ -127,6 +127,11 @@ inputs:
       For example, if the benchmark name is 'Benchmark', the link should look as follows:
       https://dawidniezgodka.github.io/Bench1-Final/
     required: false
+  github_context:
+    description: |
+      The GitHub context. This is used to get the current branch name.
+      If not specified, the default GitHub context is used.
+    required: false
 
 outputs:
   should_fail:
