@@ -32565,6 +32565,7 @@ async function run() {
 
     const context = core.getInput('github_context');
     if (context) {
+      core.info("Context: " + context)
       core.info(`run id: ${context['run_id']}`)
       core.info(`run id: ${context.run_id}`)
       // exit with error
