@@ -31932,6 +31932,7 @@ module.exports.checkIfPreviousSuccessfulExists = function(data, benchmarkKey) {
 }
 
 module.exports.mergeResults = function(directory, strategies, outputFile, metricsToEvaluate) {
+  core.debug(`--- Start mergeResults ---`);
   const validStrategies = ['sum', 'average', 'min', 'max', 'median'];
 
   let evaluatedMetrics;
@@ -31984,6 +31985,8 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
     });
   });
 
+  core.debug(`Metrics values: ${metricsValues}`)
+  core.debug(`Merged data: ${JSON.stringify(mergedData, null, 2)}`)
   mergedData.results.forEach((metric, index) => {
     const strategy = mergeAllMetrics ? strategies[index] : strategies[evaluatedMetrics.indexOf(metric.name)];
     if (!validStrategies.includes(strategy)) {
