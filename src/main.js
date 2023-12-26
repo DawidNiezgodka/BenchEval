@@ -26,8 +26,6 @@ const {
 async function run() {
   try {
 
-    core.info("Starting the evaluation process.");
-
     const completeConfig = validateInputAndFetchConfig()
     core.info("Validated and prepared the configuration.");
     core.debug('Complete config: ' + JSON.stringify(completeConfig))
@@ -37,6 +35,7 @@ async function run() {
     core.debug("------------------------------------------------")
     // The variable below is an object, not 1:1 json from the file!
     const completeBenchmarkObject = createCurrBench(completeConfig);
+    core.debug(`Commit info: ${completeBenchmarkObject.commitInfo}`)
     core.info("Created current benchmark object from the current benchmark results.");
     core.debug('Current benchmark: ' + JSON.stringify(completeBenchmarkObject))
     core.debug("------------------------------------------------")
@@ -44,6 +43,7 @@ async function run() {
         completeConfig.folderWithBenchData,
         completeConfig.fileWithBenchData
     );
+
     core.info("Fetched the complete benchmark data.");
 
     let latestBenchSha = null;
@@ -90,8 +90,12 @@ async function run() {
     const addCommentOption = completeConfig.addComment;
 
     if (addCommentOption === 'on' || (addCommentOption === 'if_failed' && shouldFail)) {
-      createComment(completeConfig, evaluationResult)
-      core.info('Created comment.')
+      if (completeBenchmarkObject.commitInfo === null || completeBenchmarkObject.commitInfo === undefined) {
+        core.warning('Commit id is null or undefined. Cannot create comment. The reason might be scheduled event.')
+      } else {
+        createComment(completeConfig, evaluationResult)
+        core.info('Created comment.')
+      }
     }
 
     const addJobSummary = completeConfig.addJobSummary;

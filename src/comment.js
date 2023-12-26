@@ -264,6 +264,7 @@ module.exports.createBenchDataText = function (currentBenchmark) {
   benchDataLines.push(`**Other Info**: ${benchInfo.otherInfo}`)
   benchDataLines.push(' ', ' ')
 
+  core.info('------ end createBenchDataText ------')
   return benchDataLines.join('\n')
 }
 

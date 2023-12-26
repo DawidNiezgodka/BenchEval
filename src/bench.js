@@ -1,4 +1,4 @@
-const { getCommit } = require('./commit')
+const { getCommit, getCommitReplacementWhenTriggeredByScheduledEvent } = require('./commit')
 const core = require('@actions/core')
 
 const { SimpleMetricResult } = require('./types')
@@ -29,7 +29,14 @@ module.exports.createCurrBench = function (config) {
     return new SimpleMetricResult(item.name, numericValue, item.unit);
   }).filter(result => result !== null);
 
-  const commit = getCommit()
+  let commit = getCommit()
+  core.debug(`commit: ${JSON.stringify(commit)}`);
+  // if commit is null or undefined, then we will add
+  // information that the workflow was run by scheduled event
+  // and not by a commit
+  if (commit === null || commit === undefined) {
+    commit = getCommitReplacementWhenTriggeredByScheduledEvent(config.runId)
+  }
   const completeBenchmark = new CompleteBenchmark(
     config.benchmarkGroupName,
     benchInfo,
