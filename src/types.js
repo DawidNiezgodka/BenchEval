@@ -60,7 +60,8 @@ class Config {
     addJobSummary,
     saveCurrBenchRes,
     alertUsersIfBenchFailed,
-    linkToTemplatedGhPageWithResults
+    linkToTemplatedGhPageWithResults,
+    runId
   ) {
       this.benchmarkGroupName = benchmarkGroupName
       this.currBenchResJson = currBenchResJson
@@ -76,6 +77,7 @@ class Config {
       this.saveCurrBenchRes = saveCurrBenchRes
       this.alertUsersIfBenchFailed = alertUsersIfBenchFailed
       this.linkToTemplatedGhPageWithResults = linkToTemplatedGhPageWithResults
+      this.runId = runId
   }
 }
 

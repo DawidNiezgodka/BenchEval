@@ -26,21 +26,6 @@ const {
 async function run() {
   try {
 
-    const contextStr = core.getInput('github_context');
-    if (contextStr) {
-      const context = JSON.parse(contextStr);
-      core.info("Context: " + context)
-      core.info(`run id: ${context['run_id']}`)
-      core.info(`run id: ${context.run_id}`)
-      core.info(`run id: ${context['runId']}`)
-      core.info(`run id: ${context.runId}`)
-      // exit with error
-      core.setFailed('Github context is not supported anymore.' +
-          ' Please update your action to the latest version.')
-    }
-
-
-
     const completeConfig = validateInputAndFetchConfig()
     core.info("Validated and prepared the configuration.");
     core.debug('Complete config: ' + JSON.stringify(completeConfig))
@@ -105,8 +90,12 @@ async function run() {
     const addCommentOption = completeConfig.addComment;
 
     if (addCommentOption === 'on' || (addCommentOption === 'if_failed' && shouldFail)) {
-      createComment(completeConfig, evaluationResult)
-      core.info('Created comment.')
+      if (completeBenchmarkObject.commitInfo === null || completeBenchmarkObject.commitInfo === undefined) {
+        core.warning('Commit id is null or undefined. Cannot create comment. The reason might be scheduled event.')
+      } else {
+        createComment(completeConfig, evaluationResult)
+        core.info('Created comment.')
+      }
     }
 
     const addJobSummary = completeConfig.addJobSummary;

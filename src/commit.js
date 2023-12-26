@@ -69,3 +69,15 @@ module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkG
 
   return filteredBenchmarks.length > 0 ? filteredBenchmarks[0].commit.id : null;
 }
+
+module.exports.getCommitReplacementWhenTriggeredByScheduledEvent = function(runId) {
+  const now = new Date();
+  return new Commit(
+      "scheduled event",
+      "scheduled event",
+      runId,
+      null,
+      now,
+      null
+  )
+}

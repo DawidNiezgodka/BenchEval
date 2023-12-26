@@ -119,6 +119,8 @@ module.exports.validateInputAndFetchConfig = function () {
 
   const linkToTemplatedGhPageWithResults = module.exports.validateLinkToTemplatedGhPageWithResults();
 
+  const context = core.getInput('github_context')
+  const runId = JSON.parse(context).run_id;
 
   return new Config(
       benchmarkGroupName,
@@ -134,7 +136,8 @@ module.exports.validateInputAndFetchConfig = function () {
       addJobSummary,
       saveCurrBenchRes,
       alertUsersIfBenchFailed,
-      linkToTemplatedGhPageWithResults
+      linkToTemplatedGhPageWithResults,
+      runId
   )
 }
 

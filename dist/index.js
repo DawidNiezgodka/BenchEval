@@ -30041,7 +30041,7 @@ function wrappy (fn, cb) {
 /***/ 501:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const { getCommit } = __nccwpck_require__(1175)
+const { getCommit, getCommitReplacementWhenTriggeredByScheduledEvent } = __nccwpck_require__(1175)
 const core = __nccwpck_require__(5127)
 
 const { SimpleMetricResult } = __nccwpck_require__(510)
@@ -30072,7 +30072,14 @@ module.exports.createCurrBench = function (config) {
     return new SimpleMetricResult(item.name, numericValue, item.unit);
   }).filter(result => result !== null);
 
-  const commit = getCommit()
+  let commit = getCommit()
+  core.debug(`commit: ${JSON.stringify(commit)}`);
+  // if commit is null or undefined, then we will add
+  // information that the workflow was run by scheduled event
+  // and not by a commit
+  if (commit === null || commit === undefined) {
+    commit = getCommitReplacementWhenTriggeredByScheduledEvent(config.runId)
+  }
   const completeBenchmark = new CompleteBenchmark(
     config.benchmarkGroupName,
     benchInfo,
@@ -31375,6 +31382,18 @@ module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkG
   return filteredBenchmarks.length > 0 ? filteredBenchmarks[0].commit.id : null;
 }
 
+module.exports.getCommitReplacementWhenTriggeredByScheduledEvent = function(runId) {
+  const now = new Date();
+  return new Commit(
+      "scheduled event",
+      "scheduled event",
+      runId,
+      null,
+      now,
+      null
+  )
+}
+
 
 /***/ }),
 
@@ -31502,6 +31521,8 @@ module.exports.validateInputAndFetchConfig = function () {
 
   const linkToTemplatedGhPageWithResults = module.exports.validateLinkToTemplatedGhPageWithResults();
 
+  const context = core.getInput('github_context')
+  const runId = JSON.parse(context).run_id;
 
   return new Config(
       benchmarkGroupName,
@@ -31517,7 +31538,8 @@ module.exports.validateInputAndFetchConfig = function () {
       addJobSummary,
       saveCurrBenchRes,
       alertUsersIfBenchFailed,
-      linkToTemplatedGhPageWithResults
+      linkToTemplatedGhPageWithResults,
+      runId
   )
 }
 
@@ -32563,21 +32585,6 @@ const {
 async function run() {
   try {
 
-    const contextStr = core.getInput('github_context');
-    if (contextStr) {
-      const context = JSON.parse(contextStr);
-      core.info("Context: " + context)
-      core.info(`run id: ${context['run_id']}`)
-      core.info(`run id: ${context.run_id}`)
-      core.info(`run id: ${context['runId']}`)
-      core.info(`run id: ${context.runId}`)
-      // exit with error
-      core.setFailed('Github context is not supported anymore.' +
-          ' Please update your action to the latest version.')
-    }
-
-
-
     const completeConfig = validateInputAndFetchConfig()
     core.info("Validated and prepared the configuration.");
     core.debug('Complete config: ' + JSON.stringify(completeConfig))
@@ -32642,8 +32649,12 @@ async function run() {
     const addCommentOption = completeConfig.addComment;
 
     if (addCommentOption === 'on' || (addCommentOption === 'if_failed' && shouldFail)) {
-      createComment(completeConfig, evaluationResult)
-      core.info('Created comment.')
+      if (completeBenchmarkObject.commitInfo === null || completeBenchmarkObject.commitInfo === undefined) {
+        core.warning('Commit id is null or undefined. Cannot create comment. The reason might be scheduled event.')
+      } else {
+        createComment(completeConfig, evaluationResult)
+        core.info('Created comment.')
+      }
     }
 
     const addJobSummary = completeConfig.addJobSummary;
@@ -32743,7 +32754,8 @@ class Config {
     addJobSummary,
     saveCurrBenchRes,
     alertUsersIfBenchFailed,
-    linkToTemplatedGhPageWithResults
+    linkToTemplatedGhPageWithResults,
+    runId
   ) {
       this.benchmarkGroupName = benchmarkGroupName
       this.currBenchResJson = currBenchResJson
@@ -32759,6 +32771,7 @@ class Config {
       this.saveCurrBenchRes = saveCurrBenchRes
       this.alertUsersIfBenchFailed = alertUsersIfBenchFailed
       this.linkToTemplatedGhPageWithResults = linkToTemplatedGhPageWithResults
+      this.runId = runId
   }
 }
 
