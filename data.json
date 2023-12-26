@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1703589386299,
+    "lastUpdate": 1703592262407,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -13020,6 +13020,144 @@
                             106719,
                             1373.2816363881784,
                             112671
+                        ],
+                        "shouldBe": [
+                            "In symmetric range of 10 % to",
+                            "In symmetric range of 10 % to",
+                            "In symmetric range of 10 % to",
+                            "In symmetric range of 10 % to",
+                            "In symmetric range of 10 % to"
+                        ],
+                        "than": [
+                            2500,
+                            700,
+                            50000,
+                            5000,
+                            30000
+                        ]
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "failed",
+                            "failed",
+                            "failed",
+                            "failed",
+                            "failed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "committer": {
+                        "email": "dawid.niezgodka@gmail.com",
+                        "name": "Dawid Niezgódka",
+                        "username": "DawidNiezgodka"
+                    },
+                    "id": "65bc5accdf8cab23b4a186f78ac9e759334e8c6c",
+                    "message": "test mongo",
+                    "timestamp": "2023-12-26T13:04:05+01:00",
+                    "url": "https://github.com/DawidNiezgodka/BenchEval/commit/65bc5accdf8cab23b4a186f78ac9e759334e8c6c",
+                    "eventName": "push"
+                },
+                "date": 1703592262407,
+                "executionTime": "0m 11s",
+                "parametrization": {
+                    "storageEngine": "N/A",
+                    "logVerbosity": "N/A",
+                    "bindIp": "0.0.0.0",
+                    "port": 27017
+                },
+                "otherInfo": "YCSB Parameters: workload=workloada, recordcount=200000, threads=32, ",
+                "metrics": [
+                    {
+                        "name": "OVERALL Throughput",
+                        "value": 67213.4178876343,
+                        "unit": "ops/sec"
+                    },
+                    {
+                        "name": "[READ], AverageLatency(us)",
+                        "value": 1810.7039287334164,
+                        "unit": "us"
+                    },
+                    {
+                        "name": "[READ], MaxLatency(us)",
+                        "value": 117887,
+                        "unit": "us"
+                    },
+                    {
+                        "name": "[UPDATE], AverageLatency(us)",
+                        "value": 1853.367453202496,
+                        "unit": "us"
+                    },
+                    {
+                        "name": "[UPDATE], MaxLatency(us)",
+                        "value": 128631,
+                        "unit": "us"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "threshold",
+                        "benchmarkGroupToCompare": "MongoDB Benchmark",
+                        "thresholdValues": [
+                            2500,
+                            700,
+                            50000,
+                            5000,
+                            30000
+                        ],
+                        "comparisonOperators": [
+                            "tolerance",
+                            "tolerance",
+                            "tolerance",
+                            "tolerance",
+                            "tolerance"
+                        ],
+                        "comparisonMargins": [
+                            10,
+                            10,
+                            10,
+                            10,
+                            10
+                        ],
+                        "thresholdUpper": null,
+                        "thresholdLower": null,
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": null,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "threshold",
+                        "metricNames": [
+                            "OVERALL Throughput",
+                            "[READ], AverageLatency(us)",
+                            "[READ], MaxLatency(us)",
+                            "[UPDATE], AverageLatency(us)",
+                            "[UPDATE], MaxLatency(us)"
+                        ],
+                        "metricUnits": [
+                            "ops/sec",
+                            "us",
+                            "us",
+                            "us",
+                            "us"
+                        ],
+                        "resultExplanations": [],
+                        "metricToDifferentBenchValues": {},
+                        "is": [
+                            67213.4178876343,
+                            1810.7039287334164,
+                            117887,
+                            1853.367453202496,
+                            128631
                         ],
                         "shouldBe": [
                             "In symmetric range of 10 % to",
