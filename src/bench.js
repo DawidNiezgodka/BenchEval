@@ -29,14 +29,15 @@ module.exports.createCurrBench = function (config) {
     return new SimpleMetricResult(item.name, numericValue, item.unit);
   }).filter(result => result !== null);
 
-  let commit = getCommit()
-  core.debug(`commit: ${JSON.stringify(commit)}`);
-  // if commit is null or undefined, then we will add
-  // information that the workflow was run by scheduled event
-  // and not by a commit
-  if (commit === null || commit === undefined) {
-    commit = getCommitReplacementWhenTriggeredByScheduledEvent(config.runId)
+  let commit;
+  // if config.eventName === schedule, then we will not have
+  if (config.eventName === 'schedule') {
+    core.info('The workflow was triggered by a scheduled event.');
+    commit = getCommitReplacementWhenTriggeredByScheduledEvent(config.runId);
+  } else {
+    commit = getCommit();
   }
+  core.debug(`commit: ${JSON.stringify(commit)}`);
   const completeBenchmark = new CompleteBenchmark(
     config.benchmarkGroupName,
     benchInfo,

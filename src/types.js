@@ -61,6 +61,7 @@ class Config {
     saveCurrBenchRes,
     alertUsersIfBenchFailed,
     linkToTemplatedGhPageWithResults,
+    eventName,
     runId
   ) {
       this.benchmarkGroupName = benchmarkGroupName
@@ -77,6 +78,7 @@ class Config {
       this.saveCurrBenchRes = saveCurrBenchRes
       this.alertUsersIfBenchFailed = alertUsersIfBenchFailed
       this.linkToTemplatedGhPageWithResults = linkToTemplatedGhPageWithResults
+      this.eventName = eventName
       this.runId = runId
   }
 }

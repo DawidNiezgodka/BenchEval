@@ -120,6 +120,7 @@ module.exports.validateInputAndFetchConfig = function () {
   const linkToTemplatedGhPageWithResults = module.exports.validateLinkToTemplatedGhPageWithResults();
 
   const context = core.getInput('github_context')
+  const evantName = JSON.parse(context).event_name;
   const runId = JSON.parse(context).run_id;
 
   return new Config(
@@ -137,6 +138,7 @@ module.exports.validateInputAndFetchConfig = function () {
       saveCurrBenchRes,
       alertUsersIfBenchFailed,
       linkToTemplatedGhPageWithResults,
+      evantName,
       runId
   )
 }

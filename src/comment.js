@@ -483,17 +483,22 @@ module.exports.createWorkflowSummaryForCompWithPrev = function (evaluationResult
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
 
+  // if the completeConfig.eventName is schedule, then we must take complete runId,
+  // otherwise we can take the short version of the commitInfo.id
+  const currentCommitId = completeConfig.eventName === 'schedule' ? currentBenchmark.commitInfo.id : currentBenchmark.commitInfo.id.substring(0, 7);
+  const previousCommitId = completeConfig.eventName === 'schedule' ? previousBenchmark.commitInfo.id : previousBenchmark.commitInfo.id.substring(0, 7);
+
   const headers = [
     {
       data: 'Metric',
       header: true,
     },
     {
-      data: `Current: "${currentBenchmark.commitInfo.id.substring(0, 7)}"`,
+      data: `Current: "${currentCommitId}"`,
       header: true,
     },
     {
-      data: `Previous: "${previousBenchmark.commitInfo.id.substring(0, 7)}"`,
+      data: `Previous: "${previousCommitId}"`,
       header: true,
     },
 
@@ -568,6 +573,7 @@ module.exports.createWorkflowSummaryForCompWithPrev = function (evaluationResult
 module.exports.createWorkflowSummaryThreshold = function (evaluationResult, completeConfig) {
 
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+  const currentCommitId = completeConfig.eventName === 'schedule' ? currentBenchmark.commitInfo.id : currentBenchmark.commitInfo.id.substring(0, 7);
 
   const headers = [
     {
@@ -575,7 +581,7 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult, comp
       header: true,
     },
     {
-      data: `Current: "${currentBenchmark.commitInfo.id.substring(0, 7)}"`,
+      data: `Current: "${currentCommitId}"`,
       header: true,
     }
 
@@ -642,14 +648,14 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult, comp
 module.exports.createWorkflowSummaryForThresholdRange = function (evaluationResult, completeConfig) {
 
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
-
+  const currentCommitId = completeConfig.eventName === 'schedule' ? currentBenchmark.commitInfo.id : currentBenchmark.commitInfo.id.substring(0, 7);
   const headers = [
     {
       data: 'Metric',
       header: true,
     },
     {
-      data: `Current: "${currentBenchmark.commitInfo.id.substring(0, 7)}"`,
+      data: `Current: "${currentCommitId}"`,
       header: true,
     },
     {
@@ -779,25 +785,30 @@ module.exports.createWorkflowSummaryForTrendDetDeltas = function (evaluationResu
   const weekAgoBench = evaluationResult.referenceBenchmarks.weekAgo;
   const lastStableReleaseBench = evaluationResult.referenceBenchmarks.lastStableRelease;
 
+  const currentCommitId = completeConfig.eventName === 'schedule' ? currentBenchmark.commitInfo.id : currentBenchmark.commitInfo.id.substring(0, 7);
+  const previousCommitId = completeConfig.eventName === 'schedule' ? previousBenchmark.commitInfo.id : previousBenchmark.commitInfo.id.substring(0, 7);
+  const weekAgoCommitId = completeConfig.eventName === 'schedule' ? weekAgoBench.commitInfo.id : weekAgoBench.commitInfo.id.substring(0, 7);
+  const lastStableReleaseCommitId = completeConfig.eventName === 'schedule' ? lastStableReleaseBench.commitInfo.id : lastStableReleaseBench.commitInfo.id.substring(0, 7);
+
   const headers = [
     {
       data: 'Metric',
       header: true,
     },
     {
-      data: `Curr: "${currentBenchmark.commitInfo.id.substring(0, 7)}"`,
+      data: `Curr: "${currentCommitId}"`,
       header: true,
     },
     {
-      data: `Prev: "${previousBenchmark.commitInfo.id.substring(0, 7)}"`,
+      data: `Prev: "${previousCommitId}"`,
       header: true,
     },
     {
-      data: `~Week: "${weekAgoBench.commitInfo.id.substring(0, 7)}"`,
+      data: `~Week: "${weekAgoCommitId}"`,
       header: true,
     },
     {
-      data: `Stable: "${lastStableReleaseBench.commitInfo.id.substring(0, 7)}"`,
+      data: `Stable: "${lastStableReleaseCommitId}"`,
       header: true,
     },
     {

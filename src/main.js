@@ -90,8 +90,8 @@ async function run() {
     const addCommentOption = completeConfig.addComment;
 
     if (addCommentOption === 'on' || (addCommentOption === 'if_failed' && shouldFail)) {
-      if (completeBenchmarkObject.commitInfo === null || completeBenchmarkObject.commitInfo === undefined) {
-        core.warning('Commit id is null or undefined. Cannot create comment. The reason might be scheduled event.')
+      if (completeConfig.eventName === 'schedule') {
+        core.warning('The workflow was triggered by a scheduled event. Thus, there is no commit to comment on.')
       } else {
         createComment(completeConfig, evaluationResult)
         core.info('Created comment.')
