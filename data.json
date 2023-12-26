@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1703588138835,
+    "lastUpdate": 1703589307377,
     "repoUrl": "",
     "entries": {
         "Benchmark": [
@@ -12661,6 +12661,135 @@
                     "url": null
                 },
                 "date": 1703588138835,
+                "executionTime": "0m 7s",
+                "parametrization": {
+                    "storageEngine": "N/A",
+                    "logVerbosity": "N/A",
+                    "bindIp": "0.0.0.0",
+                    "port": 27017
+                },
+                "otherInfo": "YCSB Parameters: workload=workloada, recordcount=100000, threads=16, ",
+                "metrics": [
+                    {
+                        "name": "OVERALL Throughput",
+                        "value": 21810.87358452,
+                        "unit": "ops/sec"
+                    },
+                    {
+                        "name": "[READ], AverageLatency(us)",
+                        "value": 1434.7817410779016,
+                        "unit": "us"
+                    },
+                    {
+                        "name": "[READ], MaxLatency(us)",
+                        "value": 106719,
+                        "unit": "us"
+                    },
+                    {
+                        "name": "[UPDATE], AverageLatency(us)",
+                        "value": 1373.2816363881784,
+                        "unit": "us"
+                    },
+                    {
+                        "name": "[UPDATE], MaxLatency(us)",
+                        "value": 112671,
+                        "unit": "us"
+                    }
+                ],
+                "benchSuccessful": false,
+                "evaluation": {
+                    "evaluationConfig": {
+                        "evaluationMethod": "threshold",
+                        "benchmarkGroupToCompare": "MongoDB Benchmark",
+                        "thresholdValues": [
+                            2500,
+                            700,
+                            50000,
+                            5000,
+                            30000
+                        ],
+                        "comparisonOperators": [
+                            "tolerance",
+                            "tolerance",
+                            "tolerance",
+                            "tolerance",
+                            "tolerance"
+                        ],
+                        "comparisonMargins": [
+                            10,
+                            10,
+                            10,
+                            10,
+                            10
+                        ],
+                        "thresholdUpper": null,
+                        "thresholdLower": null,
+                        "jumpDetectionThresholds": null,
+                        "trendThresholds": null,
+                        "movingAveWindowSize": null,
+                        "trendDetNoSufficientDataStrategy": "use_available"
+                    },
+                    "evaluationParams": {
+                        "evaluationMethod": "threshold",
+                        "metricNames": [
+                            "OVERALL Throughput",
+                            "[READ], AverageLatency(us)",
+                            "[READ], MaxLatency(us)",
+                            "[UPDATE], AverageLatency(us)",
+                            "[UPDATE], MaxLatency(us)"
+                        ],
+                        "metricUnits": [
+                            "ops/sec",
+                            "us",
+                            "us",
+                            "us",
+                            "us"
+                        ],
+                        "resultExplanations": [],
+                        "metricToDifferentBenchValues": {},
+                        "is": [
+                            21810.87358452,
+                            1434.7817410779016,
+                            106719,
+                            1373.2816363881784,
+                            112671
+                        ],
+                        "shouldBe": [
+                            "In symmetric range of 10 % to",
+                            "In symmetric range of 10 % to",
+                            "In symmetric range of 10 % to",
+                            "In symmetric range of 10 % to",
+                            "In symmetric range of 10 % to"
+                        ],
+                        "than": [
+                            2500,
+                            700,
+                            50000,
+                            5000,
+                            30000
+                        ]
+                    },
+                    "evaluationResult": {
+                        "result": [
+                            "failed",
+                            "failed",
+                            "failed",
+                            "failed",
+                            "failed"
+                        ]
+                    }
+                }
+            },
+            {
+                "commit": {
+                    "author": "scheduled event",
+                    "committer": "scheduled event",
+                    "id": "7329061041",
+                    "message": null,
+                    "timestamp": "2023-12-26T11:15:07.364Z",
+                    "url": null
+                },
+                "date": 1703589307377,
                 "executionTime": "0m 7s",
                 "parametrization": {
                     "storageEngine": "N/A",
