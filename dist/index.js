@@ -31327,7 +31327,6 @@ const { Commit } = __nccwpck_require__(510)
 const core = __nccwpck_require__(5127)
 
 module.exports.getCommit = function () {
-  core.debug(github.context.payload.author)
   if (github.context.payload.head_commit) {
     const { head_commit } = github.context.payload
     return new Commit(
@@ -31336,7 +31335,8 @@ module.exports.getCommit = function () {
       head_commit.id,
       head_commit.message,
       head_commit.timestamp,
-      head_commit.url
+      head_commit.url,
+        github.context.eventName
     )
   }
 
@@ -31355,7 +31355,8 @@ module.exports.getCommit = function () {
       id,
       pr.title,
       pr.head.repo.updated_at,
-      `${pr.html_url}/commits/${id}`
+      `${pr.html_url}/commits/${id}`,
+        github.context.eventName
     )
   }
 }
@@ -32739,13 +32740,14 @@ class SimpleMetricResult {
 }
 
 class Commit {
-  constructor(author, committer, id, message, timestamp, url) {
-    this.author = author
-    this.committer = committer
-    this.id = id
-    this.message = message
-    this.timestamp = timestamp
-    this.url = url
+  constructor(author, committer, id, message, timestamp, url, eventName) {
+      this.author = author
+      this.committer = committer
+      this.id = id
+      this.message = message
+      this.timestamp = timestamp
+      this.url = url
+      this.eventName = eventName
   }
 }
 

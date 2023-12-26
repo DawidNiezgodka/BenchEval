@@ -31,13 +31,14 @@ class SimpleMetricResult {
 }
 
 class Commit {
-  constructor(author, committer, id, message, timestamp, url) {
-    this.author = author
-    this.committer = committer
-    this.id = id
-    this.message = message
-    this.timestamp = timestamp
-    this.url = url
+  constructor(author, committer, id, message, timestamp, url, eventName) {
+      this.author = author
+      this.committer = committer
+      this.id = id
+      this.message = message
+      this.timestamp = timestamp
+      this.url = url
+      this.eventName = eventName
   }
 }
 
