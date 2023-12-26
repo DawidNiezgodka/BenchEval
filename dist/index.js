@@ -32049,7 +32049,8 @@ module.exports.mergeResults = function(directory, strategies, outputFile, metric
       throw new Error(`Invalid strategy: ${strategy}. Valid strategies are sum, average, min, max, median.`);
     }
     const values = metricsValues.get(metric.name);
-    metric.value = module.exports.applyStrategy(strategy, values);
+    let rawValue = module.exports.applyStrategy(strategy, values);
+    metric.value = Number(rawValue).toFixed(2);
   });
 
   fs.writeFileSync(outputFile, JSON.stringify(mergedData, null, 2));
