@@ -31407,14 +31407,14 @@ module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkG
 }
 
 module.exports.getCommitReplacementWhenTriggeredByScheduledEvent = function(runId) {
-  const now = new Date();
   return new Commit(
       "scheduled event",
       "scheduled event",
       runId,
+      "scheduled event",
+      new Date(),
       null,
-      now,
-      null
+      github.context.eventName
   )
 }
 
@@ -32613,6 +32613,13 @@ async function run() {
   try {
 
     const completeConfig = validateInputAndFetchConfig()
+    // if scheduled event, print context
+    if (completeConfig.eventName === 'schedule') {
+        core.info('The workflow was triggered by a scheduled event.');
+        const context = core.getInput('github_context')
+
+        core.info(`Context: ${JSON.stringify(context)}`);
+    }
     core.info("Validated and prepared the configuration.");
     core.debug('Complete config: ' + JSON.stringify(completeConfig))
     core.debug("------------------------------------------------")

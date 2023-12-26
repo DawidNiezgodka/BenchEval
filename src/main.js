@@ -27,6 +27,13 @@ async function run() {
   try {
 
     const completeConfig = validateInputAndFetchConfig()
+    // if scheduled event, print context
+    if (completeConfig.eventName === 'schedule') {
+        core.info('The workflow was triggered by a scheduled event.');
+        const context = core.getInput('github_context')
+
+        core.info(`Context: ${JSON.stringify(context)}`);
+    }
     core.info("Validated and prepared the configuration.");
     core.debug('Complete config: ' + JSON.stringify(completeConfig))
     core.debug("------------------------------------------------")

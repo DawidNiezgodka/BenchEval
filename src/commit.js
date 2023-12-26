@@ -72,13 +72,13 @@ module.exports.findLatestSuccessfulBenchmark = function(benchmarkData,benchmarkG
 }
 
 module.exports.getCommitReplacementWhenTriggeredByScheduledEvent = function(runId) {
-  const now = new Date();
   return new Commit(
       "scheduled event",
       "scheduled event",
       runId,
+      "scheduled event",
+      new Date(),
       null,
-      now,
-      null
+      github.context.eventName
   )
 }
