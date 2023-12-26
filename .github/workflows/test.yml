@@ -1,12 +1,10 @@
-name: "test with folder"
+name: "BenchEval Test"
 on:
-  pull_request:
   schedule:
     - cron: '*/5 * * * *'
   push:
     branches:
       - main
-      - mongotest
       - runidinfo
 
 jobs:
