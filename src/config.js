@@ -323,6 +323,7 @@ module.exports.validateAndFetchEvaluationConfig = function (currentResultLength,
 }
 
 module.exports.createEvaluationConfig = function (...inputNames) {
+  core.debug(`--- start createEvaluationConfig ---`)
   const validInputs = [
     "evaluationMethod",
     "benchmarkGroupToCompare",
@@ -365,7 +366,7 @@ module.exports.createEvaluationConfig = function (...inputNames) {
     }
     return null
   })
-
+  core.debug(`--- end createEvaluationConfig ---`)
   return new EvaluationConfig(...configValues)
 }
 

@@ -1,7 +1,7 @@
 {
   "benchInfo": {
-    "executionTime": "0m 10s",
-    "otherInfo": "YCSB Parameters: workload=workloada, recordcount=100000, threads=16, ",
+    "executionTime": "0m 11s",
+    "otherInfo": "YCSB Parameters: workload=workloada, recordcount=200000, threads=32, ",
     "parametrization": {
       "storageEngine": "N/A",
       "logVerbosity": "N/A",
@@ -12,27 +12,27 @@
   "results": [
     {
       "unit": "ops/sec",
-      "value": 9187.798603454612,
+      "value": 16770.08217340265,
       "name": "OVERALL Throughput"
     },
     {
       "unit": "us",
-      "value": 1653.7729062395729,
+      "value": 1817.7090485888857,
       "name": "[READ], AverageLatency(us)"
     },
     {
       "unit": "us",
-      "value": 137343.0,
+      "value": 158847.0,
       "name": "[READ], MaxLatency(us)"
     },
     {
       "unit": "us",
-      "value": 1569.4936623516721,
+      "value": 1861.29883843717,
       "name": "[UPDATE], AverageLatency(us)"
     },
     {
       "unit": "us",
-      "value": 133247.0,
+      "value": 155135.0,
       "name": "[UPDATE], MaxLatency(us)"
     }
   ]

@@ -1,11 +1,39 @@
 {
-    "benchInfo": {
-        "parametrization": {
-            "storageEngine": "N/A",
-            "logVerbosity": "N/A",
-            "bindIp": "0.0.0.0",
-            "port": 27017
-        },
-        "otherInfo": ""
+  "benchInfo": {
+    "executionTime": "0m 11s",
+    "otherInfo": "YCSB Parameters: workload=workloada, recordcount=200000, threads=32, ",
+    "parametrization": {
+      "storageEngine": "N/A",
+      "logVerbosity": "N/A",
+      "bindIp": "0.0.0.0",
+      "port": 27017
     }
+  },
+  "results": [
+    {
+      "unit": "ops/sec",
+      "value": 16747.613465081227,
+      "name": "OVERALL Throughput"
+    },
+    {
+      "unit": "us",
+      "value": 1825.4436406295827,
+      "name": "[READ], AverageLatency(us)"
+    },
+    {
+      "unit": "us",
+      "value": 87807.0,
+      "name": "[READ], MaxLatency(us)"
+    },
+    {
+      "unit": "us",
+      "value": 1871.9681377399565,
+      "name": "[UPDATE], AverageLatency(us)"
+    },
+    {
+      "unit": "us",
+      "value": 151423.0,
+      "name": "[UPDATE], MaxLatency(us)"
+    }
+  ]
 }
