@@ -30905,7 +30905,7 @@ module.exports.createWorkflowSummaryForCompWithPrev = function (evaluationResult
   // if the completeConfig.eventName is schedule, then we must take complete runId,
   // otherwise we can take the short version of the commitInfo.id
   const currentCommitId = completeConfig.eventName === 'schedule' ? currentBenchmark.commitInfo.id : currentBenchmark.commitInfo.id.substring(0, 7);
-  const previousCommitId = completeConfig.eventName === 'schedule' ? previousBenchmark.commitInfo.id : previousBenchmark.commitInfo.id.substring(0, 7);
+  const previousCommitId = previousBenchmark.commitInfo.eventName === 'schedule' ? previousBenchmark.commitInfo.id : previousBenchmark.commitInfo.id.substring(0, 7);
 
   const headers = [
     {
@@ -31205,9 +31205,9 @@ module.exports.createWorkflowSummaryForTrendDetDeltas = function (evaluationResu
   const lastStableReleaseBench = evaluationResult.referenceBenchmarks.lastStableRelease;
 
   const currentCommitId = completeConfig.eventName === 'schedule' ? currentBenchmark.commitInfo.id : currentBenchmark.commitInfo.id.substring(0, 7);
-  const previousCommitId = completeConfig.eventName === 'schedule' ? previousBenchmark.commitInfo.id : previousBenchmark.commitInfo.id.substring(0, 7);
-  const weekAgoCommitId = completeConfig.eventName === 'schedule' ? weekAgoBench.commitInfo.id : weekAgoBench.commitInfo.id.substring(0, 7);
-  const lastStableReleaseCommitId = completeConfig.eventName === 'schedule' ? lastStableReleaseBench.commitInfo.id : lastStableReleaseBench.commitInfo.id.substring(0, 7);
+  const previousCommitId = previousBenchmark.commitInfo.eventName === 'schedule' ? previousBenchmark.commitInfo.id : previousBenchmark.commitInfo.id.substring(0, 7);
+  const weekAgoCommitId = weekAgoBench.commitInfo.eventName === 'schedule' ? weekAgoBench.commitInfo.id : weekAgoBench.commitInfo.id.substring(0, 7);
+  const lastStableReleaseCommitId = lastStableReleaseBench.commitInfo.eventName === 'schedule' ? lastStableReleaseBench.commitInfo.id : lastStableReleaseBench.commitInfo.id.substring(0, 7);
 
   const headers = [
     {
