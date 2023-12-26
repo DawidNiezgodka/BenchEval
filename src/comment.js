@@ -567,7 +567,8 @@ module.exports.createWorkflowSummaryForCompWithPrev = function (evaluationResult
   let summaryMessage = module.exports.createSummaryMessage(evaluationResult);
   const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
 
-  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults);
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults,
+      completeConfig.eventName);
 }
 
 module.exports.createWorkflowSummaryThreshold = function (evaluationResult, completeConfig) {
@@ -642,7 +643,8 @@ module.exports.createWorkflowSummaryThreshold = function (evaluationResult, comp
   let summaryMessage = module.exports.createSummaryMessage(evaluationResult);
   const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
 
-  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults);
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults,
+      completeConfig.eventName);
 }
 
 module.exports.createWorkflowSummaryForThresholdRange = function (evaluationResult, completeConfig) {
@@ -706,7 +708,8 @@ module.exports.createWorkflowSummaryForThresholdRange = function (evaluationResu
   }
   let summaryMessage = module.exports.createSummaryMessage(evaluationResult);
   const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
-  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults);
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults,
+      completeConfig.eventName);
 }
 
 module.exports.summaryForMethodNotSupported = function (evaluationResult, linkToGraph) {
@@ -729,14 +732,21 @@ module.exports.summaryForMethodNotSupported = function (evaluationResult, linkTo
 //////////
 /// Helpers
 //////////
-module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMessage, linkToGraph) {
+module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMessage, linkToGraph, eventName) {
 
   const methodSpecificDescription = module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod(evaluationMethod);
   const methodDescriptionFullText = `<b>Method description:</b> ${methodSpecificDescription}`;
+
   core.summary
       .addHeading(`Benchmark summary`, 2)
       .addRaw(summaryMessage)
-      .addSeparator()
+      .addSeparator();
+  if (eventName === 'schedule') {
+    const scheduledEventExtraInfo = "The benchmark was run on a scheduled event. Instead of a commit id, the full run id is displayed.";
+    core.summary.addRaw(scheduledEventExtraInfo)
+    .addSeparator();
+  }
+  core.summary
       .addHeading(`The chosen evaluation method: ${evaluationMethod}`, 4)
       .addRaw(methodDescriptionFullText)
       .addBreak()
@@ -880,7 +890,8 @@ module.exports.createWorkflowSummaryForTrendDetDeltas = function (evaluationResu
   }
   let summaryMessage = module.exports.createSummaryMessage(evaluationResult);
   const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
-  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults);
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults,
+      completeConfig.eventName);
 }
 
 module.exports.createSummaryMessage = function(evaluationResult) {
