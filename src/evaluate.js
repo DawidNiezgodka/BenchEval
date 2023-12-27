@@ -31,8 +31,6 @@ module.exports.evaluateCurrentBenchmark = function (
         evaluationResult = module.exports.trendDetectionMovingAve(currentBenchmark, completeConfig);
         break;
     case 'trend_detection_deltas':
-      core.debug('Benchmark group to compare (evaluate 35): ' + completeConfig.benchmarkGroupToCompare)
-        core.debug('bech eval config: ' + JSON.stringify(completeConfig.evaluationConfig))
         evaluationResult = module.exports.trendDetectionDeltas(currentBenchmark, completeConfig);
         break;
     default:
@@ -61,7 +59,13 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluatio
     actualValues.push(value);
     metricNames.push(result.name);
     metricUnits.push(result.unit);
-    let smallerBiggerText = `At least ${margin} % ${operator} than`;
+
+    let smallerBiggerText;
+    if (margin < 0) {
+      smallerBiggerText = `Strictly ${operator} than`;
+    } else {
+      smallerBiggerText = `At least ${margin} % ${operator} than`;
+    }
     let toleranceText = `In symmetric range of ${margin} % to`;
     operator === 'tolerance' ? shouldBe.push(toleranceText) : shouldBe.push(smallerBiggerText);
     thanValues.push(thresholdValue);
@@ -77,15 +81,11 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluatio
         isPassed = margin < 0 ? value === thresholdValue : value >= thresholdValue * (1 - margin / 100) && value <= thresholdValue * (1 + margin / 100);
         break;
       default:
-
         isPassed = false;
         break;
     }
-
     evaluationResults.push(isPassed ? 'passed' : 'failed');
   });
-
-
 
   return module.exports.createEvaluationObject({
     "evaluation_method": "threshold",
@@ -99,17 +99,13 @@ module.exports.evaluateWithThreshold = function (currentBenchmarkData, evaluatio
       "current": currentBenchmarkData
     }
   });
-
 };
 
 module.exports.compareWithPrevious = function (currentBenchmarkData, completeBenchData, completeConfig, successful) {
-
-
   const previousBenchmarkData = getLatestBenchmark(completeConfig.benchmarkGroupToCompare,
       completeConfig.folderWithBenchData, completeConfig.fileWithBenchData, 1, successful);
 
   core.debug("------ compareWithPrevious [after fetching prev data] ------")
-
   const { comparisonOperators, comparisonMargins } = completeConfig.evaluationConfig;
 
   const metricNames = [];
@@ -134,7 +130,6 @@ module.exports.compareWithPrevious = function (currentBenchmarkData, completeBen
       const margin = comparisonMargins[index];
       const operator = comparisonOperators[index];
       const thresholdValue = previousValue;
-      core.debug(`Current value: ${currentValue}, previous value: ${previousValue}, margin: ${margin}, operator: ${operator}, thresholdValue: ${thresholdValue}`)
       metricNames.push(currentName);
       metricUnits.push(result.unit);
       shouldBe.push(operator);
@@ -153,7 +148,6 @@ module.exports.compareWithPrevious = function (currentBenchmarkData, completeBen
       }
       evaluationResults.push(typeof isPassed === 'boolean' ? (isPassed ? 'passed' : 'failed') : isPassed);
     } else {
-      // If there is no matching metric in the previous results, push 'no data'
       metricNames.push(currentName);
       metricUnits.push(result.unit);
       shouldBe.push('N/A');
@@ -183,7 +177,6 @@ module.exports.compareWithPrevious = function (currentBenchmarkData, completeBen
 module.exports.evaluateWithThresholdRanges = function (currentBenchmarkData, config) {
 
   core.debug('--- start evaluateWithThresholdRanges ---')
-
   const { thresholdLower, thresholdUpper } = config;
 
   const metricNames = [];
@@ -223,13 +216,10 @@ module.exports.evaluateWithThresholdRanges = function (currentBenchmarkData, con
 };
 
 module.exports.evaluateWithJumpDetection = function (currentBenchmarkData, config) {
-
   const previousBenchmarkData = getLatestBenchmark(config.benchmarkGroupToCompare,
       config.folderWithBenchData, config.fileWithBenchData, 1, false);
 
   const { jumpDetectionThresholds } = config.evaluationConfig;
-  //core.debug('Jump detection thresholds: ' + JSON.stringify(jumpDetectionThresholds));
-
   const map = new Map(
       previousBenchmarkData.simpleMetricResults.map(item => [item.name, { value: item.value, unit: item.unit }]));
 
@@ -240,7 +230,6 @@ module.exports.evaluateWithJumpDetection = function (currentBenchmarkData, confi
   const evaluationResults = [];
 
   currentBenchmarkData.simpleMetricResults.forEach((result, index) => {
-    //core.debug('Current benchmark data jump det: ' + JSON.stringify(result));
     const currentName = result.name;
     const currentValue = result.value;
     const previousResult = map.get(currentName);
@@ -276,13 +265,9 @@ module.exports.evaluateWithJumpDetection = function (currentBenchmarkData, confi
 };
 
 module.exports.trendDetectionMovingAve = function (currentBenchmarkData, completeConfig) {
-
   const { trendThresholds: t, movingAveWindowSize: b } = completeConfig.evaluationConfig;
-
-  // First get the previous b benchmarks
   const previousBenchmarkDataArray = getNLatestBenchmarks(completeConfig.evaluationConfig.benchmarkGroupToCompare,
         completeConfig.folderWithBenchData, completeConfig.fileWithBenchData, b, false);
-  //core.debug('Retrieved the following number of benchmarks: ' + previousBenchmarkDataArray.length);
 
   const metricNames = [];
   const evaluationResults = [];
@@ -301,8 +286,6 @@ module.exports.trendDetectionMovingAve = function (currentBenchmarkData, complet
     const previousMetrics = previousBenchmarkDataArray
         .map(build => build.simpleMetricResults.find(result => result.name === currentName))
         .filter(Boolean)
-
-    //core.debug(`Number of benchmarks that have the current metric: ${previousMetrics.length}`);
 
     const sumOfPreviousMetrics = previousMetrics.reduce((acc, metric) => acc + metric.value, 0);
     const movingAverage = sumOfPreviousMetrics / Math.min(b, previousMetrics.length);
@@ -350,24 +333,14 @@ module.exports.addResultToBenchmarkObject = function (
 }
 
 module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
-
   core.debug('--- start trendDetectionDeltas ---')
-  //core.debug('Current benchmark data: ' + JSON.stringify(currentBenchmarkData));
-
-  //core.debug('Benchmark group to compare: ' + config.evaluationConfig.benchmarkGroupToCompare)
   const previousBenchmarkData = getLatestBenchmark(config.evaluationConfig.benchmarkGroupToCompare,
         config.folderWithBenchData, config.fileWithBenchData, 1, false);
-  //core.debug('Previous benchmark data: ' + JSON.stringify(previousBenchmarkData));
-
   const benchFromWeekAgo = getBenchFromWeekAgo(config.evaluationConfig.benchmarkGroupToCompare,
         config.folderWithBenchData, config.fileWithBenchData);
-  //core.debug('Bench from week ago: ' + JSON.stringify(benchFromWeekAgo));
-
   const lastStableReleaseBench = getBenchmarkOfStableBranch(
         config.evaluationConfig.benchmarkGroupToCompare, config.folderWithBenchData,
       config.fileWithBenchData, config.latestBenchSha);
-  //core.debug('Last stable release bench: ' + JSON.stringify(lastStableReleaseBench));
-
 
   let { trendThresholds: X } = config.evaluationConfig;
   if (!Array.isArray(X)) {
@@ -395,12 +368,9 @@ module.exports.trendDetectionDeltas = function (currentBenchmarkData, config) {
     const currentUnit = currentResult.unit;
     metricUnits.push(currentUnit);
     const currentThreshold = X[index];
-    core.info(`X is: ${X}`)
-    core.info(`X index is: ${X[index]}`)
     const previousMetric = previousBenchmarkData.simpleMetricResults.find(r => r.name === currentName)?.value;
     const weekAgoMetric = benchFromWeekAgo.simpleMetricResults.find(r => r.name === currentName)?.value;
     const lastStableMetric = lastStableReleaseBench.simpleMetricResults.find(r => r.name === currentName)?.value;
-
     metricNames.push(currentName);
 
     const isPassedPrevious = previousMetric !== undefined && evaluateChange(previousMetric, currentValue, currentThreshold);
@@ -477,7 +447,6 @@ module.exports.createEvaluationObject = function(data) {
         data.reference_benchmarks.last_stable_release
     );
   }
-
   return new Evaluation(results, evalParameters, referenceBenchmarks);
 }
 
