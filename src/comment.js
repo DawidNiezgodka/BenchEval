@@ -884,7 +884,7 @@ module.exports.createWorkflowSummaryForJumpDetection = function (evaluationResul
     const evaluationParameters = evaluationResult.evalParameters
     const evaluationConfiguration = completeConfig.evaluationConfig
     for (let i = 0; i < evaluationResults.length; i++) {
-
+      const resultStatus = evaluationResults[i];
       const metricName = evaluationParameters.metricNames[i];
       const metricUnit = evaluationParameters.metricUnits[i];
 
