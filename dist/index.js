@@ -31296,7 +31296,7 @@ module.exports.createWorkflowSummaryForJumpDetection = function (evaluationResul
     const evaluationParameters = evaluationResult.evalParameters
     const evaluationConfiguration = completeConfig.evaluationConfig
     for (let i = 0; i < evaluationResults.length; i++) {
-      const resultStatus = evaluationResults[i];
+
       const metricName = evaluationParameters.metricNames[i];
       const metricUnit = evaluationParameters.metricUnits[i];
 
@@ -31309,15 +31309,6 @@ module.exports.createWorkflowSummaryForJumpDetection = function (evaluationResul
       const shouldBe = evaluationParameters.shouldBe[i];
       const ratio = evaluationParameters.is[i];
 
-
-
-        const metricValues = evaluationParameters.metricToDifferentBenchValues.get(metricName);
-        if (!metricValues) {
-        continue;
-        }
-
-        let currBenchValue = metricValues?.current ?? 'N/A';
-        let prevBenchValue = metricValues?.previous ?? 'N/A';
 
         let graphicalRepresentationOfRes;
         if (resultStatus === 'failed' || resultStatus === 'passed') {
