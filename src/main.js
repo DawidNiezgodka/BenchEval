@@ -109,7 +109,9 @@ async function run() {
     if (addJobSummary === 'on' || (addJobSummary === 'if_failed' && shouldFail)) {
 
       if (evaluationConfig.evaluationMethod === 'previous') {
-        createWorkflowSummaryForCompWithPrev(evaluationResult, completeConfig);
+        createWorkflowSummaryForCompWithPrev(evaluationResult, completeConfig, false);
+      } else if (evaluationConfig.evaluationMethod === 'previous_successful') {
+        createWorkflowSummaryForCompWithPrev(evaluationResult, completeConfig, true);
       } else if (evaluationConfig.evaluationMethod === 'threshold') {
         createWorkflowSummaryThreshold(evaluationResult, completeConfig);
       } else if (evaluationConfig.evaluationMethod === 'threshold_range') {
