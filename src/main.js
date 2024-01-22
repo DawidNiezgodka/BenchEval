@@ -120,6 +120,8 @@ async function run() {
         createWorkflowSummaryForTrendDetDeltas(evaluationResult, completeConfig);
       } else if (evaluationConfig.evaluationMethod === 'jump_detection') {
         createWorkflowSummaryForJumpDetection(evaluationResult, completeConfig);
+      } else if (evaluationConfig.evaluationMethod === 'none') {
+        createWorkflowSummaryForTrendDetAve(evaluationResult, completeConfig);
       }
 
       else {

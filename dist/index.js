@@ -30655,6 +30655,86 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
   return lines.join('\n')
 }
 
+module.exports.createBodyForComparisonWithTrendDetMovAverage = function(evaluationResult, completeConfig) {
+
+  core.debug('------ start createBodyForComparisonWithTrendDetMovAverage ------')
+  const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+
+  const lines = []
+  lines.push('## Benchmark results')
+  lines.push('')
+  lines.push(`<b>Benchmark group:</b> ${currentBenchmark.benchmarkGroupName}`)
+  lines.push('')
+  lines.push(`The chosen evaluation method is trend_detection_moving_ave.`)
+  lines.push(`For each metric, the procedure checks if the current value does not exceed the average
+   of a particular number of last measurements more than a given threshold
+        `)
+
+  const benchDataText = module.exports.createBenchDataText(
+      currentBenchmark
+  )
+  lines.push(benchDataText)
+
+  lines.push('', '', '', '', '')
+  lines.push('## Results')
+  lines.push('', '', '', '', '')
+
+  lines.push(
+      `| Metric | Curr: ${currentBenchmark.commitInfo.id} | Max.Jump | Was | No builds | Res | `
+  )
+  lines.push('|-|-|-|-|-|-|')
+
+  /**
+   *   return module.exports.createEvaluationObject({
+   *     "evaluation_method": "trend_detection_moving_ave",
+   *     "metric_names": metricNames,
+   *     "metric_units": metricUnits,
+   *     "is": percentageIncreases,
+   *     "should_be": should_be,
+   *     "result": evaluationResults,
+   *     "reference_benchmarks": {
+   *         "previous": previousBenchmarkDataArray,
+   *         "current": currentBenchmarkData
+   *     }
+   *   });
+   */
+
+  const evaluationResults = evaluationResult.results.result
+  const evaluationParameters = evaluationResult.evalParameters
+  const evaluationConfiguration = completeConfig.evaluationConfig
+  for (let i = 0; i < evaluationResults.length; i++) {
+
+    const resultStatus = evaluationResults[i];
+    const metricName = evaluationParameters.metricNames[i];
+    const metricUnit = evaluationParameters.metricUnits[i];
+
+    const currValue = currentBenchmark.simpleMetricResults[i].value;
+    const currPlusUnit = currValue + ' ' + metricUnit;
+    const shouldBe = evaluationParameters.should_be[i];
+    const ratio = evaluationParameters.percentageIncreases[i];
+
+    //const numberOfConsideredBuilds = evaluationConfiguration.numberOfConsideredBuilds[i];
+
+
+    let line
+
+// Max.Jump | Was | No builds | Res
+    if (resultStatus === 'failed' || resultStatus === 'passed') {
+      let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴'
+      line = `| \`${metricName}\` | \`${currPlusUnit}\` |  ${shouldBe} | ${ratio} | 0 | ${betterOrWorse} |`
+    } else {
+      line = `| \`${metricName}\` | \'${currPlusUnit}\' | N/A | N/A | N/A | 🔘 |`
+    }
+
+    lines.push(line)
+  }
+
+  const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
+  module.exports.alertUsersIfBenchFailed(benchmarkPassed, completeConfig, lines);
+  return lines.join('\n')
+
+}
+
 module.exports.createBodyForComparisonWithJumpDeltas = function(evaluationResult, completeConfig) {
   core.debug('------ start createBodyForComparisonWithJumpDeltas ------')
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
@@ -32837,6 +32917,8 @@ async function run() {
         createWorkflowSummaryForTrendDetDeltas(evaluationResult, completeConfig);
       } else if (evaluationConfig.evaluationMethod === 'jump_detection') {
         createWorkflowSummaryForJumpDetection(evaluationResult, completeConfig);
+      } else if (evaluationConfig.evaluationMethod === 'none') {
+        createWorkflowSummaryForTrendDetAve(evaluationResult, completeConfig);
       }
 
       else {

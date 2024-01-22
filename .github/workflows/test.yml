@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - main
-      - missing_eval
+      - trend_det_ave
 
 jobs:
   test:
@@ -34,8 +34,9 @@ jobs:
           file_with_bench_data: data.json
           folder_with_current_benchmark_results: resultsFolder
           bench_group_name: "MongoDB Benchmark"
-          evaluation_method: "jump_detection"
-          jump_detection_thresholds: "10, 10, 10, 10, 10"
+          evaluation_method: "trend_detection_moving_ave"
+          moving_ave_window_size: 5
+          trend_thresholds: "10, 10, 10, 10, 10"
           save_curr_bench_res: true
           github_token: ${{ secrets.GH_TOKEN }}
           github_context: ${{ toJson(github) }}
