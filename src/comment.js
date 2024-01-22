@@ -28,7 +28,7 @@ module.exports.createComment = function (
       commentBody = module.exports.createBodyForComparisonWithJumpDeltas(evaluationResult, completeConfig);
       break;
     case 'trend_detection_moving_ave':
-      commentBody = module.exports.createBodyForComparisonWithTrendDetMovAve(evaluationResult, completeConfig);
+      commentBody = module.exports.createBodyForComparisonWithTrendDetMovAverage(evaluationResult, completeConfig);
       break;
     case 'trend_detection_deltas':
       commentBody = module.exports.createBodyForComparisonWithTrendDetDeltas(evaluationResult, completeConfig);

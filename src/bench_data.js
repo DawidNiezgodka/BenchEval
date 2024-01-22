@@ -171,9 +171,9 @@ module.exports.getNLatestBenchmarks = function (
     const nthLatest = sortedBenchmarkData.slice(0, n).map(data => {
       return convertBenchDataToCompleteBenchmarkInstance(data, benchmarkGroupName);
     });
-    return nthLatest;
-    //core.debug(`nthLatest ${JSON.stringify(nthLatest)}`)
     core.debug('--- end getNLatestBenchmarks ---')
+    return nthLatest;
+
   } catch (error) {
     console.error('An error occurred:', error);
     return null;
