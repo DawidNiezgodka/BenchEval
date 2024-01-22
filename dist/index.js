@@ -30707,6 +30707,7 @@ module.exports.createBodyForComparisonWithTrendDetMovAverage = function(evaluati
   core.debug("Moving ave window size: " + movingAveWindowSize)
   for (let i = 0; i < evaluationResults.length; i++) {
 
+    core.info(`Printing eval parameters", ${JSON.stringify(evaluationParameters)}`)
     const resultStatus = evaluationResults[i];
     const metricName = evaluationParameters.metricNames[i];
     const metricUnit = evaluationParameters.metricUnits[i];
