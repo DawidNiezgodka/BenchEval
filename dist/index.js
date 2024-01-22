@@ -32616,6 +32616,9 @@ module.exports.trendDetectionMovingAve = function (currentBenchmarkData, complet
   const percentageIncreases = [];
   const should_be = [];
 
+  core.debug("Printing fetched benchmarks")
+  core.debug(JSON.stringify(previousBenchmarkDataArray));
+
   currentBenchmarkData.simpleMetricResults.forEach((currentResult, index) => {
     const currentThreshold = t[index];
     should_be.push(currentThreshold);
@@ -32624,8 +32627,7 @@ module.exports.trendDetectionMovingAve = function (currentBenchmarkData, complet
     metricNames.push(currentName);
     metricUnits.push(currentResult.unit);
 
-    core.debug("Printing fetched benchmarks")
-    core.debug(JSON.stringify(previousBenchmarkDataArray));
+
 
     const previousMetrics = previousBenchmarkDataArray
         .map(build => build.simpleMetricResults.find(result => result.name === currentName))
