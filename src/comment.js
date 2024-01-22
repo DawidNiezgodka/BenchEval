@@ -289,8 +289,8 @@ module.exports.createBodyForComparisonWithJumpDeltas = function(evaluationResult
     const metricName = evaluationParameters.metricNames[i];
     const metricUnit = evaluationParameters.metricUnits[i];
 
-    const currValue = currentBenchmark.results[i].value;
-    const prevValue = previousBenchmark.results[i].value;
+    const currValue = currentBenchmark.simpleMetricResults[i].value;
+    const prevValue = previousBenchmark.simpleMetricResults[i].value;
 
     const currPlusUnit = currValue + ' ' + metricUnit;
     const prevPlusUnit = prevValue + ' ' + metricUnit;
