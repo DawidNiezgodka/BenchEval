@@ -240,7 +240,7 @@ module.exports.evaluateWithJumpDetection = function (currentBenchmarkData, confi
     shouldBe.push(threshold);
 
     if (previousResult) {
-      const ratio = (currentValue / previousResult.value - 1) * 100;
+      const ratio = Math.abs((currentValue / previousResult.value - 1) * 100);
       ratios.push(ratio.toFixed(2));
       const isPassed = Math.abs(ratio) < threshold;
       evaluationResults.push(isPassed ? 'passed' : 'failed');

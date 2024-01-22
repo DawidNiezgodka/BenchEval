@@ -30688,9 +30688,9 @@ module.exports.createBodyForComparisonWithJumpDeltas = function(evaluationResult
   lines.push('', '', '', '', '')
 
   lines.push(
-      `| Metric | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Max. Jump | Was  | Res | `
+      `| Metric | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Max. Jump | Was | Res | `
   )
-  lines.push('|-|-|-|-|-|-|-|')
+  lines.push('|-|-|-|-|-|-|')
 
   const evaluationResults = evaluationResult.results.result
   const evaluationParameters = evaluationResult.evalParameters
@@ -30700,21 +30700,25 @@ module.exports.createBodyForComparisonWithJumpDeltas = function(evaluationResult
     const resultStatus = evaluationResults[i];
     const metricName = evaluationParameters.metricNames[i];
     const metricUnit = evaluationParameters.metricUnits[i];
-    const actualValue = parseFloat(evaluationParameters.is[i]).toFixed(2);
+
+    const currValue = currentBenchmark.results[i].value;
+    const prevValue = previousBenchmark.results[i].value;
+
+    const currPlusUnit = currValue + ' ' + metricUnit;
+    const prevPlusUnit = prevValue + ' ' + metricUnit;
 
     const shouldBe = evaluationParameters.shouldBe[i];
     const ratio = evaluationParameters.is[i];
 
-    const previousBenchRes = parseFloat(evaluationParameters.than[i]).toFixed(2);
-    const prevBenchValAndUnit = previousBenchRes + ' ' + metricUnit;
+
     let line
-    let valueAndUnit = actualValue + ' ' + metricUnit
+
 
     if (resultStatus === 'failed' || resultStatus === 'passed') {
       let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴'
-      line = `| \`${metricName}\` | \`${valueAndUnit}\` | \`${prevBenchValAndUnit}\` | ${shouldBe} | ${ratio} | ${betterOrWorse} |`
+      line = `| \`${metricName}\` | \`${currPlusUnit}\` | \`${prevPlusUnit}\` | ${shouldBe} | ${ratio} | ${betterOrWorse} |`
     } else {
-      line = `| \`${metricName}\` | \'${valueAndUnit}\' | N/A | N/A | N/A | 🔘 |`
+      line = `| \`${metricName}\` | \'${currPlusUnit}\' | N/A | N/A | N/A | 🔘 |`
     }
 
     lines.push(line)
@@ -32403,7 +32407,7 @@ module.exports.evaluateWithJumpDetection = function (currentBenchmarkData, confi
     shouldBe.push(threshold);
 
     if (previousResult) {
-      const ratio = (currentValue / previousResult.value - 1) * 100;
+      const ratio = Math.abs((currentValue / previousResult.value - 1) * 100);
       ratios.push(ratio.toFixed(2));
       const isPassed = Math.abs(ratio) < threshold;
       evaluationResults.push(isPassed ? 'passed' : 'failed');
