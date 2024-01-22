@@ -289,7 +289,7 @@ module.exports.createBodyForComparisonWithTrendDetMovAverage = function(evaluati
 
   const evaluationResults = evaluationResult.results.result
   const evaluationParameters = evaluationResult.evalParameters
-  const evaluationConfiguration = completeConfig.evaluationConfig
+  const movingAveWindowSize = completeConfig.evaluationConfig.movingAveWindowSize;
   for (let i = 0; i < evaluationResults.length; i++) {
 
     const resultStatus = evaluationResults[i];
@@ -309,7 +309,7 @@ module.exports.createBodyForComparisonWithTrendDetMovAverage = function(evaluati
 // Max.Jump | Was | No builds | Res
     if (resultStatus === 'failed' || resultStatus === 'passed') {
       let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴'
-      line = `| \`${metricName}\` | \`${currPlusUnit}\` |  ${shouldBe} | ${ratio} | 0 | ${betterOrWorse} |`
+      line = `| \`${metricName}\` | \`${currPlusUnit}\` |  ${shouldBe} | ${ratio} | ${movingAveWindowSize} | ${betterOrWorse} |`
     } else {
       line = `| \`${metricName}\` | \'${currPlusUnit}\' | N/A | N/A | N/A | 🔘 |`
     }

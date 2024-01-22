@@ -269,6 +269,9 @@ module.exports.trendDetectionMovingAve = function (currentBenchmarkData, complet
   const previousBenchmarkDataArray = getNLatestBenchmarks(completeConfig.evaluationConfig.benchmarkGroupToCompare,
         completeConfig.folderWithBenchData, completeConfig.fileWithBenchData, b, false);
 
+
+  core.debug("------ trendDetectionMovingAve [after previousBenchmarkDataArray] ------")
+
   const metricNames = [];
   const evaluationResults = [];
   const metricUnits = [];
@@ -282,6 +285,9 @@ module.exports.trendDetectionMovingAve = function (currentBenchmarkData, complet
     const currentValue = currentResult.value;
     metricNames.push(currentName);
     metricUnits.push(currentResult.unit);
+
+    core.debug("Printing fetched benchmarks")
+    core.debug(JSON.stringify(previousBenchmarkDataArray));
 
     const previousMetrics = previousBenchmarkDataArray
         .map(build => build.simpleMetricResults.find(result => result.name === currentName))

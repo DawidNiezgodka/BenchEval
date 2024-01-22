@@ -30188,7 +30188,7 @@ module.exports.getLatestBenchmark = function (
   )
 
     const nthLatestBenchmarkData = sortedBenchmarkData[n - 1]
-    core.debug(`nthLatestBenchmarkData.metrics ${JSON.stringify(nthLatestBenchmarkData)}`)
+    //core.debug(`nthLatestBenchmarkData.metrics ${JSON.stringify(nthLatestBenchmarkData)}`)
     return convertBenchDataToCompleteBenchmarkInstance(nthLatestBenchmarkData, benchmarkGroupName)
 
 }
@@ -30269,7 +30269,7 @@ module.exports.getNLatestBenchmarks = function (
     const nthLatest = sortedBenchmarkData.slice(0, n).map(data => {
       return convertBenchDataToCompleteBenchmarkInstance(data, benchmarkGroupName);
     });
-    core.debug(`nthLatest ${JSON.stringify(nthLatest)}`)
+    //core.debug(`nthLatest ${JSON.stringify(nthLatest)}`)
     core.debug('--- end getNLatestBenchmarks ---')
   } catch (error) {
     console.error('An error occurred:', error);
@@ -30701,7 +30701,7 @@ module.exports.createBodyForComparisonWithTrendDetMovAverage = function(evaluati
 
   const evaluationResults = evaluationResult.results.result
   const evaluationParameters = evaluationResult.evalParameters
-  const evaluationConfiguration = completeConfig.evaluationConfig
+  const movingAveWindowSize = completeConfig.evaluationConfig.movingAveWindowSize;
   for (let i = 0; i < evaluationResults.length; i++) {
 
     const resultStatus = evaluationResults[i];
@@ -30721,7 +30721,7 @@ module.exports.createBodyForComparisonWithTrendDetMovAverage = function(evaluati
 // Max.Jump | Was | No builds | Res
     if (resultStatus === 'failed' || resultStatus === 'passed') {
       let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴'
-      line = `| \`${metricName}\` | \`${currPlusUnit}\` |  ${shouldBe} | ${ratio} | 0 | ${betterOrWorse} |`
+      line = `| \`${metricName}\` | \`${currPlusUnit}\` |  ${shouldBe} | ${ratio} | ${movingAveWindowSize} | ${betterOrWorse} |`
     } else {
       line = `| \`${metricName}\` | \'${currPlusUnit}\' | N/A | N/A | N/A | 🔘 |`
     }
@@ -32607,6 +32607,9 @@ module.exports.trendDetectionMovingAve = function (currentBenchmarkData, complet
   const previousBenchmarkDataArray = getNLatestBenchmarks(completeConfig.evaluationConfig.benchmarkGroupToCompare,
         completeConfig.folderWithBenchData, completeConfig.fileWithBenchData, b, false);
 
+
+  core.debug("------ trendDetectionMovingAve [after previousBenchmarkDataArray] ------")
+
   const metricNames = [];
   const evaluationResults = [];
   const metricUnits = [];
@@ -32620,6 +32623,9 @@ module.exports.trendDetectionMovingAve = function (currentBenchmarkData, complet
     const currentValue = currentResult.value;
     metricNames.push(currentName);
     metricUnits.push(currentResult.unit);
+
+    core.debug("Printing fetched benchmarks")
+    core.debug(JSON.stringify(previousBenchmarkDataArray));
 
     const previousMetrics = previousBenchmarkDataArray
         .map(build => build.simpleMetricResults.find(result => result.name === currentName))
