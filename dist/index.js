@@ -30702,7 +30702,9 @@ module.exports.createBodyForComparisonWithTrendDetMovAverage = function(evaluati
 
   const evaluationResults = evaluationResult.results.result
   const evaluationParameters = evaluationResult.evalParameters
+
   const movingAveWindowSize = completeConfig.evaluationConfig.movingAveWindowSize;
+  core.debug("Moving ave window size: " + movingAveWindowSize)
   for (let i = 0; i < evaluationResults.length; i++) {
 
     const resultStatus = evaluationResults[i];
@@ -30712,7 +30714,7 @@ module.exports.createBodyForComparisonWithTrendDetMovAverage = function(evaluati
     const currValue = currentBenchmark.simpleMetricResults[i].value;
     const currPlusUnit = currValue + ' ' + metricUnit;
     const shouldBe = evaluationParameters.should_be[i];
-    const ratio = evaluationParameters.percentageIncreases[i];
+    const ratio = evaluationParameters.is[i];
 
     //const numberOfConsideredBuilds = evaluationConfiguration.numberOfConsideredBuilds[i];
 
