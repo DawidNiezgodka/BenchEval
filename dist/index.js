@@ -30714,7 +30714,7 @@ module.exports.createBodyForComparisonWithTrendDetMovAverage = function(evaluati
 
     const currValue = currentBenchmark.simpleMetricResults[i].value;
     const currPlusUnit = currValue + ' ' + metricUnit;
-    const shouldBe = evaluationParameters.should_be[i];
+    const shouldBe = evaluationParameters.shouldBe[i];
     const ratio = evaluationParameters.is[i];
 
     //const numberOfConsideredBuilds = evaluationConfiguration.numberOfConsideredBuilds[i];
