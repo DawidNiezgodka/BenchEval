@@ -843,6 +843,106 @@ module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMe
       .write();
 }
 
+module.exports.createWorkflowSummaryForJumpDetection = function (evaluationResult, completeConfig) {
+    const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+    const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
+
+    const currentCommitId = completeConfig.eventName === 'schedule' ? currentBenchmark.commitInfo.id : currentBenchmark.commitInfo.id.substring(0, 7);
+    const previousCommitId = previousBenchmark.commitInfo.eventName === 'schedule' ? previousBenchmark.commitInfo.id : previousBenchmark.commitInfo.id.substring(0, 7);
+
+    const headers = [
+        {
+        data: 'Metric',
+        header: true,
+        },
+        {
+        data: `Current: "${currentCommitId}"`,
+        header: true,
+        },
+        {
+        data: `Previous: "${previousCommitId}"`,
+        header: true,
+        },
+
+      {
+        data: 'Jump',
+        header: true,
+      },
+      {
+        data: 'Max. change [%]',
+        header: true,
+      },
+        {
+        data: 'Result',
+        header: true,
+        }
+
+    ];
+
+    const rows = [];
+    const evaluationResults = evaluationResult.results.result
+    const evaluationParameters = evaluationResult.evalParameters
+    const evaluationConfiguration = completeConfig.evaluationConfig
+    for (let i = 0; i < evaluationResults.length; i++) {
+      const resultStatus = evaluationResults[i];
+      const metricName = evaluationParameters.metricNames[i];
+      const metricUnit = evaluationParameters.metricUnits[i];
+
+      const currValue = currentBenchmark.simpleMetricResults[i].value;
+      const prevValue = previousBenchmark.simpleMetricResults[i].value;
+
+      const currPlusUnit = currValue + ' ' + metricUnit;
+      const prevPlusUnit = prevValue + ' ' + metricUnit;
+
+      const shouldBe = evaluationParameters.shouldBe[i];
+      const ratio = evaluationParameters.is[i];
+
+
+
+        const metricValues = evaluationParameters.metricToDifferentBenchValues.get(metricName);
+        if (!metricValues) {
+        continue;
+        }
+
+        let currBenchValue = metricValues?.current ?? 'N/A';
+        let prevBenchValue = metricValues?.previous ?? 'N/A';
+
+        let graphicalRepresentationOfRes;
+        if (resultStatus === 'failed' || resultStatus === 'passed') {
+        graphicalRepresentationOfRes = resultStatus === 'passed' ? '🟢' : '🔴'
+        } else {
+        graphicalRepresentationOfRes= '🔘';
+        }
+
+        rows.push([
+        {
+            data: metricName,
+        },
+        {
+            data: currPlusUnit,
+        },
+        {
+            data: prevPlusUnit,
+        },
+        {
+            data: ratio,
+        },
+          {
+            data: shouldBe,
+          },
+        {
+            data: graphicalRepresentationOfRes
+        },
+
+        ])
+    }
+  let summaryMessage = module.exports.createSummaryMessage(evaluationResult);
+  const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults,
+      completeConfig.eventName);
+}
+
+
 
 module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod = function (evaluationMethod) {
   switch (evaluationMethod) {
