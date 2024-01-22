@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - missing_eval
 
 jobs:
   test:
@@ -22,7 +23,7 @@ jobs:
           sparse-checkout-cone-mode: false
           path: 'bench_data'
 
-      - run: tree
+#      - run: tree
 
       - name: Evaluate benchmark
         uses: ./
@@ -33,26 +34,23 @@ jobs:
           file_with_bench_data: data.json
           folder_with_current_benchmark_results: resultsFolder
           bench_group_name: "MongoDB Benchmark"
-          evaluation_method: "threshold"
-          threshold_values: 2500,700,50000,5000,30000
-          comparison_operators: tolerance,tolerance,tolerance,tolerance,tolerance
-          comparison_margins: 10,10,10,10,10
-          result_files_merge_strategy_for_each_metric: "sum, average, average, average, average"
+          evaluation_method: "jump_detection"
+          jump_detection_thresholds: "10, 10, 10, 10, 10"
           save_curr_bench_res: true
           github_token: ${{ secrets.GH_TOKEN }}
           github_context: ${{ toJson(github) }}
 
-      - name: Commit files
-        working-directory: ./bench_data
-        run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git commit -a -m "Add changes"
-          git push origin bench_data
-
-      - name: Check output and fail if needed
-        if: steps.eval.outputs.should_fail == 'true'
-        run: |
-          echo "Failing as indicated by evaluation action"
-          exit 1
+#      - name: Commit files
+#        working-directory: ./bench_data
+#        run: |
+#          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+#          git config --local user.name "github-actions[bot]"
+#          git commit -a -m "Add changes"
+#          git push origin bench_data
+#
+#      - name: Check output and fail if needed
+#        if: steps.eval.outputs.should_fail == 'true'
+#        run: |
+#          echo "Failing as indicated by evaluation action"
+#          exit 1
 

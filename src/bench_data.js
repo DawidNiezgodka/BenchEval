@@ -26,7 +26,6 @@ module.exports.addCompleteBenchmarkToFile = async (
     core.debug(`Reading file at ${pathToPreviousDataFile}`)
     try {
       const data = await fs.readFile(pathToPreviousDataFile, 'utf8')
-      //core.debug('Read file: ' + data) // -> can be very long...
       jsonData = JSON.parse(data)
     } catch (err) {
       core.debug(
@@ -229,12 +228,8 @@ module.exports.getBenchFromWeekAgo = function (
   );
 
   let benchmarks = data.entries[benchmarkGroupToCompare];
-  // Print the amount of benchmarks
-
   let closestBenchmark = null;
   let smallestDifference = Infinity;
-
-
 
   benchmarks.forEach(benchmark => {
     let difference = Math.abs(now - benchmark.date - ONE_WEEK_IN_MS);
@@ -298,7 +293,6 @@ module.exports.getBenchmarkOfStableBranch = function (benchmarkGroupToCompare, f
         folderWithBenchData, fileNameWithBenchData
     );
   let benchmarks = data.entries[benchmarkGroupToCompare];
-  // find benchmark with commit sha == latestBenchSha
   let benchmark = benchmarks.find(benchmark => benchmark.commit.id === latestBenchSha);
   core.debug(`Benchmark of stable branch: ${JSON.stringify(benchmark)}`);
 

@@ -30073,7 +30073,6 @@ module.exports.createCurrBench = function (config) {
   }).filter(result => result !== null);
 
   let commit;
-  // if config.eventName === schedule, then we will not have
   if (config.eventName === 'schedule') {
     core.info('The workflow was triggered by a scheduled event.');
     commit = getCommitReplacementWhenTriggeredByScheduledEvent(config.runId);
@@ -30125,7 +30124,6 @@ module.exports.addCompleteBenchmarkToFile = async (
     core.debug(`Reading file at ${pathToPreviousDataFile}`)
     try {
       const data = await fs.readFile(pathToPreviousDataFile, 'utf8')
-      //core.debug('Read file: ' + data) // -> can be very long...
       jsonData = JSON.parse(data)
     } catch (err) {
       core.debug(
@@ -30328,12 +30326,8 @@ module.exports.getBenchFromWeekAgo = function (
   );
 
   let benchmarks = data.entries[benchmarkGroupToCompare];
-  // Print the amount of benchmarks
-
   let closestBenchmark = null;
   let smallestDifference = Infinity;
-
-
 
   benchmarks.forEach(benchmark => {
     let difference = Math.abs(now - benchmark.date - ONE_WEEK_IN_MS);
@@ -30397,7 +30391,6 @@ module.exports.getBenchmarkOfStableBranch = function (benchmarkGroupToCompare, f
         folderWithBenchData, fileNameWithBenchData
     );
   let benchmarks = data.entries[benchmarkGroupToCompare];
-  // find benchmark with commit sha == latestBenchSha
   let benchmark = benchmarks.find(benchmark => benchmark.commit.id === latestBenchSha);
   core.debug(`Benchmark of stable branch: ${JSON.stringify(benchmark)}`);
 
@@ -30438,13 +30431,13 @@ module.exports.createComment = function (
       commentBody = module.exports.createBodyForComparisonWithPrev(evaluationResult, completeConfig);
       break;
     case 'previous_successful':
-      commentBody = module.exports.createBodyForComparisonWithPrevSucc(evaluationResult, completeConfig);
+      commentBody = module.exports.createBodyForComparisonWithPrev(evaluationResult, completeConfig);
       break;
     case 'threshold_range':
       commentBody = module.exports.createBodyForComparisonWithThresholdRange(evaluationResult, completeConfig);
       break;
     case 'jump_detection':
-      commentBody = module.exports.createBodyForComparisonWithJumpDet(evaluationResult, completeConfig);
+      commentBody = module.exports.createBodyForComparisonWithJumpDeltas(evaluationResult, completeConfig);
       break;
     case 'trend_detection_moving_ave':
       commentBody = module.exports.createBodyForComparisonWithTrendDetMovAve(evaluationResult, completeConfig);
@@ -30661,6 +30654,83 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
 
   return lines.join('\n')
 }
+
+module.exports.createBodyForComparisonWithJumpDeltas = function(evaluationResult, completeConfig) {
+  core.debug('------ start createBodyForComparisonWithJumpDeltas ------')
+  const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+  const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
+
+  const lines = []
+  lines.push('## Benchmark results')
+  lines.push('')
+  lines.push(`<b>Benchmark group:</b> ${currentBenchmark.benchmarkGroupName}`)
+  lines.push('')
+  lines.push(`The chosen evaluation method is jump_detection.`)
+  lines.push(`For each metric, there is the following condition: 
+        The current value should not change more than X% (Max. ch in the table below) from the value measured for the previous benchmark.`)
+
+  const currentBenchmarkGroupName = currentBenchmark.benchmarkGroupName
+  const previousBenchmarkGroupName = previousBenchmark.benchmarkGroupName
+
+  if (currentBenchmarkGroupName !== previousBenchmarkGroupName) {
+    lines.push(
+        "<b>Note</b>: Benchmarks from different groups are being compared."
+    )
+  }
+  const benchDataText = module.exports.createBenchDataTextForCompWithPrev(
+      currentBenchmark,
+      previousBenchmark
+  )
+  lines.push(benchDataText)
+
+  lines.push('', '', '', '', '')
+  lines.push('## Results')
+  lines.push('', '', '', '', '')
+
+  lines.push(
+      `| Metric | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Max. Jump | Was | Res | `
+  )
+  lines.push('|-|-|-|-|-|-|')
+
+  const evaluationResults = evaluationResult.results.result
+  const evaluationParameters = evaluationResult.evalParameters
+  const evaluationConfiguration = completeConfig.evaluationConfig
+  for (let i = 0; i < evaluationResults.length; i++) {
+
+    const resultStatus = evaluationResults[i];
+    const metricName = evaluationParameters.metricNames[i];
+    const metricUnit = evaluationParameters.metricUnits[i];
+
+    const currValue = currentBenchmark.simpleMetricResults[i].value;
+    const prevValue = previousBenchmark.simpleMetricResults[i].value;
+
+    const currPlusUnit = currValue + ' ' + metricUnit;
+    const prevPlusUnit = prevValue + ' ' + metricUnit;
+
+    const shouldBe = evaluationParameters.shouldBe[i];
+    const ratio = evaluationParameters.is[i];
+
+
+    let line
+
+
+    if (resultStatus === 'failed' || resultStatus === 'passed') {
+      let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴'
+      line = `| \`${metricName}\` | \`${currPlusUnit}\` | \`${prevPlusUnit}\` | ${shouldBe} | ${ratio} | ${betterOrWorse} |`
+    } else {
+      line = `| \`${metricName}\` | \'${currPlusUnit}\' | N/A | N/A | N/A | 🔘 |`
+    }
+
+    lines.push(line)
+  }
+
+  const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
+  module.exports.alertUsersIfBenchFailed(benchmarkPassed, completeConfig, lines);
+  return lines.join('\n')
+}
+
+
+
 module.exports.createBenchDataText = function (currentBenchmark) {
   core.info('------ start createBenchDataText ------')
   const benchInfo = currentBenchmark.benchmarkInfo
@@ -30897,7 +30967,7 @@ module.exports.createBodyForComparisonWithThresholdRange = function (
 ///////////////////////
 /////////////////////// Summary
 ///////////////////////
-module.exports.createWorkflowSummaryForCompWithPrev = function (evaluationResult, completeConfig) {
+module.exports.createWorkflowSummaryForCompWithPrev = function (evaluationResult, completeConfig, successful) {
 
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
@@ -31184,6 +31254,97 @@ module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMe
   core.summary
       .write();
 }
+
+module.exports.createWorkflowSummaryForJumpDetection = function (evaluationResult, completeConfig) {
+    const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+    const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
+
+    const currentCommitId = completeConfig.eventName === 'schedule' ? currentBenchmark.commitInfo.id : currentBenchmark.commitInfo.id.substring(0, 7);
+    const previousCommitId = previousBenchmark.commitInfo.eventName === 'schedule' ? previousBenchmark.commitInfo.id : previousBenchmark.commitInfo.id.substring(0, 7);
+
+    const headers = [
+        {
+        data: 'Metric',
+        header: true,
+        },
+        {
+        data: `Current: "${currentCommitId}"`,
+        header: true,
+        },
+        {
+        data: `Previous: "${previousCommitId}"`,
+        header: true,
+        },
+
+      {
+        data: 'Jump',
+        header: true,
+      },
+      {
+        data: 'Max. change [%]',
+        header: true,
+      },
+        {
+        data: 'Result',
+        header: true,
+        }
+
+    ];
+
+    const rows = [];
+    const evaluationResults = evaluationResult.results.result
+    const evaluationParameters = evaluationResult.evalParameters
+    const evaluationConfiguration = completeConfig.evaluationConfig
+    for (let i = 0; i < evaluationResults.length; i++) {
+      const resultStatus = evaluationResults[i];
+      const metricName = evaluationParameters.metricNames[i];
+      const metricUnit = evaluationParameters.metricUnits[i];
+
+      const currValue = currentBenchmark.simpleMetricResults[i].value;
+      const prevValue = previousBenchmark.simpleMetricResults[i].value;
+
+      const currPlusUnit = currValue + ' ' + metricUnit;
+      const prevPlusUnit = prevValue + ' ' + metricUnit;
+
+      const shouldBe = evaluationParameters.shouldBe[i];
+      const ratio = evaluationParameters.is[i];
+
+
+        let graphicalRepresentationOfRes;
+        if (resultStatus === 'failed' || resultStatus === 'passed') {
+        graphicalRepresentationOfRes = resultStatus === 'passed' ? '🟢' : '🔴'
+        } else {
+        graphicalRepresentationOfRes= '🔘';
+        }
+
+        rows.push([
+        {
+            data: metricName,
+        },
+        {
+            data: currPlusUnit,
+        },
+        {
+            data: prevPlusUnit,
+        },
+        {
+            data: ratio,
+        },
+          {
+            data: shouldBe,
+          },
+        {
+            data: graphicalRepresentationOfRes
+        },
+
+        ])
+    }
+  let summaryMessage = module.exports.createSummaryMessage(evaluationResult);
+  const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults,
+      completeConfig.eventName);
+}
+
 
 
 module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod = function (evaluationMethod) {
@@ -32337,7 +32498,7 @@ module.exports.evaluateWithJumpDetection = function (currentBenchmarkData, confi
     shouldBe.push(threshold);
 
     if (previousResult) {
-      const ratio = (currentValue / previousResult.value - 1) * 100;
+      const ratio = Math.abs((currentValue / previousResult.value - 1) * 100);
       ratios.push(ratio.toFixed(2));
       const isPassed = Math.abs(ratio) < threshold;
       evaluationResults.push(isPassed ? 'passed' : 'failed');
@@ -32572,7 +32733,7 @@ const { createCurrBench} = __nccwpck_require__(501)
 
 const { createComment, createWorkflowSummaryForCompWithPrev, createWorkflowSummaryThreshold,
   summaryForMethodNotSupported, createWorkflowSummaryForThresholdRange,
-  createWorkflowSummaryForTrendDetDeltas} = __nccwpck_require__(3732)
+  createWorkflowSummaryForTrendDetDeltas, createWorkflowSummaryForJumpDetection} = __nccwpck_require__(3732)
 
 const {
   addCompleteBenchmarkToFile,
@@ -32665,13 +32826,17 @@ async function run() {
     if (addJobSummary === 'on' || (addJobSummary === 'if_failed' && shouldFail)) {
 
       if (evaluationConfig.evaluationMethod === 'previous') {
-        createWorkflowSummaryForCompWithPrev(evaluationResult, completeConfig);
+        createWorkflowSummaryForCompWithPrev(evaluationResult, completeConfig, false);
+      } else if (evaluationConfig.evaluationMethod === 'previous_successful') {
+        createWorkflowSummaryForCompWithPrev(evaluationResult, completeConfig, true);
       } else if (evaluationConfig.evaluationMethod === 'threshold') {
         createWorkflowSummaryThreshold(evaluationResult, completeConfig);
       } else if (evaluationConfig.evaluationMethod === 'threshold_range') {
         createWorkflowSummaryForThresholdRange(evaluationResult, completeConfig)
       } else if (evaluationConfig.evaluationMethod === 'trend_detection_deltas') {
         createWorkflowSummaryForTrendDetDeltas(evaluationResult, completeConfig);
+      } else if (evaluationConfig.evaluationMethod === 'jump_detection') {
+        createWorkflowSummaryForJumpDetection(evaluationResult, completeConfig);
       }
 
       else {

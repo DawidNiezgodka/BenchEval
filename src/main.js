@@ -16,7 +16,7 @@ const { createCurrBench} = require('./bench')
 
 const { createComment, createWorkflowSummaryForCompWithPrev, createWorkflowSummaryThreshold,
   summaryForMethodNotSupported, createWorkflowSummaryForThresholdRange,
-  createWorkflowSummaryForTrendDetDeltas} = require('./comment')
+  createWorkflowSummaryForTrendDetDeltas, createWorkflowSummaryForJumpDetection} = require('./comment')
 
 const {
   addCompleteBenchmarkToFile,
@@ -109,13 +109,17 @@ async function run() {
     if (addJobSummary === 'on' || (addJobSummary === 'if_failed' && shouldFail)) {
 
       if (evaluationConfig.evaluationMethod === 'previous') {
-        createWorkflowSummaryForCompWithPrev(evaluationResult, completeConfig);
+        createWorkflowSummaryForCompWithPrev(evaluationResult, completeConfig, false);
+      } else if (evaluationConfig.evaluationMethod === 'previous_successful') {
+        createWorkflowSummaryForCompWithPrev(evaluationResult, completeConfig, true);
       } else if (evaluationConfig.evaluationMethod === 'threshold') {
         createWorkflowSummaryThreshold(evaluationResult, completeConfig);
       } else if (evaluationConfig.evaluationMethod === 'threshold_range') {
         createWorkflowSummaryForThresholdRange(evaluationResult, completeConfig)
       } else if (evaluationConfig.evaluationMethod === 'trend_detection_deltas') {
         createWorkflowSummaryForTrendDetDeltas(evaluationResult, completeConfig);
+      } else if (evaluationConfig.evaluationMethod === 'jump_detection') {
+        createWorkflowSummaryForJumpDetection(evaluationResult, completeConfig);
       }
 
       else {

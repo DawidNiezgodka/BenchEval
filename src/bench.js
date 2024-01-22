@@ -30,7 +30,6 @@ module.exports.createCurrBench = function (config) {
   }).filter(result => result !== null);
 
   let commit;
-  // if config.eventName === schedule, then we will not have
   if (config.eventName === 'schedule') {
     core.info('The workflow was triggered by a scheduled event.');
     commit = getCommitReplacementWhenTriggeredByScheduledEvent(config.runId);

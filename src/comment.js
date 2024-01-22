@@ -19,13 +19,13 @@ module.exports.createComment = function (
       commentBody = module.exports.createBodyForComparisonWithPrev(evaluationResult, completeConfig);
       break;
     case 'previous_successful':
-      commentBody = module.exports.createBodyForComparisonWithPrevSucc(evaluationResult, completeConfig);
+      commentBody = module.exports.createBodyForComparisonWithPrev(evaluationResult, completeConfig);
       break;
     case 'threshold_range':
       commentBody = module.exports.createBodyForComparisonWithThresholdRange(evaluationResult, completeConfig);
       break;
     case 'jump_detection':
-      commentBody = module.exports.createBodyForComparisonWithJumpDet(evaluationResult, completeConfig);
+      commentBody = module.exports.createBodyForComparisonWithJumpDeltas(evaluationResult, completeConfig);
       break;
     case 'trend_detection_moving_ave':
       commentBody = module.exports.createBodyForComparisonWithTrendDetMovAve(evaluationResult, completeConfig);
@@ -242,6 +242,83 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
 
   return lines.join('\n')
 }
+
+module.exports.createBodyForComparisonWithJumpDeltas = function(evaluationResult, completeConfig) {
+  core.debug('------ start createBodyForComparisonWithJumpDeltas ------')
+  const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+  const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
+
+  const lines = []
+  lines.push('## Benchmark results')
+  lines.push('')
+  lines.push(`<b>Benchmark group:</b> ${currentBenchmark.benchmarkGroupName}`)
+  lines.push('')
+  lines.push(`The chosen evaluation method is jump_detection.`)
+  lines.push(`For each metric, there is the following condition: 
+        The current value should not change more than X% (Max. ch in the table below) from the value measured for the previous benchmark.`)
+
+  const currentBenchmarkGroupName = currentBenchmark.benchmarkGroupName
+  const previousBenchmarkGroupName = previousBenchmark.benchmarkGroupName
+
+  if (currentBenchmarkGroupName !== previousBenchmarkGroupName) {
+    lines.push(
+        "<b>Note</b>: Benchmarks from different groups are being compared."
+    )
+  }
+  const benchDataText = module.exports.createBenchDataTextForCompWithPrev(
+      currentBenchmark,
+      previousBenchmark
+  )
+  lines.push(benchDataText)
+
+  lines.push('', '', '', '', '')
+  lines.push('## Results')
+  lines.push('', '', '', '', '')
+
+  lines.push(
+      `| Metric | Curr: ${currentBenchmark.commitInfo.id} | Prev: ${previousBenchmark.commitInfo.id} | Max. Jump | Was | Res | `
+  )
+  lines.push('|-|-|-|-|-|-|')
+
+  const evaluationResults = evaluationResult.results.result
+  const evaluationParameters = evaluationResult.evalParameters
+  const evaluationConfiguration = completeConfig.evaluationConfig
+  for (let i = 0; i < evaluationResults.length; i++) {
+
+    const resultStatus = evaluationResults[i];
+    const metricName = evaluationParameters.metricNames[i];
+    const metricUnit = evaluationParameters.metricUnits[i];
+
+    const currValue = currentBenchmark.simpleMetricResults[i].value;
+    const prevValue = previousBenchmark.simpleMetricResults[i].value;
+
+    const currPlusUnit = currValue + ' ' + metricUnit;
+    const prevPlusUnit = prevValue + ' ' + metricUnit;
+
+    const shouldBe = evaluationParameters.shouldBe[i];
+    const ratio = evaluationParameters.is[i];
+
+
+    let line
+
+
+    if (resultStatus === 'failed' || resultStatus === 'passed') {
+      let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴'
+      line = `| \`${metricName}\` | \`${currPlusUnit}\` | \`${prevPlusUnit}\` | ${shouldBe} | ${ratio} | ${betterOrWorse} |`
+    } else {
+      line = `| \`${metricName}\` | \'${currPlusUnit}\' | N/A | N/A | N/A | 🔘 |`
+    }
+
+    lines.push(line)
+  }
+
+  const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
+  module.exports.alertUsersIfBenchFailed(benchmarkPassed, completeConfig, lines);
+  return lines.join('\n')
+}
+
+
+
 module.exports.createBenchDataText = function (currentBenchmark) {
   core.info('------ start createBenchDataText ------')
   const benchInfo = currentBenchmark.benchmarkInfo
@@ -478,7 +555,7 @@ module.exports.createBodyForComparisonWithThresholdRange = function (
 ///////////////////////
 /////////////////////// Summary
 ///////////////////////
-module.exports.createWorkflowSummaryForCompWithPrev = function (evaluationResult, completeConfig) {
+module.exports.createWorkflowSummaryForCompWithPrev = function (evaluationResult, completeConfig, successful) {
 
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
   const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
@@ -765,6 +842,97 @@ module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMe
   core.summary
       .write();
 }
+
+module.exports.createWorkflowSummaryForJumpDetection = function (evaluationResult, completeConfig) {
+    const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+    const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
+
+    const currentCommitId = completeConfig.eventName === 'schedule' ? currentBenchmark.commitInfo.id : currentBenchmark.commitInfo.id.substring(0, 7);
+    const previousCommitId = previousBenchmark.commitInfo.eventName === 'schedule' ? previousBenchmark.commitInfo.id : previousBenchmark.commitInfo.id.substring(0, 7);
+
+    const headers = [
+        {
+        data: 'Metric',
+        header: true,
+        },
+        {
+        data: `Current: "${currentCommitId}"`,
+        header: true,
+        },
+        {
+        data: `Previous: "${previousCommitId}"`,
+        header: true,
+        },
+
+      {
+        data: 'Jump',
+        header: true,
+      },
+      {
+        data: 'Max. change [%]',
+        header: true,
+      },
+        {
+        data: 'Result',
+        header: true,
+        }
+
+    ];
+
+    const rows = [];
+    const evaluationResults = evaluationResult.results.result
+    const evaluationParameters = evaluationResult.evalParameters
+    const evaluationConfiguration = completeConfig.evaluationConfig
+    for (let i = 0; i < evaluationResults.length; i++) {
+      const resultStatus = evaluationResults[i];
+      const metricName = evaluationParameters.metricNames[i];
+      const metricUnit = evaluationParameters.metricUnits[i];
+
+      const currValue = currentBenchmark.simpleMetricResults[i].value;
+      const prevValue = previousBenchmark.simpleMetricResults[i].value;
+
+      const currPlusUnit = currValue + ' ' + metricUnit;
+      const prevPlusUnit = prevValue + ' ' + metricUnit;
+
+      const shouldBe = evaluationParameters.shouldBe[i];
+      const ratio = evaluationParameters.is[i];
+
+
+        let graphicalRepresentationOfRes;
+        if (resultStatus === 'failed' || resultStatus === 'passed') {
+        graphicalRepresentationOfRes = resultStatus === 'passed' ? '🟢' : '🔴'
+        } else {
+        graphicalRepresentationOfRes= '🔘';
+        }
+
+        rows.push([
+        {
+            data: metricName,
+        },
+        {
+            data: currPlusUnit,
+        },
+        {
+            data: prevPlusUnit,
+        },
+        {
+            data: ratio,
+        },
+          {
+            data: shouldBe,
+          },
+        {
+            data: graphicalRepresentationOfRes
+        },
+
+        ])
+    }
+  let summaryMessage = module.exports.createSummaryMessage(evaluationResult);
+  const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults,
+      completeConfig.eventName);
+}
+
 
 
 module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod = function (evaluationMethod) {
