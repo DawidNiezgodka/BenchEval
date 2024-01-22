@@ -32640,11 +32640,13 @@ module.exports.trendDetectionMovingAve = function (currentBenchmarkData, complet
     const sumOfPreviousMetrics = previousMetrics.reduce((acc, metric) => acc + metric.value, 0);
     const movingAverage = sumOfPreviousMetrics / Math.min(b, previousMetrics.length);
 
-    const percentageIncrease = (currentValue / movingAverage - 1) * 100;
+    const percentageIncrease = Math.abs((currentValue / movingAverage - 1) * 100);
     percentageIncreases.push(percentageIncrease.toFixed(2));
     const isPassed = currentThreshold >= percentageIncrease;
     evaluationResults.push(isPassed ? 'passed' : 'failed');
   });
+
+  core.info(`Percentage increases: ${percentageIncreases}`)
 
   return module.exports.createEvaluationObject({
     "evaluation_method": "trend_detection_moving_ave",
