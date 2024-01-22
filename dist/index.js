@@ -30269,6 +30269,7 @@ module.exports.getNLatestBenchmarks = function (
     const nthLatest = sortedBenchmarkData.slice(0, n).map(data => {
       return convertBenchDataToCompleteBenchmarkInstance(data, benchmarkGroupName);
     });
+    return nthLatest;
     //core.debug(`nthLatest ${JSON.stringify(nthLatest)}`)
     core.debug('--- end getNLatestBenchmarks ---')
   } catch (error) {
