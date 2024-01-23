@@ -16,7 +16,8 @@ const { createCurrBench} = require('./bench')
 
 const { createComment, createWorkflowSummaryForCompWithPrev, createWorkflowSummaryThreshold,
   summaryForMethodNotSupported, createWorkflowSummaryForThresholdRange,
-  createWorkflowSummaryForTrendDetDeltas, createWorkflowSummaryForJumpDetection} = require('./comment')
+  createWorkflowSummaryForTrendDetDeltas, createWorkflowSummaryForJumpDetection,
+  createWorkflowSummaryForTrendDetAve} = require('./comment')
 
 const {
   addCompleteBenchmarkToFile,
