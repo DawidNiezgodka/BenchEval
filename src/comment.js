@@ -28,7 +28,7 @@ module.exports.createComment = function (
       commentBody = module.exports.createBodyForComparisonWithJumpDeltas(evaluationResult, completeConfig);
       break;
     case 'trend_detection_moving_ave':
-      commentBody = module.exports.createBodyForComparisonWithTrendDetMovAve(evaluationResult, completeConfig);
+      commentBody = module.exports.createBodyForComparisonWithTrendDetMovAverage(evaluationResult, completeConfig);
       break;
     case 'trend_detection_deltas':
       commentBody = module.exports.createBodyForComparisonWithTrendDetDeltas(evaluationResult, completeConfig);
@@ -241,6 +241,72 @@ module.exports.createBodyForComparisonWithTrendDetDeltas = function(evaluationRe
 
 
   return lines.join('\n')
+}
+
+module.exports.createBodyForComparisonWithTrendDetMovAverage = function(evaluationResult, completeConfig) {
+
+  core.debug('------ start createBodyForComparisonWithTrendDetMovAverage ------')
+  const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+
+  const lines = []
+  lines.push('## Benchmark results')
+  lines.push('')
+  lines.push(`<b>Benchmark group:</b> ${currentBenchmark.benchmarkGroupName}`)
+  lines.push('')
+  lines.push(`The chosen evaluation method is trend_detection_moving_ave.`)
+  lines.push(`For each metric, the procedure checks if the current value does not exceed the average
+   of a particular number of last measurements more than a given threshold
+        `)
+
+  const benchDataText = module.exports.createBenchDataText(
+      currentBenchmark
+  )
+  lines.push(benchDataText)
+
+  lines.push('', '', '', '', '')
+  lines.push('## Results')
+  lines.push('', '', '', '', '')
+
+  lines.push(
+      `| Metric | Curr: ${currentBenchmark.commitInfo.id} | Max.Jump | Was | No builds | Res | `
+  )
+  lines.push('|-|-|-|-|-|-|')
+
+
+  const evaluationResults = evaluationResult.results.result
+  const evaluationParameters = evaluationResult.evalParameters
+
+  const movingAveWindowSize = completeConfig.evaluationConfig.movingAveWindowSize;
+  core.debug("Moving ave window size: " + movingAveWindowSize)
+  for (let i = 0; i < evaluationResults.length; i++) {
+
+    core.info(`Printing eval parameters", ${JSON.stringify(evaluationParameters)}`)
+    const resultStatus = evaluationResults[i];
+    const metricName = evaluationParameters.metricNames[i];
+    const metricUnit = evaluationParameters.metricUnits[i];
+
+    const currValue = currentBenchmark.simpleMetricResults[i].value;
+    const currPlusUnit = currValue + ' ' + metricUnit;
+    const shouldBe = evaluationParameters.shouldBe[i];
+    const ratio = evaluationParameters.is[i];
+
+    let line
+
+// Max.Jump | Was | No builds | Res
+    if (resultStatus === 'failed' || resultStatus === 'passed') {
+      let betterOrWorse = resultStatus === 'passed' ? '🟢' : '🔴'
+      line = `| \`${metricName}\` | \`${currPlusUnit}\` |  ${shouldBe} | ${ratio} | ${movingAveWindowSize} | ${betterOrWorse} |`
+    } else {
+      line = `| \`${metricName}\` | \'${currPlusUnit}\' | N/A | N/A | N/A | 🔘 |`
+    }
+
+    lines.push(line)
+  }
+
+  const benchmarkPassed = module.exports.addInfoAboutBenchRes(lines, completeConfig, evaluationResults);
+  module.exports.alertUsersIfBenchFailed(benchmarkPassed, completeConfig, lines);
+  return lines.join('\n')
+
 }
 
 module.exports.createBodyForComparisonWithJumpDeltas = function(evaluationResult, completeConfig) {
@@ -809,7 +875,8 @@ module.exports.summaryForMethodNotSupported = function (evaluationResult, linkTo
 //////////
 /// Helpers
 //////////
-module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMessage, linkToGraph, eventName) {
+module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMessage, linkToGraph, eventName,
+                                      isMovingAve = false, movingAveWindowSize = null) {
 
   const methodSpecificDescription = module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod(evaluationMethod);
   const methodDescriptionFullText = `<b>Method description:</b> ${methodSpecificDescription}`;
@@ -822,6 +889,11 @@ module.exports.addSummary = function (evaluationMethod, headers, rows, summaryMe
     const scheduledEventExtraInfo = "The benchmark was run on a scheduled event. Instead of a commit id, the full run id is displayed.";
     core.summary.addRaw(scheduledEventExtraInfo)
     .addSeparator();
+  }
+  if (isMovingAve) {
+    const movingAveExtraInfo = `The chosen moving average window size is ${movingAveWindowSize}.`;
+    core.summary.addRaw(movingAveExtraInfo)
+        .addSeparator();
   }
   core.summary
       .addHeading(`The chosen evaluation method: ${evaluationMethod}`, 4)
@@ -933,6 +1005,84 @@ module.exports.createWorkflowSummaryForJumpDetection = function (evaluationResul
       completeConfig.eventName);
 }
 
+module.exports.createWorkflowSummaryForTrendDetAve = function (evaluationResult, completeConfig) {
+  core.info("Creating summary for trend detection moving average")
+  const currentBenchmark = evaluationResult.referenceBenchmarks.current;
+  const currentCommitId = completeConfig.eventName === 'schedule' ? currentBenchmark.commitInfo.id : currentBenchmark.commitInfo.id.substring(0, 7);
+
+  const headers = [
+    {
+      data: 'Metric',
+      header: true,
+    },
+    {
+      data: `Current: "${currentCommitId}"`,
+      header: true,
+    },
+
+
+    {
+      data: 'Jump',
+      header: true,
+    },
+    {
+      data: 'Max. change [%]',
+      header: true,
+    },
+    {
+      data: 'Result',
+      header: true,
+    }
+
+  ];
+
+  const rows = [];
+  const evaluationResults = evaluationResult.results.result
+  const evaluationParameters = evaluationResult.evalParameters
+  const evaluationConfiguration = completeConfig.evaluationConfig
+  for (let i = 0; i < evaluationResults.length; i++) {
+    const resultStatus = evaluationResults[i];
+    const metricName = evaluationParameters.metricNames[i];
+    const metricUnit = evaluationParameters.metricUnits[i];
+
+    const currValue = currentBenchmark.simpleMetricResults[i].value;
+    const currPlusUnit = currValue + ' ' + metricUnit;
+    const shouldBe = evaluationParameters.shouldBe[i];
+    const ratio = evaluationParameters.is[i];
+
+    let graphicalRepresentationOfRes;
+    if (resultStatus === 'failed' || resultStatus === 'passed') {
+      graphicalRepresentationOfRes = resultStatus === 'passed' ? '🟢' : '🔴'
+    } else {
+      graphicalRepresentationOfRes= '🔘';
+    }
+
+    rows.push([
+      {
+        data: metricName,
+      },
+      {
+        data: currPlusUnit,
+      },
+      {
+        data: ratio,
+      },
+      {
+        data: shouldBe,
+      },
+      {
+        data: graphicalRepresentationOfRes
+      }
+
+    ])
+  }
+  const movingAveWindowSize = completeConfig.evaluationConfig.movingAveWindowSize;
+  let summaryMessage = module.exports.createSummaryMessage(evaluationResult);
+  const evaluationMethod = evaluationResult.evalParameters.evaluationMethod;
+  module.exports.addSummary(evaluationMethod, headers, rows, summaryMessage, completeConfig.linkToTemplatedGhPageWithResults,
+      completeConfig.eventName, true, movingAveWindowSize);
+}
+
 
 
 module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod = function (evaluationMethod) {
@@ -946,9 +1096,9 @@ module.exports.getEvaluationMethodSpecificDescriptionOfEvalMethod = function (ev
     case 'threshold_range':
       return "The method compares the current benchmark in relation to a range of a given values (given by lower and upper bounds)."
     case 'jump_detection':
-      return ""
+      return "The strategy checks if the difference between the current and previous value does not exceed a given threshold"
     case 'trend_detection_moving_ave':
-      return ""
+      return "The procedure checks if the current value does not exceed the average of a particular number of last measurements more than a given threshold"
     case 'trend_detection_deltas':
       return "The method tries to identify software performance degradation by comparing current performance against three benchmarks:" +
           " the immediate previous run, a run closest to one week ago, and the last stable release." +

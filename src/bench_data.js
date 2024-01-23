@@ -90,7 +90,7 @@ module.exports.getLatestBenchmark = function (
   )
 
     const nthLatestBenchmarkData = sortedBenchmarkData[n - 1]
-    core.debug(`nthLatestBenchmarkData.metrics ${JSON.stringify(nthLatestBenchmarkData)}`)
+    //core.debug(`nthLatestBenchmarkData.metrics ${JSON.stringify(nthLatestBenchmarkData)}`)
     return convertBenchDataToCompleteBenchmarkInstance(nthLatestBenchmarkData, benchmarkGroupName)
 
 }
@@ -171,8 +171,9 @@ module.exports.getNLatestBenchmarks = function (
     const nthLatest = sortedBenchmarkData.slice(0, n).map(data => {
       return convertBenchDataToCompleteBenchmarkInstance(data, benchmarkGroupName);
     });
-    core.debug(`nthLatest ${JSON.stringify(nthLatest)}`)
     core.debug('--- end getNLatestBenchmarks ---')
+    return nthLatest;
+
   } catch (error) {
     console.error('An error occurred:', error);
     return null;

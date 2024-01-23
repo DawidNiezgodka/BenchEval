@@ -16,7 +16,8 @@ const { createCurrBench} = require('./bench')
 
 const { createComment, createWorkflowSummaryForCompWithPrev, createWorkflowSummaryThreshold,
   summaryForMethodNotSupported, createWorkflowSummaryForThresholdRange,
-  createWorkflowSummaryForTrendDetDeltas, createWorkflowSummaryForJumpDetection} = require('./comment')
+  createWorkflowSummaryForTrendDetDeltas, createWorkflowSummaryForJumpDetection,
+  createWorkflowSummaryForTrendDetAve} = require('./comment')
 
 const {
   addCompleteBenchmarkToFile,
@@ -120,6 +121,8 @@ async function run() {
         createWorkflowSummaryForTrendDetDeltas(evaluationResult, completeConfig);
       } else if (evaluationConfig.evaluationMethod === 'jump_detection') {
         createWorkflowSummaryForJumpDetection(evaluationResult, completeConfig);
+      } else if (evaluationConfig.evaluationMethod === 'trend_detection_moving_ave') {
+        createWorkflowSummaryForTrendDetAve(evaluationResult, completeConfig);
       }
 
       else {
