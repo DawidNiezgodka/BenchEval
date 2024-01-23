@@ -31419,11 +31419,9 @@ module.exports.createWorkflowSummaryForJumpDetection = function (evaluationResul
 }
 
 module.exports.createWorkflowSummaryForTrendDetAve = function (evaluationResult, completeConfig) {
+  core.info("Creating summary for trend detection moving average")
   const currentBenchmark = evaluationResult.referenceBenchmarks.current;
-  const previousBenchmark = evaluationResult.referenceBenchmarks.previous;
-
   const currentCommitId = completeConfig.eventName === 'schedule' ? currentBenchmark.commitInfo.id : currentBenchmark.commitInfo.id.substring(0, 7);
-  const previousCommitId = previousBenchmark.commitInfo.eventName === 'schedule' ? previousBenchmark.commitInfo.id : previousBenchmark.commitInfo.id.substring(0, 7);
 
   const headers = [
     {
@@ -31465,10 +31463,6 @@ module.exports.createWorkflowSummaryForTrendDetAve = function (evaluationResult,
     const shouldBe = evaluationParameters.shouldBe[i];
     const ratio = evaluationParameters.is[i];
 
-    let line
-
-
-
     let graphicalRepresentationOfRes;
     if (resultStatus === 'failed' || resultStatus === 'passed') {
       graphicalRepresentationOfRes = resultStatus === 'passed' ? '🟢' : '🔴'
@@ -31491,7 +31485,7 @@ module.exports.createWorkflowSummaryForTrendDetAve = function (evaluationResult,
       },
       {
         data: graphicalRepresentationOfRes
-      },
+      }
 
     ])
   }
