@@ -33005,7 +33005,7 @@ async function run() {
         createWorkflowSummaryForTrendDetDeltas(evaluationResult, completeConfig);
       } else if (evaluationConfig.evaluationMethod === 'jump_detection') {
         createWorkflowSummaryForJumpDetection(evaluationResult, completeConfig);
-      } else if (evaluationConfig.evaluationMethod === 'none') {
+      } else if (evaluationConfig.evaluationMethod === 'trend_detection_moving_ave') {
         createWorkflowSummaryForTrendDetAve(evaluationResult, completeConfig);
       }
 
